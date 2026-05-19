@@ -26,6 +26,10 @@ export type ScheduleConflict = {
   endAt: Date;
 };
 
+export type ScheduleConflictOptions = {
+  excludeScheduleIds?: string[];
+};
+
 export type BasicScheduleConflictInput = {
   classGroupId: string;
   teacherId: string;
@@ -201,6 +205,7 @@ export async function findScheduleConflicts(
   tx: ScheduleConflictClient,
   tenantId: string,
   candidates: ScheduleConflictCandidate[],
+  options: ScheduleConflictOptions = {},
 ) {
   if (candidates.length === 0) {
     return [];
@@ -252,6 +257,12 @@ export async function findScheduleConflicts(
     tx.schedule.findMany({
       where: {
         tenantId,
+        id:
+          options.excludeScheduleIds && options.excludeScheduleIds.length > 0
+            ? {
+                notIn: options.excludeScheduleIds,
+              }
+            : undefined,
         status: {
           in: ["SCHEDULED", "RESCHEDULED", "MAKE_UP"],
         },

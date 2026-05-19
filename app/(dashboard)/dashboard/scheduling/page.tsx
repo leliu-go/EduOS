@@ -28,6 +28,7 @@ import {
 } from "@/features/scheduling/calendar";
 import { getScheduleCalendarData, type ScheduleCalendarItem } from "@/features/scheduling/queries";
 import { ScheduleBatchDialog } from "@/features/scheduling/schedule-batch-dialog";
+import { ScheduleChangeActions } from "@/features/scheduling/schedule-change-actions";
 import { ScheduleCreateDialog } from "@/features/scheduling/schedule-create-dialog";
 import { scheduleStatusLabels } from "@/features/scheduling/schedule-schema";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -36,6 +37,9 @@ import { cn } from "@/lib/utils";
 type SchedulingCalendarPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+type ScheduleCalendarData = Awaited<ReturnType<typeof getScheduleCalendarData>>;
+type ScheduleCalendarRoom = ScheduleCalendarData["options"]["rooms"][number];
 
 const viewLabels = {
   day: "日",
@@ -117,9 +121,11 @@ function getSchedulesByDate(schedules: ScheduleCalendarItem[]) {
 
 function ScheduleEvent({
   schedule,
+  rooms,
   compact = false,
 }: {
   schedule: ScheduleCalendarItem;
+  rooms: ScheduleCalendarRoom[];
   compact?: boolean;
 }) {
   return (
@@ -141,15 +147,22 @@ function ScheduleEvent({
           {schedule.teacher.name} · {schedule.campus.name}/{schedule.room.name}
         </span>
       </div>
+      <ScheduleChangeActions schedule={schedule} rooms={rooms} />
     </div>
   );
 }
 
-function DayCalendar({ schedules }: { schedules: ScheduleCalendarItem[] }) {
+function DayCalendar({
+  schedules,
+  rooms,
+}: {
+  schedules: ScheduleCalendarItem[];
+  rooms: ScheduleCalendarRoom[];
+}) {
   return (
     <div className="grid gap-3">
       {schedules.map((schedule) => (
-        <ScheduleEvent key={schedule.id} schedule={schedule} />
+        <ScheduleEvent key={schedule.id} schedule={schedule} rooms={rooms} />
       ))}
     </div>
   );
@@ -157,9 +170,11 @@ function DayCalendar({ schedules }: { schedules: ScheduleCalendarItem[] }) {
 
 function WeekCalendar({
   schedules,
+  rooms,
   startAt,
 }: {
   schedules: ScheduleCalendarItem[];
+  rooms: ScheduleCalendarRoom[];
   startAt: Date;
 }) {
   const schedulesByDate = getSchedulesByDate(schedules);
@@ -178,7 +193,7 @@ function WeekCalendar({
             <div className="mt-3 grid gap-2">
               {dailySchedules.length > 0 ? (
                 dailySchedules.map((schedule) => (
-                  <ScheduleEvent key={schedule.id} schedule={schedule} compact />
+                  <ScheduleEvent key={schedule.id} schedule={schedule} rooms={rooms} compact />
                 ))
               ) : (
                 <p className="rounded-md border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
@@ -193,22 +208,29 @@ function WeekCalendar({
   );
 }
 
-function ListCalendar({ schedules }: { schedules: ScheduleCalendarItem[] }) {
+function ListCalendar({
+  schedules,
+  rooms,
+}: {
+  schedules: ScheduleCalendarItem[];
+  rooms: ScheduleCalendarRoom[];
+}) {
   return (
     <div className="overflow-x-auto rounded-lg border bg-card">
-      <div className="min-w-[760px]">
-        <div className="grid grid-cols-[1.3fr_1fr_1fr_1fr_auto] gap-3 border-b px-4 py-3 text-xs font-medium text-muted-foreground">
+      <div className="min-w-[920px]">
+        <div className="grid grid-cols-[1.3fr_1fr_1fr_1fr_auto_12rem] gap-3 border-b px-4 py-3 text-xs font-medium text-muted-foreground">
           <span>时间</span>
           <span>班级</span>
           <span>老师</span>
           <span>教室</span>
           <span>状态</span>
+          <span>操作</span>
         </div>
         <div className="divide-y">
           {schedules.map((schedule) => (
             <div
               key={schedule.id}
-              className="grid grid-cols-[1.3fr_1fr_1fr_1fr_auto] gap-3 px-4 py-3 text-sm"
+              className="grid grid-cols-[1.3fr_1fr_1fr_1fr_auto_12rem] gap-3 px-4 py-3 text-sm"
             >
               <span className="text-foreground">{formatScheduleTime(schedule)}</span>
               <span className="text-muted-foreground">{schedule.classGroup.name}</span>
@@ -217,6 +239,7 @@ function ListCalendar({ schedules }: { schedules: ScheduleCalendarItem[] }) {
                 {schedule.campus.name}/{schedule.room.name}
               </span>
               <Badge variant="secondary">{scheduleStatusLabels[schedule.status]}</Badge>
+              <ScheduleChangeActions schedule={schedule} rooms={rooms} />
             </div>
           ))}
         </div>
@@ -413,16 +436,17 @@ export default async function SchedulingCalendarPage({
         {calendarData.schedules.length > 0 ? (
           <Tabs defaultValue={search.view}>
             <TabsContent value="day">
-              <DayCalendar schedules={calendarData.schedules} />
+              <DayCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
             </TabsContent>
             <TabsContent value="week">
               <WeekCalendar
                 schedules={calendarData.schedules}
+                rooms={calendarData.options.rooms}
                 startAt={calendarData.window.startAt}
               />
             </TabsContent>
             <TabsContent value="list">
-              <ListCalendar schedules={calendarData.schedules} />
+              <ListCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
             </TabsContent>
           </Tabs>
         ) : (

@@ -138,6 +138,39 @@ export const scheduleBatchCreateFormSchema = z
     message: "Schedule end time must be after start time.",
   });
 
+const scheduleReasonSchema = z.string().trim().min(1).max(300);
+
+export const scheduleCancelFormSchema = z.object({
+  scheduleId: z.string().cuid(),
+  reason: scheduleReasonSchema,
+});
+
+export const scheduleRescheduleFormSchema = z
+  .object({
+    scheduleId: z.string().cuid(),
+    roomId: z.string().cuid(),
+    startAt: formDateTimeSchema,
+    endAt: formDateTimeSchema,
+    reason: scheduleReasonSchema,
+  })
+  .refine((value) => value.endAt > value.startAt, {
+    path: ["endAt"],
+    message: "Schedule end time must be after start time.",
+  });
+
+export const scheduleMakeUpFormSchema = z
+  .object({
+    scheduleId: z.string().cuid(),
+    roomId: z.string().cuid(),
+    startAt: formDateTimeSchema,
+    endAt: formDateTimeSchema,
+    reason: scheduleReasonSchema,
+  })
+  .refine((value) => value.endAt > value.startAt, {
+    path: ["endAt"],
+    message: "Schedule end time must be after start time.",
+  });
+
 export function getScheduleCreateFormValues(formData: FormData) {
   return scheduleCreateFormSchema.safeParse({
     classGroupId: formData.get("classGroupId"),
@@ -161,8 +194,38 @@ export function getScheduleBatchCreateFormValues(formData: FormData) {
   });
 }
 
+export function getScheduleCancelFormValues(formData: FormData) {
+  return scheduleCancelFormSchema.safeParse({
+    scheduleId: formData.get("scheduleId"),
+    reason: formData.get("reason"),
+  });
+}
+
+export function getScheduleRescheduleFormValues(formData: FormData) {
+  return scheduleRescheduleFormSchema.safeParse({
+    scheduleId: formData.get("scheduleId"),
+    roomId: formData.get("roomId"),
+    startAt: formData.get("startAt"),
+    endAt: formData.get("endAt"),
+    reason: formData.get("reason"),
+  });
+}
+
+export function getScheduleMakeUpFormValues(formData: FormData) {
+  return scheduleMakeUpFormSchema.safeParse({
+    scheduleId: formData.get("scheduleId"),
+    roomId: formData.get("roomId"),
+    startAt: formData.get("startAt"),
+    endAt: formData.get("endAt"),
+    reason: formData.get("reason"),
+  });
+}
+
 export type LessonDataValues = z.infer<typeof lessonDataSchema>;
 export type ScheduleDataValues = z.infer<typeof scheduleDataSchema>;
 export type ScheduleChangeLogDataValues = z.infer<typeof scheduleChangeLogDataSchema>;
 export type ScheduleCreateFormValues = z.infer<typeof scheduleCreateFormSchema>;
 export type ScheduleBatchCreateFormValues = z.infer<typeof scheduleBatchCreateFormSchema>;
+export type ScheduleCancelFormValues = z.infer<typeof scheduleCancelFormSchema>;
+export type ScheduleRescheduleFormValues = z.infer<typeof scheduleRescheduleFormSchema>;
+export type ScheduleMakeUpFormValues = z.infer<typeof scheduleMakeUpFormSchema>;

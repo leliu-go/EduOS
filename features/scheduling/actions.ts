@@ -11,7 +11,10 @@ import { findScheduleConflicts, type ScheduleConflict } from "./conflicts";
 import { buildWeeklyScheduleOccurrences } from "./recurring";
 import {
   getScheduleBatchCreateFormValues,
+  getScheduleCancelFormValues,
   getScheduleCreateFormValues,
+  getScheduleMakeUpFormValues,
+  getScheduleRescheduleFormValues,
   type ScheduleCreateFormValues,
 } from "./schedule-schema";
 
@@ -53,8 +56,8 @@ function scheduleSnapshot(schedule: {
     campusId: schedule.campusId,
     roomId: schedule.roomId,
     lessonId: schedule.lessonId,
-    startAt: schedule.startAt,
-    endAt: schedule.endAt,
+    startAt: schedule.startAt.toISOString(),
+    endAt: schedule.endAt.toISOString(),
     status: schedule.status,
   };
 }
@@ -141,6 +144,38 @@ async function getScheduleScope(
 
 function weeklyRecurrenceRule(weeks: number) {
   return `FREQ=WEEKLY;COUNT=${weeks}`;
+}
+
+async function getActiveRoom(
+  tx: {
+    room: {
+      findFirst(args: {
+        where: {
+          id: string;
+          tenantId: string;
+          status: "ACTIVE";
+        };
+        select: {
+          id: true;
+          campusId: true;
+        };
+      }): Promise<{ id: string; campusId: string } | null>;
+    };
+  },
+  tenantId: string,
+  roomId: string,
+) {
+  return tx.room.findFirst({
+    where: {
+      id: roomId,
+      tenantId,
+      status: "ACTIVE",
+    },
+    select: {
+      id: true,
+      campusId: true,
+    },
+  });
 }
 
 export async function createScheduleAction(formData: FormData) {
@@ -359,4 +394,286 @@ export async function createWeeklySchedulesAction(formData: FormData) {
 
   revalidatePath("/dashboard/scheduling");
   redirect(`/dashboard/scheduling?view=week&date=${formatScheduleDate(result.firstStartAt)}`);
+}
+
+export async function rescheduleScheduleAction(formData: FormData) {
+  const currentUser = await requirePermission("scheduling:mutate", {
+    nextPath: "/dashboard/scheduling",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsed = getScheduleRescheduleFormValues(formData);
+
+  if (!parsed.success) {
+    redirectWithScheduleError("invalid_input");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const schedule = await tx.schedule.findFirst({
+      where: {
+        id: parsed.data.scheduleId,
+        tenantId: currentUser.tenantId,
+      },
+    });
+    const room = await getActiveRoom(tx, currentUser.tenantId, parsed.data.roomId);
+
+    if (!schedule || !room) {
+      return { status: "invalid_scope" as const };
+    }
+
+    const beforeJson = scheduleSnapshot(schedule);
+    const conflicts = await findScheduleConflicts(
+      tx,
+      currentUser.tenantId,
+      [
+        {
+          classGroupId: schedule.classGroupId,
+          teacherId: schedule.teacherId,
+          roomId: room.id,
+          campusId: room.campusId,
+          startAt: parsed.data.startAt,
+          endAt: parsed.data.endAt,
+        },
+      ],
+      {
+        excludeScheduleIds: [schedule.id],
+      },
+    );
+
+    if (conflicts.length > 0) {
+      return {
+        status: "conflict" as const,
+        conflicts,
+      };
+    }
+
+    const updatedSchedule = await tx.schedule.update({
+      where: {
+        id: schedule.id,
+      },
+      data: {
+        campusId: room.campusId,
+        roomId: room.id,
+        startAt: parsed.data.startAt,
+        endAt: parsed.data.endAt,
+        status: "RESCHEDULED",
+      },
+    });
+    const afterJson = scheduleSnapshot(updatedSchedule);
+
+    await tx.scheduleChangeLog.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        scheduleId: updatedSchedule.id,
+        actorUserId: currentUser.id,
+        changeType: "RESCHEDULE",
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+    });
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "schedule.reschedule",
+        entityType: "schedule",
+        entityId: updatedSchedule.id,
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+      tx,
+    );
+
+    return {
+      status: "ok" as const,
+      startAt: updatedSchedule.startAt,
+    };
+  });
+
+  if (result.status === "invalid_scope") {
+    redirectWithScheduleError("invalid_scope");
+  }
+
+  if (result.status === "conflict") {
+    redirectWithScheduleConflicts(result.conflicts);
+  }
+
+  revalidatePath("/dashboard/scheduling");
+  redirect(`/dashboard/scheduling?view=day&date=${formatScheduleDate(result.startAt)}`);
+}
+
+export async function cancelScheduleAction(formData: FormData) {
+  const currentUser = await requirePermission("scheduling:mutate", {
+    nextPath: "/dashboard/scheduling",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsed = getScheduleCancelFormValues(formData);
+
+  if (!parsed.success) {
+    redirectWithScheduleError("invalid_input");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const schedule = await tx.schedule.findFirst({
+      where: {
+        id: parsed.data.scheduleId,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!schedule) {
+      return { status: "invalid_scope" as const };
+    }
+
+    const beforeJson = scheduleSnapshot(schedule);
+    const updatedSchedule = await tx.schedule.update({
+      where: {
+        id: schedule.id,
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+    const afterJson = scheduleSnapshot(updatedSchedule);
+
+    await tx.scheduleChangeLog.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        scheduleId: updatedSchedule.id,
+        actorUserId: currentUser.id,
+        changeType: "CANCEL",
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+    });
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "schedule.cancel",
+        entityType: "schedule",
+        entityId: updatedSchedule.id,
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+      tx,
+    );
+
+    return {
+      status: "ok" as const,
+      startAt: updatedSchedule.startAt,
+    };
+  });
+
+  if (result.status === "invalid_scope") {
+    redirectWithScheduleError("invalid_scope");
+  }
+
+  revalidatePath("/dashboard/scheduling");
+  redirect(`/dashboard/scheduling?view=day&date=${formatScheduleDate(result.startAt)}`);
+}
+
+export async function createMakeUpScheduleAction(formData: FormData) {
+  const currentUser = await requirePermission("scheduling:mutate", {
+    nextPath: "/dashboard/scheduling",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsed = getScheduleMakeUpFormValues(formData);
+
+  if (!parsed.success) {
+    redirectWithScheduleError("invalid_input");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const sourceSchedule = await tx.schedule.findFirst({
+      where: {
+        id: parsed.data.scheduleId,
+        tenantId: currentUser.tenantId,
+      },
+    });
+    const room = await getActiveRoom(tx, currentUser.tenantId, parsed.data.roomId);
+
+    if (!sourceSchedule || !room) {
+      return { status: "invalid_scope" as const };
+    }
+
+    const conflicts = await findScheduleConflicts(tx, currentUser.tenantId, [
+      {
+        classGroupId: sourceSchedule.classGroupId,
+        teacherId: sourceSchedule.teacherId,
+        roomId: room.id,
+        campusId: room.campusId,
+        startAt: parsed.data.startAt,
+        endAt: parsed.data.endAt,
+      },
+    ]);
+
+    if (conflicts.length > 0) {
+      return {
+        status: "conflict" as const,
+        conflicts,
+      };
+    }
+
+    const makeUpSchedule = await tx.schedule.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        classGroupId: sourceSchedule.classGroupId,
+        teacherId: sourceSchedule.teacherId,
+        campusId: room.campusId,
+        roomId: room.id,
+        lessonId: sourceSchedule.lessonId,
+        sourceScheduleId: sourceSchedule.id,
+        startAt: parsed.data.startAt,
+        endAt: parsed.data.endAt,
+        status: "MAKE_UP",
+      },
+    });
+    const beforeJson = scheduleSnapshot(sourceSchedule);
+    const afterJson = scheduleSnapshot(makeUpSchedule);
+
+    await tx.scheduleChangeLog.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        scheduleId: makeUpSchedule.id,
+        actorUserId: currentUser.id,
+        changeType: "MAKE_UP",
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+    });
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "schedule.makeUp",
+        entityType: "schedule",
+        entityId: makeUpSchedule.id,
+        beforeJson,
+        afterJson,
+        reason: parsed.data.reason,
+      },
+      tx,
+    );
+
+    return {
+      status: "ok" as const,
+      startAt: makeUpSchedule.startAt,
+    };
+  });
+
+  if (result.status === "invalid_scope") {
+    redirectWithScheduleError("invalid_scope");
+  }
+
+  if (result.status === "conflict") {
+    redirectWithScheduleConflicts(result.conflicts);
+  }
+
+  revalidatePath("/dashboard/scheduling");
+  redirect(`/dashboard/scheduling?view=day&date=${formatScheduleDate(result.startAt)}`);
 }
