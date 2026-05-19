@@ -1,0 +1,118 @@
+import type { Prisma } from "@/lib/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+
+import { getScheduleCalendarWindow, type ScheduleCalendarSearch } from "./calendar";
+
+const scheduleCalendarInclude = {
+  classGroup: {
+    include: {
+      courseProduct: {
+        include: {
+          subject: true,
+          grade: true,
+        },
+      },
+    },
+  },
+  teacher: true,
+  campus: true,
+  room: true,
+  lesson: true,
+} as const satisfies Prisma.ScheduleInclude;
+
+export type ScheduleCalendarItem = Prisma.ScheduleGetPayload<{
+  include: typeof scheduleCalendarInclude;
+}>;
+
+function buildScheduleCalendarWhere(tenantId: string, search: ScheduleCalendarSearch) {
+  const { startAt, endAt } = getScheduleCalendarWindow(search);
+  const where: Prisma.ScheduleWhereInput = {
+    tenantId,
+    startAt: {
+      lt: endAt,
+    },
+    endAt: {
+      gt: startAt,
+    },
+  };
+
+  if (search.filters.classGroupId) {
+    where.classGroupId = search.filters.classGroupId;
+  }
+
+  if (search.filters.teacherId) {
+    where.teacherId = search.filters.teacherId;
+  }
+
+  if (search.filters.campusId) {
+    where.campusId = search.filters.campusId;
+  }
+
+  if (search.filters.roomId) {
+    where.roomId = search.filters.roomId;
+  }
+
+  return where;
+}
+
+export async function getScheduleCalendarData(tenantId: string, search: ScheduleCalendarSearch) {
+  const where = buildScheduleCalendarWhere(tenantId, search);
+  const [schedules, campuses, teachers, rooms, classGroups] = await prisma.$transaction([
+    prisma.schedule.findMany({
+      where,
+      include: scheduleCalendarInclude,
+      orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
+    }),
+    prisma.campus.findMany({
+      where: {
+        tenantId,
+        status: "ACTIVE",
+      },
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    prisma.teacherProfile.findMany({
+      where: {
+        tenantId,
+        status: "ACTIVE",
+      },
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    prisma.room.findMany({
+      where: {
+        tenantId,
+        status: "ACTIVE",
+      },
+      include: {
+        campus: true,
+      },
+      orderBy: [{ campusId: "asc" }, { name: "asc" }],
+    }),
+    prisma.classGroup.findMany({
+      where: {
+        tenantId,
+        status: {
+          in: ["PLANNING", "ACTIVE", "PAUSED"],
+        },
+      },
+      include: {
+        courseProduct: true,
+      },
+      orderBy: [{ startsAt: "desc" }, { name: "asc" }],
+    }),
+  ]);
+
+  return {
+    schedules,
+    options: {
+      campuses,
+      teachers,
+      rooms,
+      classGroups,
+    },
+    window: getScheduleCalendarWindow(search),
+  };
+}

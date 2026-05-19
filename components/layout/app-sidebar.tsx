@@ -26,7 +26,7 @@ const sidebarItems = [
   { label: "基础配置", href: "/dashboard/academic-config", icon: Settings },
   { label: "课程", href: "/dashboard/courses", icon: BookOpen },
   { label: "班级", href: "/dashboard/classes", icon: Library },
-  { label: "排课", href: "#", icon: CalendarDays },
+  { label: "排课", href: "/dashboard/scheduling", icon: CalendarDays },
   { label: "考勤课消", href: "/dashboard/course-accounts", icon: ClipboardCheck },
   { label: "作业", href: "#", icon: NotebookPen },
   { label: "数据看板", href: "#", icon: BarChart3 },
