@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAuthSessionPayload } from "@/lib/auth/session-cookie";
+import type { RoleKey } from "@/lib/rbac/permissions";
 
 export type CurrentUser = {
   id: string;
@@ -10,7 +11,7 @@ export type CurrentUser = {
   tenantName: string;
   tenantSlug: string;
   roleId: string;
-  roleKey: string;
+  roleKey: RoleKey;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {

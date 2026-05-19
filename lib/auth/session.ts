@@ -1,19 +1,11 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export type AuthRoleKey =
-  | "SUPER_ADMIN"
-  | "ORG_ADMIN"
-  | "CAMPUS_ADMIN"
-  | "ACADEMIC"
-  | "FINANCE"
-  | "TEACHER"
-  | "STUDENT"
-  | "PARENT";
+import { isRoleKey, type RoleKey } from "@/lib/rbac/permissions";
 
 export type AuthSessionPayload = {
   userId: string;
   tenantId: string;
-  roleKey: AuthRoleKey;
+  roleKey: RoleKey;
   expiresAt: number;
 };
 
@@ -55,6 +47,7 @@ function isSessionPayload(value: AuthSessionPayload) {
     typeof value.userId === "string" &&
     typeof value.tenantId === "string" &&
     typeof value.roleKey === "string" &&
+    isRoleKey(value.roleKey) &&
     typeof value.expiresAt === "number"
   );
 }
