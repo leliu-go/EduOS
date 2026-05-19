@@ -48,6 +48,6 @@ describe("auth foundation", () => {
   it("protects the dashboard layout on the server", () => {
     const dashboardLayout = readFileSync(join(process.cwd(), "app/(dashboard)/layout.tsx"), "utf8");
 
-    expect(dashboardLayout).toContain("requireCurrentUser");
+    expect(dashboardLayout).toContain("requirePermission");
   });
 });

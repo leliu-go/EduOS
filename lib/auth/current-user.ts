@@ -83,11 +83,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   };
 }
 
-export async function requireCurrentUser() {
+export async function requireCurrentUser(nextPath = "/dashboard") {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    redirect("/login?next=/dashboard");
+    redirect(`/login?next=${encodeURIComponent(nextPath)}`);
   }
 
   return currentUser;

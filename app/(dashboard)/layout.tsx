@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { requirePermission } from "@/lib/rbac/require-permission";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  await requireCurrentUser();
+  await requirePermission("route:dashboard", {
+    nextPath: "/dashboard",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
 
   return <DashboardShell>{children}</DashboardShell>;
 }
