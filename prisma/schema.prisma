@@ -152,6 +152,14 @@ enum ScheduleChangeType {
   MAKE_UP
 }
 
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  EXCUSED
+  ABSENT
+  MAKE_UP
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -177,6 +185,8 @@ model Tenant {
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
+  attendances Attendance[]
+  checkIns    CheckIn[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -233,6 +243,7 @@ model User {
   memberships Membership[]
   auditLogs   AuditLog[]   @relation("AuditLogActor")
   scheduleChangeLogs ScheduleChangeLog[] @relation("ScheduleChangeLogActor")
+  confirmedCheckIns CheckIn[] @relation("CheckInConfirmedBy")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -317,6 +328,8 @@ model StudentProfile {
   classGroups ClassGroupStudent[]
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
+  attendances Attendance[]
+  checkIns    CheckIn[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -607,6 +620,8 @@ model Schedule {
   status           ScheduleStatus      @default(SCHEDULED)
   recurrenceRule   String?
   changeLogs       ScheduleChangeLog[]
+  attendances      Attendance[]
+  checkIns         CheckIn[]
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
@@ -636,4 +651,46 @@ model ScheduleChangeLog {
   @@index([tenantId, scheduleId])
   @@index([tenantId, changeType])
   @@index([tenantId, createdAt])
+}
+
+model Attendance {
+  id         String           @id @default(cuid())
+  tenantId   String
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  scheduleId String
+  schedule   Schedule         @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status     AttendanceStatus
+  notes      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([tenantId, scheduleId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, scheduleId])
+  @@index([tenantId, studentId])
+}
+
+model CheckIn {
+  id                String         @id @default(cuid())
+  tenantId          String
+  tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  scheduleId        String
+  schedule          Schedule       @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  studentId         String
+  student           StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  checkedInAt       DateTime       @default(now())
+  confirmedAt       DateTime?
+  confirmedByUserId String?
+  confirmedByUser   User?          @relation("CheckInConfirmedBy", fields: [confirmedByUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([tenantId, scheduleId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, scheduleId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, confirmedAt])
 }
