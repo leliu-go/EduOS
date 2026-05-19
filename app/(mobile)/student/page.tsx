@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
 import { getStudentEnrolledCourses } from "@/features/enrollments/queries";
+import { getStudentTimetable } from "@/features/scheduling/portal-queries";
+import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 type StudentEnrollment = Awaited<ReturnType<typeof getStudentEnrolledCourses>>[number];
@@ -48,14 +50,36 @@ export default async function StudentHomePage() {
     nextPath: "/student",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const enrolledCourses = await getStudentEnrolledCourses(currentUser.tenantId, currentUser.id);
+  const [enrolledCourses, timetable] = await Promise.all([
+    getStudentEnrolledCourses(currentUser.tenantId, currentUser.id),
+    getStudentTimetable(currentUser.tenantId, currentUser.id),
+  ]);
 
-  if (enrolledCourses.length === 0) {
+  if (enrolledCourses.length === 0 && timetable.length === 0) {
     return <EmptyState title="暂无已报名课程" description="报名完成后，可在这里查看自己的课程。" />;
   }
 
   return (
     <div className="grid gap-4">
+      {timetable.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">近期课表</h2>
+          {timetable.map((schedule) => (
+            <TimetableCard
+              key={schedule.id}
+              title={schedule.lesson?.title ?? schedule.classGroup.name}
+              courseName={schedule.classGroup.courseProduct.name}
+              startAt={schedule.startAt}
+              endAt={schedule.endAt}
+              status={schedule.status}
+              campusName={schedule.campus.name}
+              classGroupName={schedule.classGroup.name}
+              teacherName={schedule.teacher.name}
+            />
+          ))}
+        </section>
+      ) : null}
+
       {enrolledCourses.map((enrollment) => (
         <StudentEnrollmentCard key={enrollment.id} enrollment={enrollment} />
       ))}
