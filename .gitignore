@@ -3,6 +3,8 @@ node_modules
 .playwright-cli
 out
 coverage
+playwright-report
+test-results
 lib/generated
 tsconfig.tsbuildinfo
 .env

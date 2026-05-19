@@ -106,6 +106,7 @@ model User {
   name        String
   email       String?      @unique
   phone       String?      @unique
+  passwordHash String
   status      UserStatus   @default(ACTIVE)
   memberships Membership[]
   createdAt   DateTime     @default(now())

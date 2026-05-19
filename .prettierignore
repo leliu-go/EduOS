@@ -1,6 +1,8 @@
 .next
 .playwright-cli
 coverage
+playwright-report
+test-results
 lib/generated
 node_modules
 pnpm-lock.yaml
