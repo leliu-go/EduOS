@@ -130,6 +130,28 @@ enum CourseAccountStatus {
   CLOSED
 }
 
+enum LessonStatus {
+  PLANNED
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum ScheduleStatus {
+  SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+  MAKE_UP
+}
+
+enum ScheduleChangeType {
+  CREATE
+  RESCHEDULE
+  CANCEL
+  MAKE_UP
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -152,6 +174,9 @@ model Tenant {
   classGroupStudents ClassGroupStudent[]
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
+  lessons     Lesson[]
+  schedules   Schedule[]
+  scheduleChangeLogs ScheduleChangeLog[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -169,6 +194,7 @@ model Campus {
   rooms       Room[]
   memberships Membership[]
   classGroups ClassGroup[]
+  schedules   Schedule[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -187,6 +213,7 @@ model Room {
   capacity  Int?
   equipment String?
   status    RoomStatus @default(ACTIVE)
+  schedules Schedule[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -205,6 +232,7 @@ model User {
   status      UserStatus   @default(ACTIVE)
   memberships Membership[]
   auditLogs   AuditLog[]   @relation("AuditLogActor")
+  scheduleChangeLogs ScheduleChangeLog[] @relation("ScheduleChangeLogActor")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -353,6 +381,8 @@ model TeacherProfile {
   qualificationFileName String?
   notes                 String?
   primaryClassGroups    ClassGroup[]
+  lessons               Lesson[]
+  schedules             Schedule[]
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -457,6 +487,8 @@ model ClassGroup {
   endsAt           DateTime
   students         ClassGroupStudent[]
   enrollments      Enrollment[]
+  lessons          Lesson[]
+  schedules        Schedule[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -531,4 +563,77 @@ model Enrollment {
   @@index([tenantId, studentId])
   @@index([tenantId, courseProductId])
   @@index([tenantId, classGroupId])
+}
+
+model Lesson {
+  id           String        @id @default(cuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  classGroupId String
+  classGroup   ClassGroup    @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  teacherId    String
+  teacher      TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  title        String
+  status       LessonStatus  @default(PLANNED)
+  schedules    Schedule[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, teacherId])
+}
+
+model Schedule {
+  id               String              @id @default(cuid())
+  tenantId         String
+  tenant           Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  classGroupId     String
+  classGroup       ClassGroup          @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  teacherId        String
+  teacher          TeacherProfile      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  campusId         String
+  campus           Campus              @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  roomId           String
+  room             Room                @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  lessonId         String?
+  lesson           Lesson?             @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  sourceScheduleId String?
+  sourceSchedule   Schedule?           @relation("ScheduleSource", fields: [sourceScheduleId], references: [id], onDelete: SetNull)
+  derivedSchedules Schedule[]          @relation("ScheduleSource")
+  startAt          DateTime
+  endAt            DateTime
+  status           ScheduleStatus      @default(SCHEDULED)
+  recurrenceRule   String?
+  changeLogs       ScheduleChangeLog[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, startAt])
+  @@index([tenantId, status])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, teacherId])
+  @@index([tenantId, campusId, roomId])
+}
+
+model ScheduleChangeLog {
+  id          String             @id @default(cuid())
+  tenantId    String
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  scheduleId  String
+  schedule    Schedule           @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  actorUserId String?
+  actorUser   User?              @relation("ScheduleChangeLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  changeType  ScheduleChangeType
+  beforeJson  Json?
+  afterJson   Json?
+  reason      String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([tenantId, scheduleId])
+  @@index([tenantId, changeType])
+  @@index([tenantId, createdAt])
 }
