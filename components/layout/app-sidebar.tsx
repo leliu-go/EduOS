@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 const sidebarItems = [
   { label: "首页", href: "/dashboard", icon: Home, active: true },
   { label: "招生 CRM", href: "#", icon: Users },
-  { label: "学生", href: "#", icon: GraduationCap },
+  { label: "学生", href: "/dashboard/students", icon: GraduationCap },
   { label: "老师", href: "#", icon: School },
   { label: "课程", href: "#", icon: BookOpen },
   { label: "班级", href: "#", icon: Library },

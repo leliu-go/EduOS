@@ -51,6 +51,19 @@ enum MembershipStatus {
   DISABLED
 }
 
+enum StudentGender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  PAUSED
+  GRADUATED
+  WITHDRAWN
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -61,6 +74,7 @@ model Tenant {
   roles       Role[]
   memberships Membership[]
   auditLogs   AuditLog[]
+  students    StudentProfile[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -111,6 +125,7 @@ model User {
   status      UserStatus   @default(ACTIVE)
   memberships Membership[]
   auditLogs   AuditLog[]   @relation("AuditLogActor")
+  studentProfiles StudentProfile[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -173,4 +188,27 @@ model AuditLog {
   @@index([tenantId, actorUserId])
   @@index([tenantId, action])
   @@index([tenantId, entityType, entityId])
+}
+
+model StudentProfile {
+  id        String         @id @default(cuid())
+  tenantId  String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  gender    StudentGender?
+  birthday  DateTime?
+  grade     String
+  school    String?
+  status    StudentStatus  @default(ACTIVE)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, name])
+  @@index([tenantId, createdAt])
 }
