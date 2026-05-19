@@ -27,6 +27,7 @@ import {
   type ScheduleCalendarSearch,
 } from "@/features/scheduling/calendar";
 import { getScheduleCalendarData, type ScheduleCalendarItem } from "@/features/scheduling/queries";
+import { ScheduleBatchDialog } from "@/features/scheduling/schedule-batch-dialog";
 import { ScheduleCreateDialog } from "@/features/scheduling/schedule-create-dialog";
 import { scheduleStatusLabels } from "@/features/scheduling/schedule-schema";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -45,6 +46,7 @@ const viewLabels = {
 const errorMessages = {
   invalid_input: "排课信息不完整，请检查班级、老师、教室和时间。",
   invalid_scope: "请选择当前机构下有效的班级、老师和教室。",
+  schedule_conflict: "排课存在时间冲突，请调整老师、教室或时间后再提交。",
 } as const;
 
 function formatDate(value: Date) {
@@ -233,6 +235,7 @@ export default async function SchedulingCalendarPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ScheduleCreateDialog options={calendarData.options} />
+          <ScheduleBatchDialog options={calendarData.options} />
           <Button asChild variant="outline" size="sm">
             <Link href={getHrefWithDate(search, previousDate)} aria-label="上一段时间">
               <ChevronLeft className="size-4" aria-hidden="true" />

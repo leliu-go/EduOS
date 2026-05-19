@@ -123,6 +123,21 @@ export const scheduleCreateFormSchema = z
     message: "Schedule end time must be after start time.",
   });
 
+export const scheduleBatchCreateFormSchema = z
+  .object({
+    classGroupId: z.string().cuid(),
+    teacherId: z.string().cuid(),
+    roomId: z.string().cuid(),
+    lessonTitle: z.string().trim().min(1).max(120),
+    firstStartAt: formDateTimeSchema,
+    firstEndAt: formDateTimeSchema,
+    weeks: z.coerce.number().int().min(1).max(52),
+  })
+  .refine((value) => value.firstEndAt > value.firstStartAt, {
+    path: ["firstEndAt"],
+    message: "Schedule end time must be after start time.",
+  });
+
 export function getScheduleCreateFormValues(formData: FormData) {
   return scheduleCreateFormSchema.safeParse({
     classGroupId: formData.get("classGroupId"),
@@ -134,7 +149,20 @@ export function getScheduleCreateFormValues(formData: FormData) {
   });
 }
 
+export function getScheduleBatchCreateFormValues(formData: FormData) {
+  return scheduleBatchCreateFormSchema.safeParse({
+    classGroupId: formData.get("classGroupId"),
+    teacherId: formData.get("teacherId"),
+    roomId: formData.get("roomId"),
+    lessonTitle: formData.get("lessonTitle"),
+    firstStartAt: formData.get("firstStartAt"),
+    firstEndAt: formData.get("firstEndAt"),
+    weeks: formData.get("weeks"),
+  });
+}
+
 export type LessonDataValues = z.infer<typeof lessonDataSchema>;
 export type ScheduleDataValues = z.infer<typeof scheduleDataSchema>;
 export type ScheduleChangeLogDataValues = z.infer<typeof scheduleChangeLogDataSchema>;
 export type ScheduleCreateFormValues = z.infer<typeof scheduleCreateFormSchema>;
+export type ScheduleBatchCreateFormValues = z.infer<typeof scheduleBatchCreateFormSchema>;
