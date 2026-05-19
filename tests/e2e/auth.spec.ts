@@ -10,6 +10,7 @@ const protectedRoutes = [
   { route: "/dashboard/courses", next: "/dashboard" },
   { route: "/dashboard/classes", next: "/dashboard" },
   { route: "/dashboard/enrollments", next: "/dashboard" },
+  { route: "/dashboard/course-accounts", next: "/dashboard" },
   { route: "/teacher/classes", next: "/teacher" },
   { route: "/student", next: "/student" },
   { route: "/teacher", next: "/teacher" },
