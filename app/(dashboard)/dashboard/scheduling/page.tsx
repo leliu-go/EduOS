@@ -27,6 +27,7 @@ import {
   type ScheduleCalendarSearch,
 } from "@/features/scheduling/calendar";
 import { getScheduleCalendarData, type ScheduleCalendarItem } from "@/features/scheduling/queries";
+import { ScheduleCreateDialog } from "@/features/scheduling/schedule-create-dialog";
 import { scheduleStatusLabels } from "@/features/scheduling/schedule-schema";
 import { requirePermission } from "@/lib/rbac/require-permission";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,11 @@ const viewLabels = {
   day: "日",
   week: "周",
   list: "列表",
+} as const;
+
+const errorMessages = {
+  invalid_input: "排课信息不完整，请检查班级、老师、教室和时间。",
+  invalid_scope: "请选择当前机构下有效的班级、老师和教室。",
 } as const;
 
 function formatDate(value: Date) {
@@ -211,6 +217,10 @@ export default async function SchedulingCalendarPage({
   const calendarData = await getScheduleCalendarData(currentUser.tenantId, search);
   const previousDate = getShiftedScheduleDate(search, -1);
   const nextDate = getShiftedScheduleDate(search, 1);
+  const errorMessage =
+    typeof params.error === "string"
+      ? errorMessages[params.error as keyof typeof errorMessages]
+      : null;
 
   return (
     <div className="grid gap-6">
@@ -222,6 +232,7 @@ export default async function SchedulingCalendarPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ScheduleCreateDialog options={calendarData.options} />
           <Button asChild variant="outline" size="sm">
             <Link href={getHrefWithDate(search, previousDate)} aria-label="上一段时间">
               <ChevronLeft className="size-4" aria-hidden="true" />
@@ -241,6 +252,15 @@ export default async function SchedulingCalendarPage({
           </Button>
         </div>
       </div>
+
+      {errorMessage ? (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/30 px-3 py-2 text-sm text-destructive"
+        >
+          {errorMessage}
+        </p>
+      ) : null}
 
       <section className="grid gap-4 rounded-lg border bg-card p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

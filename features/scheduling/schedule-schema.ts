@@ -51,6 +51,33 @@ const dateTimeSchema = z
   .datetime()
   .transform((value) => new Date(value));
 
+function normalizeFormDateTimeValue(value: string) {
+  const trimmedValue = value.trim();
+
+  if (/[zZ]$|[+-]\d{2}:\d{2}$/.test(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmedValue)) {
+    return `${trimmedValue}:00.000Z`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(trimmedValue)) {
+    return `${trimmedValue}.000Z`;
+  }
+
+  return trimmedValue;
+}
+
+const formDateTimeSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .transform((value) => new Date(normalizeFormDateTimeValue(value)))
+  .refine((value) => !Number.isNaN(value.getTime()), {
+    message: "Invalid date time.",
+  });
+
 export const lessonDataSchema = z.object({
   classGroupId: z.string().cuid(),
   teacherId: z.string().cuid(),
@@ -82,6 +109,32 @@ export const scheduleChangeLogDataSchema = z.object({
   reason: optionalText(300),
 });
 
+export const scheduleCreateFormSchema = z
+  .object({
+    classGroupId: z.string().cuid(),
+    teacherId: z.string().cuid(),
+    roomId: z.string().cuid(),
+    lessonTitle: z.string().trim().min(1).max(120),
+    startAt: formDateTimeSchema,
+    endAt: formDateTimeSchema,
+  })
+  .refine((value) => value.endAt > value.startAt, {
+    path: ["endAt"],
+    message: "Schedule end time must be after start time.",
+  });
+
+export function getScheduleCreateFormValues(formData: FormData) {
+  return scheduleCreateFormSchema.safeParse({
+    classGroupId: formData.get("classGroupId"),
+    teacherId: formData.get("teacherId"),
+    roomId: formData.get("roomId"),
+    lessonTitle: formData.get("lessonTitle"),
+    startAt: formData.get("startAt"),
+    endAt: formData.get("endAt"),
+  });
+}
+
 export type LessonDataValues = z.infer<typeof lessonDataSchema>;
 export type ScheduleDataValues = z.infer<typeof scheduleDataSchema>;
 export type ScheduleChangeLogDataValues = z.infer<typeof scheduleChangeLogDataSchema>;
+export type ScheduleCreateFormValues = z.infer<typeof scheduleCreateFormSchema>;
