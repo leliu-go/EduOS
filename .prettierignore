@@ -1,0 +1,11 @@
+.next
+.playwright-cli
+coverage
+node_modules
+pnpm-lock.yaml
+tsconfig.tsbuildinfo
+README_先读我.md
+docs/CODEX_TASKS.md
+docs/INSTALL_GUIDE.md
+docs/PRODUCT_SPEC.md
+docs/UI_SPEC.md
