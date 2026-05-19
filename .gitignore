@@ -3,6 +3,7 @@ node_modules
 .playwright-cli
 out
 coverage
+lib/generated
 tsconfig.tsbuildinfo
 .env
 .env*.local
