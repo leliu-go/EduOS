@@ -109,6 +109,14 @@ enum CourseProductStatus {
   ARCHIVED
 }
 
+enum ClassGroupStatus {
+  PLANNING
+  ACTIVE
+  PAUSED
+  FINISHED
+  ARCHIVED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -127,6 +135,8 @@ model Tenant {
   grades      Grade[]
   terms       Term[]
   courseProducts CourseProduct[]
+  classGroups ClassGroup[]
+  classGroupStudents ClassGroupStudent[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -143,6 +153,7 @@ model Campus {
   status      CampusStatus @default(ACTIVE)
   rooms       Room[]
   memberships Membership[]
+  classGroups ClassGroup[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -260,6 +271,7 @@ model StudentProfile {
   status    StudentStatus  @default(ACTIVE)
   notes     String?
   guardians StudentGuardian[]
+  classGroups ClassGroupStudent[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -323,6 +335,7 @@ model TeacherProfile {
   availableTimeNotes    String?
   qualificationFileName String?
   notes                 String?
+  primaryClassGroups    ClassGroup[]
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -398,6 +411,7 @@ model CourseProduct {
   price       Decimal
   description String?
   status      CourseProductStatus @default(ACTIVE)
+  classGroups ClassGroup[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -405,4 +419,47 @@ model CourseProduct {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, subjectId, gradeId])
+}
+
+model ClassGroup {
+  id               String             @id @default(cuid())
+  tenantId         String
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  courseProductId  String
+  courseProduct    CourseProduct      @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  primaryTeacherId String
+  primaryTeacher   TeacherProfile     @relation(fields: [primaryTeacherId], references: [id], onDelete: Restrict)
+  campusId         String
+  campus           Campus             @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  name             String
+  capacity         Int
+  status           ClassGroupStatus   @default(PLANNING)
+  startsAt         DateTime
+  endsAt           DateTime
+  students         ClassGroupStudent[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, primaryTeacherId])
+  @@index([tenantId, campusId])
+}
+
+model ClassGroupStudent {
+  id           String         @id @default(cuid())
+  tenantId     String
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  classGroupId String
+  classGroup   ClassGroup     @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([tenantId, classGroupId, studentId])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, studentId])
 }

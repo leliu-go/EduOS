@@ -8,6 +8,8 @@ const protectedRoutes = [
   { route: "/dashboard/accounts", next: "/dashboard" },
   { route: "/dashboard/academic-config", next: "/dashboard" },
   { route: "/dashboard/courses", next: "/dashboard" },
+  { route: "/dashboard/classes", next: "/dashboard" },
+  { route: "/teacher/classes", next: "/teacher" },
   { route: "/student", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
