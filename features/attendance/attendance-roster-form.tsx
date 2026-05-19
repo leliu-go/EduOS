@@ -1,5 +1,6 @@
 import { ClipboardCheck } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,10 @@ import {
   attendanceStatusLabels,
   attendanceStatusValues,
 } from "@/features/attendance/attendance-schema";
-import { recordLessonAttendanceAction } from "@/features/attendance/actions";
+import {
+  confirmStudentCheckInAction,
+  recordLessonAttendanceAction,
+} from "@/features/attendance/actions";
 import type { getTeacherAttendanceSchedules } from "@/features/attendance/queries";
 
 type AttendanceSchedule = Awaited<ReturnType<typeof getTeacherAttendanceSchedules>>[number];
@@ -19,6 +23,9 @@ type AttendanceRosterFormProps = {
 export function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
   const attendanceByStudentId = new Map(
     schedule.attendances.map((attendance) => [attendance.studentId, attendance]),
+  );
+  const checkInByStudentId = new Map(
+    schedule.checkIns.map((checkIn) => [checkIn.studentId, checkIn]),
   );
 
   return (
@@ -35,6 +42,7 @@ export function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
           {schedule.classGroup.students.map((classGroupStudent) => {
             const student = classGroupStudent.student;
             const attendance = attendanceByStudentId.get(student.id);
+            const checkIn = checkInByStudentId.get(student.id);
 
             return (
               <div key={student.id} className="grid gap-2 rounded-md border p-3">
@@ -56,6 +64,23 @@ export function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <Badge variant="outline">
+                    {checkIn ? (checkIn.confirmedAt ? "已确认" : "已签到") : "未签到"}
+                  </Badge>
+                  {checkIn && !checkIn.confirmedAt ? (
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="secondary"
+                      name="checkInId"
+                      value={checkIn.id}
+                      formAction={confirmStudentCheckInAction}
+                    >
+                      确认
+                    </Button>
+                  ) : null}
                 </div>
                 <Input
                   name={`notes:${student.id}`}

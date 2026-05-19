@@ -31,6 +31,14 @@ export const attendanceRecordFormSchema = z.object({
   entries: z.array(attendanceRecordEntrySchema).min(1),
 });
 
+export const studentCheckInFormSchema = z.object({
+  scheduleId: z.string().cuid(),
+});
+
+export const checkInConfirmFormSchema = z.object({
+  checkInId: z.string().cuid(),
+});
+
 export function getAttendanceRecordFormValues(formData: FormData) {
   const studentIds = formData
     .getAll("studentId")
@@ -46,5 +54,19 @@ export function getAttendanceRecordFormValues(formData: FormData) {
   });
 }
 
+export function getStudentCheckInFormValues(formData: FormData) {
+  return studentCheckInFormSchema.safeParse({
+    scheduleId: formData.get("scheduleId"),
+  });
+}
+
+export function getCheckInConfirmFormValues(formData: FormData) {
+  return checkInConfirmFormSchema.safeParse({
+    checkInId: formData.get("checkInId"),
+  });
+}
+
 export type AttendanceStatusValue = (typeof attendanceStatusValues)[number];
 export type AttendanceRecordFormValues = z.infer<typeof attendanceRecordFormSchema>;
+export type StudentCheckInFormValues = z.infer<typeof studentCheckInFormSchema>;
+export type CheckInConfirmFormValues = z.infer<typeof checkInConfirmFormSchema>;

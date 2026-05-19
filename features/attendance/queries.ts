@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 const attendanceScheduleStatuses = ["SCHEDULED", "RESCHEDULED", "MAKE_UP"] as const;
+const studentCheckInScheduleTake = 6;
 const teacherAttendanceScheduleTake = 8;
 
 function startOfDay(value: Date) {
@@ -9,6 +10,62 @@ function startOfDay(value: Date) {
   date.setHours(0, 0, 0, 0);
 
   return date;
+}
+
+function endOfDay(value: Date) {
+  const date = new Date(value);
+
+  date.setHours(23, 59, 59, 999);
+
+  return date;
+}
+
+export async function getStudentCheckInSchedules(
+  tenantId: string,
+  userId: string,
+  today = new Date(),
+) {
+  return prisma.schedule.findMany({
+    where: {
+      tenantId,
+      status: {
+        in: [...attendanceScheduleStatuses],
+      },
+      startAt: {
+        gte: startOfDay(today),
+        lte: endOfDay(today),
+      },
+      classGroup: {
+        students: {
+          some: {
+            student: {
+              userId,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      lesson: true,
+      classGroup: {
+        include: {
+          courseProduct: true,
+        },
+      },
+      teacher: true,
+      campus: true,
+      checkIns: {
+        where: {
+          student: {
+            userId,
+          },
+        },
+        take: 1,
+      },
+    },
+    orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
+    take: studentCheckInScheduleTake,
+  });
 }
 
 export async function getTeacherAttendanceSchedules(
@@ -47,6 +104,7 @@ export async function getTeacherAttendanceSchedules(
       campus: true,
       room: true,
       attendances: true,
+      checkIns: true,
     },
     orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
     take: teacherAttendanceScheduleTake,
