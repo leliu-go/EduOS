@@ -23,6 +23,7 @@ const sidebarItems = [
   { label: "老师", href: "/dashboard/teachers", icon: School },
   { label: "校区教室", href: "/dashboard/campuses", icon: Building2 },
   { label: "账号", href: "/dashboard/accounts", icon: Users },
+  { label: "基础配置", href: "/dashboard/academic-config", icon: Settings },
   { label: "课程", href: "#", icon: BookOpen },
   { label: "班级", href: "#", icon: Library },
   { label: "排课", href: "#", icon: CalendarDays },
