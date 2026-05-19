@@ -117,6 +117,19 @@ enum ClassGroupStatus {
   ARCHIVED
 }
 
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  WITHDRAWN
+}
+
+enum CourseAccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -137,6 +150,8 @@ model Tenant {
   courseProducts CourseProduct[]
   classGroups ClassGroup[]
   classGroupStudents ClassGroupStudent[]
+  enrollments Enrollment[]
+  courseAccounts CourseAccount[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -272,6 +287,8 @@ model StudentProfile {
   notes     String?
   guardians StudentGuardian[]
   classGroups ClassGroupStudent[]
+  enrollments Enrollment[]
+  courseAccounts CourseAccount[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -412,6 +429,8 @@ model CourseProduct {
   description String?
   status      CourseProductStatus @default(ACTIVE)
   classGroups ClassGroup[]
+  enrollments Enrollment[]
+  courseAccounts CourseAccount[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -437,6 +456,7 @@ model ClassGroup {
   startsAt         DateTime
   endsAt           DateTime
   students         ClassGroupStudent[]
+  enrollments      Enrollment[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -462,4 +482,53 @@ model ClassGroupStudent {
   @@unique([tenantId, classGroupId, studentId])
   @@index([tenantId, classGroupId])
   @@index([tenantId, studentId])
+}
+
+model CourseAccount {
+  id              String              @id @default(cuid())
+  tenantId        String
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         StudentProfile      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseProductId String
+  courseProduct   CourseProduct       @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  purchasedHours  Int                 @default(0)
+  giftHours       Int                 @default(0)
+  usedHours       Int                 @default(0)
+  frozenHours     Int                 @default(0)
+  status          CourseAccountStatus @default(ACTIVE)
+  enrollments     Enrollment[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([tenantId, studentId, courseProductId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, studentId])
+}
+
+model Enrollment {
+  id              String           @id @default(cuid())
+  tenantId        String
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseProductId String
+  courseProduct   CourseProduct    @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  classGroupId    String?
+  classGroup      ClassGroup?      @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  courseAccountId String
+  courseAccount   CourseAccount    @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
+  purchasedHours  Int
+  status          EnrollmentStatus @default(ACTIVE)
+  enrolledAt      DateTime
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, studentId])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, classGroupId])
 }
