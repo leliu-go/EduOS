@@ -6,3 +6,147 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum CampusStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RoomStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RoleKey {
+  SUPER_ADMIN
+  ORG_ADMIN
+  CAMPUS_ADMIN
+  ACADEMIC
+  FINANCE
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  status      TenantStatus @default(ACTIVE)
+  campuses    Campus[]
+  rooms       Room[]
+  roles       Role[]
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+}
+
+model Campus {
+  id          String       @id @default(cuid())
+  tenantId    String
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  address     String?
+  status      CampusStatus @default(ACTIVE)
+  rooms       Room[]
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, status])
+}
+
+model Room {
+  id        String     @id @default(cuid())
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campusId  String
+  campus    Campus     @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  name      String
+  capacity  Int?
+  status    RoomStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([tenantId, campusId, name])
+  @@index([tenantId])
+  @@index([tenantId, campusId])
+  @@index([tenantId, status])
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String?      @unique
+  phone       String?      @unique
+  status      UserStatus   @default(ACTIVE)
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  tenantId    String
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key         RoleKey
+  name        String
+  status      RoleStatus   @default(ACTIVE)
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@index([tenantId, status])
+}
+
+model Membership {
+  id        String           @id @default(cuid())
+  tenantId  String
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId    String
+  role      Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  campusId  String?
+  campus    Campus?          @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  status    MembershipStatus @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([tenantId, userId, roleId, campusId])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, roleId])
+  @@index([tenantId, status])
+}
