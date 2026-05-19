@@ -89,6 +89,26 @@ enum ConfigStatus {
   INACTIVE
 }
 
+enum CourseType {
+  ONE_ON_ONE
+  SMALL_GROUP
+  LARGE_GROUP
+  EVENING_TUTORING
+  INTENSIVE
+}
+
+enum ClassType {
+  OFFLINE
+  ONLINE
+  HYBRID
+}
+
+enum CourseProductStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -106,6 +126,7 @@ model Tenant {
   subjects    Subject[]
   grades      Grade[]
   terms       Term[]
+  courseProducts CourseProduct[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -319,6 +340,7 @@ model Subject {
   name      String
   code      String?
   status    ConfigStatus @default(ACTIVE)
+  courseProducts CourseProduct[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -334,6 +356,7 @@ model Grade {
   name      String
   sortOrder Int          @default(0)
   status    ConfigStatus @default(ACTIVE)
+  courseProducts CourseProduct[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -358,4 +381,28 @@ model Term {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, startsAt])
+}
+
+model CourseProduct {
+  id          String              @id @default(cuid())
+  tenantId    String
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  gradeId     String
+  grade       Grade               @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  name        String
+  courseType  CourseType
+  classType   ClassType
+  totalHours  Int
+  price       Decimal
+  description String?
+  status      CourseProductStatus @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, subjectId, gradeId])
 }
