@@ -60,6 +60,7 @@ model Tenant {
   rooms       Room[]
   roles       Role[]
   memberships Membership[]
+  auditLogs   AuditLog[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -109,6 +110,7 @@ model User {
   passwordHash String
   status      UserStatus   @default(ACTIVE)
   memberships Membership[]
+  auditLogs   AuditLog[]   @relation("AuditLogActor")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -150,4 +152,25 @@ model Membership {
   @@index([tenantId, userId])
   @@index([tenantId, roleId])
   @@index([tenantId, status])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actorUserId String?
+  actorUser   User?    @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String
+  entityId    String
+  beforeJson  Json?
+  afterJson   Json?
+  reason      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, actorUserId])
+  @@index([tenantId, action])
+  @@index([tenantId, entityType, entityId])
 }
