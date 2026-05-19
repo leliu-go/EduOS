@@ -49,6 +49,14 @@ const errorMessages = {
   schedule_conflict: "排课存在时间冲突，请调整老师、教室或时间后再提交。",
 } as const;
 
+const conflictMessages = {
+  teacher_time: "老师在该时间段已有排课。",
+  room_time: "教室在该时间段已被占用。",
+  student_time: "班级学生在该时间段已有其他排课。",
+  campus_business_hours: "排课时间不在校区营业时间内。",
+  class_group_duplicate: "班级在该时间段已有课程。",
+} as const;
+
 function formatDate(value: Date) {
   return value.toISOString().slice(0, 10);
 }
@@ -59,6 +67,16 @@ function formatTime(value: Date) {
 
 function formatScheduleTime(schedule: ScheduleCalendarItem) {
   return `${formatDate(schedule.startAt)} ${formatTime(schedule.startAt)}-${formatTime(schedule.endAt)}`;
+}
+
+function getConflictMessages(value: string | string[] | undefined) {
+  const rawValue = typeof value === "string" ? value : "";
+
+  return rawValue
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry): entry is keyof typeof conflictMessages => entry in conflictMessages)
+    .map((entry) => conflictMessages[entry]);
 }
 
 function getHrefWithView(search: ScheduleCalendarSearch, view: ScheduleCalendarSearch["view"]) {
@@ -223,6 +241,7 @@ export default async function SchedulingCalendarPage({
     typeof params.error === "string"
       ? errorMessages[params.error as keyof typeof errorMessages]
       : null;
+  const scheduleConflictMessages = getConflictMessages(params.conflicts);
 
   return (
     <div className="grid gap-6">
@@ -263,6 +282,14 @@ export default async function SchedulingCalendarPage({
         >
           {errorMessage}
         </p>
+      ) : null}
+
+      {scheduleConflictMessages.length > 0 ? (
+        <ul className="grid gap-1 rounded-md border border-destructive/30 px-3 py-2 text-sm text-destructive">
+          {scheduleConflictMessages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
       ) : null}
 
       <section className="grid gap-4 rounded-lg border bg-card p-4">

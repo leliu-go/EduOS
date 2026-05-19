@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/audit/audit-log";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
-import { findBasicScheduleConflicts } from "./conflicts";
+import { findScheduleConflicts, type ScheduleConflict } from "./conflicts";
 import { buildWeeklyScheduleOccurrences } from "./recurring";
 import {
   getScheduleBatchCreateFormValues,
@@ -17,6 +17,16 @@ import {
 
 function redirectWithScheduleError(error: string): never {
   redirect(`/dashboard/scheduling?error=${error}`);
+}
+
+function redirectWithScheduleConflicts(conflicts: ScheduleConflict[]): never {
+  const conflictTypes = Array.from(new Set(conflicts.map((conflict) => conflict.type)));
+
+  redirect(
+    `/dashboard/scheduling?error=schedule_conflict&conflicts=${encodeURIComponent(
+      conflictTypes.join(","),
+    )}`,
+  );
 }
 
 function formatScheduleDate(value: Date) {
@@ -148,7 +158,25 @@ export async function createScheduleAction(formData: FormData) {
     const scope = await getScheduleScope(tx, currentUser.tenantId, parsed.data);
 
     if (!scope.classGroup || !scope.teacher || !scope.room) {
-      return null;
+      return { status: "invalid_scope" as const };
+    }
+
+    const conflicts = await findScheduleConflicts(tx, currentUser.tenantId, [
+      {
+        classGroupId: scope.classGroup.id,
+        teacherId: scope.teacher.id,
+        roomId: scope.room.id,
+        campusId: scope.room.campusId,
+        startAt: parsed.data.startAt,
+        endAt: parsed.data.endAt,
+      },
+    ]);
+
+    if (conflicts.length > 0) {
+      return {
+        status: "conflict" as const,
+        conflicts,
+      };
     }
 
     const lesson = await tx.lesson.create({
@@ -190,15 +218,22 @@ export async function createScheduleAction(formData: FormData) {
       tx,
     );
 
-    return schedule;
+    return {
+      status: "ok" as const,
+      schedule,
+    };
   });
 
-  if (!result) {
+  if (result.status === "invalid_scope") {
     redirectWithScheduleError("invalid_scope");
   }
 
+  if (result.status === "conflict") {
+    redirectWithScheduleConflicts(result.conflicts);
+  }
+
   revalidatePath("/dashboard/scheduling");
-  redirect(`/dashboard/scheduling?view=day&date=${formatScheduleDate(result.startAt)}`);
+  redirect(`/dashboard/scheduling?view=day&date=${formatScheduleDate(result.schedule.startAt)}`);
 }
 
 export async function createWeeklySchedulesAction(formData: FormData) {
@@ -219,25 +254,34 @@ export async function createWeeklySchedulesAction(formData: FormData) {
       return { status: "invalid_scope" as const };
     }
 
+    const classGroupId = scope.classGroup.id;
+    const teacherId = scope.teacher.id;
+    const roomId = scope.room.id;
+    const campusId = scope.room.campusId;
     const occurrences = buildWeeklyScheduleOccurrences({
       lessonTitle: parsed.data.lessonTitle,
       startAt: parsed.data.firstStartAt,
       endAt: parsed.data.firstEndAt,
       weeks: parsed.data.weeks,
     });
-    const conflicts = await findBasicScheduleConflicts(
+    const conflicts = await findScheduleConflicts(
       tx,
       currentUser.tenantId,
-      {
-        classGroupId: scope.classGroup.id,
-        teacherId: scope.teacher.id,
-        roomId: scope.room.id,
-      },
-      occurrences,
+      occurrences.map((occurrence) => ({
+        classGroupId,
+        teacherId,
+        roomId,
+        campusId,
+        startAt: occurrence.startAt,
+        endAt: occurrence.endAt,
+      })),
     );
 
     if (conflicts.length > 0) {
-      return { status: "conflict" as const };
+      return {
+        status: "conflict" as const,
+        conflicts,
+      };
     }
 
     const recurrenceRule = weeklyRecurrenceRule(parsed.data.weeks);
@@ -248,8 +292,8 @@ export async function createWeeklySchedulesAction(formData: FormData) {
       const lesson = await tx.lesson.create({
         data: {
           tenantId: currentUser.tenantId,
-          classGroupId: scope.classGroup.id,
-          teacherId: scope.teacher.id,
+          classGroupId,
+          teacherId,
           title: occurrence.title,
           status: "SCHEDULED",
         },
@@ -260,10 +304,10 @@ export async function createWeeklySchedulesAction(formData: FormData) {
       const schedule: { id: string } = await tx.schedule.create({
         data: {
           tenantId: currentUser.tenantId,
-          classGroupId: scope.classGroup.id,
-          teacherId: scope.teacher.id,
-          campusId: scope.room.campusId,
-          roomId: scope.room.id,
+          classGroupId,
+          teacherId,
+          campusId,
+          roomId,
           lessonId: lesson.id,
           sourceScheduleId,
           startAt: occurrence.startAt,
@@ -289,9 +333,9 @@ export async function createWeeklySchedulesAction(formData: FormData) {
         entityId: sourceScheduleId ?? "unknown",
         afterJson: {
           scheduleIds,
-          classGroupId: scope.classGroup.id,
-          teacherId: scope.teacher.id,
-          roomId: scope.room.id,
+          classGroupId,
+          teacherId,
+          roomId,
           weeks: parsed.data.weeks,
           recurrenceRule,
         },
@@ -310,7 +354,7 @@ export async function createWeeklySchedulesAction(formData: FormData) {
   }
 
   if (result.status === "conflict") {
-    redirectWithScheduleError("schedule_conflict");
+    redirectWithScheduleConflicts(result.conflicts);
   }
 
   revalidatePath("/dashboard/scheduling");

@@ -60,7 +60,7 @@ describe("batch scheduling flow", () => {
     expect(actions).toContain("createWeeklySchedulesAction");
     expect(actions).toContain("getScheduleBatchCreateFormValues");
     expect(actions).toContain("buildWeeklyScheduleOccurrences");
-    expect(actions).toContain("findBasicScheduleConflicts");
+    expect(actions).toContain("findScheduleConflicts");
     expect(actions).toContain("prisma.$transaction");
     expect(actions).toContain("tx.lesson.create");
     expect(actions).toContain("tx.schedule.create");
