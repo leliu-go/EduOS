@@ -110,6 +110,7 @@ model Campus {
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name        String
   address     String?
+  businessHours String?
   status      CampusStatus @default(ACTIVE)
   rooms       Room[]
   memberships Membership[]
@@ -129,6 +130,7 @@ model Room {
   campus    Campus     @relation(fields: [campusId], references: [id], onDelete: Cascade)
   name      String
   capacity  Int?
+  equipment String?
   status    RoomStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt

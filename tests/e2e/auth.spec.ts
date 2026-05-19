@@ -4,6 +4,7 @@ const protectedRoutes = [
   { route: "/dashboard", next: "/dashboard" },
   { route: "/dashboard/students", next: "/dashboard" },
   { route: "/dashboard/teachers", next: "/dashboard" },
+  { route: "/dashboard/campuses", next: "/dashboard" },
   { route: "/student", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
