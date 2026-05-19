@@ -1,0 +1,50 @@
+import { z } from "zod";
+
+export const attendanceStatusValues = ["PRESENT", "LATE", "EXCUSED", "ABSENT", "MAKE_UP"] as const;
+
+export const attendanceStatusLabels = {
+  PRESENT: "已到",
+  LATE: "迟到",
+  EXCUSED: "请假",
+  ABSENT: "缺勤",
+  MAKE_UP: "补课",
+} as const satisfies Record<(typeof attendanceStatusValues)[number], string>;
+
+function optionalText(maxLength: number) {
+  return z.preprocess((value) => {
+    if (typeof value !== "string") {
+      return undefined;
+    }
+
+    return value.trim() === "" ? undefined : value;
+  }, z.string().trim().max(maxLength).optional());
+}
+
+export const attendanceRecordEntrySchema = z.object({
+  studentId: z.string().cuid(),
+  status: z.enum(attendanceStatusValues),
+  notes: optionalText(300),
+});
+
+export const attendanceRecordFormSchema = z.object({
+  scheduleId: z.string().cuid(),
+  entries: z.array(attendanceRecordEntrySchema).min(1),
+});
+
+export function getAttendanceRecordFormValues(formData: FormData) {
+  const studentIds = formData
+    .getAll("studentId")
+    .filter((value): value is string => typeof value === "string");
+
+  return attendanceRecordFormSchema.safeParse({
+    scheduleId: formData.get("scheduleId"),
+    entries: studentIds.map((studentId) => ({
+      studentId,
+      status: formData.get(`status:${studentId}`),
+      notes: formData.get(`notes:${studentId}`),
+    })),
+  });
+}
+
+export type AttendanceStatusValue = (typeof attendanceStatusValues)[number];
+export type AttendanceRecordFormValues = z.infer<typeof attendanceRecordFormSchema>;
