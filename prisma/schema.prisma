@@ -64,6 +64,19 @@ enum StudentStatus {
   WITHDRAWN
 }
 
+enum GuardianStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum GuardianRelationship {
+  FATHER
+  MOTHER
+  GRANDPARENT
+  RELATIVE
+  OTHER
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -75,6 +88,8 @@ model Tenant {
   memberships Membership[]
   auditLogs   AuditLog[]
   students    StudentProfile[]
+  guardians   GuardianProfile[]
+  studentGuardians StudentGuardian[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -126,6 +141,7 @@ model User {
   memberships Membership[]
   auditLogs   AuditLog[]   @relation("AuditLogActor")
   studentProfiles StudentProfile[]
+  guardianProfiles GuardianProfile[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -203,6 +219,7 @@ model StudentProfile {
   school    String?
   status    StudentStatus  @default(ACTIVE)
   notes     String?
+  guardians StudentGuardian[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -211,4 +228,42 @@ model StudentProfile {
   @@index([tenantId, status])
   @@index([tenantId, name])
   @@index([tenantId, createdAt])
+}
+
+model GuardianProfile {
+  id        String         @id @default(cuid())
+  tenantId  String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  phone     String?
+  email     String?
+  status    GuardianStatus @default(ACTIVE)
+  students  StudentGuardian[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, phone])
+}
+
+model StudentGuardian {
+  id           String               @id @default(cuid())
+  tenantId     String
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId   String
+  guardian     GuardianProfile      @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  relationship GuardianRelationship
+  isPrimary    Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@unique([tenantId, studentId, guardianId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, guardianId])
 }
