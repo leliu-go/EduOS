@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 const protectedRoutes = [
   { route: "/dashboard", next: "/dashboard" },
   { route: "/dashboard/students", next: "/dashboard" },
+  { route: "/dashboard/teachers", next: "/dashboard" },
   { route: "/student", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
