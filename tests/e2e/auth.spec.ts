@@ -12,6 +12,7 @@ const protectedRoutes = [
   { route: "/dashboard/enrollments", next: "/dashboard" },
   { route: "/dashboard/course-accounts", next: "/dashboard" },
   { route: "/dashboard/renewals", next: "/dashboard" },
+  { route: "/dashboard/payments", next: "/dashboard" },
   { route: "/dashboard/course-consumptions", next: "/dashboard" },
   { route: "/dashboard/resources", next: "/dashboard" },
   { route: "/dashboard/homework", next: "/dashboard" },
@@ -26,6 +27,7 @@ const protectedRoutes = [
   { route: "/student/homework", next: "/student" },
   { route: "/student/mistakes", next: "/student" },
   { route: "/student/notifications", next: "/student" },
+  { route: "/student/payments", next: "/student" },
   { route: "/student/reports", next: "/student" },
   { route: "/student/resources", next: "/student" },
   { route: "/student/resources/sample-resource", next: "/student" },
@@ -36,6 +38,7 @@ const protectedRoutes = [
   { route: "/parent/consumption", next: "/parent" },
   { route: "/parent/mistakes", next: "/parent" },
   { route: "/parent/notifications", next: "/parent" },
+  { route: "/parent/payments", next: "/parent" },
   { route: "/parent/reports", next: "/parent" },
 ];
 

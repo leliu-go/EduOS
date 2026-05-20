@@ -270,6 +270,22 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  WECHAT
+  ALIPAY
+  CARD
+  OTHER
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -312,6 +328,7 @@ model Tenant {
   checkIns    CheckIn[]
   notifications Notification[]
   orders      Order[]
+  payments   Payment[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -480,6 +497,7 @@ model StudentProfile {
   classGroups ClassGroupStudent[]
   enrollments Enrollment[]
   orders      Order[]
+  payments    Payment[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
   resourcePermissions ResourcePermission[]
@@ -513,6 +531,7 @@ model GuardianProfile {
   status    GuardianStatus @default(ACTIVE)
   students  StudentGuardian[]
   orders    Order[]
+  payments  Payment[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -842,6 +861,7 @@ model Order {
   payableAmount   Decimal
   currency        String         @default("CNY")
   status          OrderStatus    @default(PENDING_PAYMENT)
+  payments        Payment[]
   notes           String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -853,6 +873,34 @@ model Order {
   @@index([tenantId, guardianId])
   @@index([tenantId, courseProductId])
   @@index([tenantId, createdAt])
+}
+
+model Payment {
+  id            String          @id @default(cuid())
+  tenantId      String
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderId       String
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId    String?
+  guardian      GuardianProfile? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  amount        Decimal
+  currency      String          @default("CNY")
+  method        PaymentMethod
+  status        PaymentStatus   @default(PENDING)
+  paidAt        DateTime?
+  transactionNo String?
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, orderId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, guardianId])
+  @@index([tenantId, status])
+  @@index([tenantId, paidAt])
 }
 
 model Enrollment {

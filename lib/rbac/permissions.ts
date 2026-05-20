@@ -43,6 +43,7 @@ export const permissions = [
   "mistakes:viewOwn",
   "mistakes:manage",
   "reports:institution:view",
+  "payments:viewOwn",
   "finance:reports:view",
   "finance:mutate",
 ] as const;
@@ -138,6 +139,7 @@ export const permissionMatrix = {
     "resources:viewOwn",
     "homework:submit",
     "mistakes:viewOwn",
+    "payments:viewOwn",
   ],
   PARENT: [
     "route:parent",
@@ -147,6 +149,7 @@ export const permissionMatrix = {
     "resources:viewOwn",
     "homework:submit",
     "mistakes:viewOwn",
+    "payments:viewOwn",
   ],
 } as const satisfies Record<RoleKey, readonly Permission[]>;
 
