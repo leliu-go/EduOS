@@ -356,7 +356,7 @@ export async function getResourceLibraryOptions(
         tenantId,
         status: "ACTIVE",
       },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      orderBy: [{ name: "asc" }],
     }),
     prisma.grade.findMany({
       where: {

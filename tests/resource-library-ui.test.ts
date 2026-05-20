@@ -57,6 +57,19 @@ describe("resource library UI", () => {
     expect(source).toContain("primaryTeacher");
   });
 
+  it("orders resource option subjects by existing schema fields", () => {
+    const queryPath = join(process.cwd(), "features/resources/queries.ts");
+    const source = readFileSync(queryPath, "utf8");
+    const start = source.indexOf("export async function getResourceLibraryOptions");
+    const optionsSource = source.slice(start);
+    const subjectQueryStart = optionsSource.indexOf("prisma.subject.findMany");
+    const gradeQueryStart = optionsSource.indexOf("prisma.grade.findMany");
+    const subjectQuery = optionsSource.slice(subjectQueryStart, gradeQueryStart);
+
+    expect(subjectQuery).toContain('orderBy: [{ name: "asc" }]');
+    expect(subjectQuery).not.toContain("sortOrder");
+  });
+
   it("creates resource metadata through server validation and audit logging", () => {
     const actionPath = join(process.cwd(), "features/resources/actions.ts");
 
