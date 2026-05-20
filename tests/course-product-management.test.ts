@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { courseProductFormSchema } from "../features/courses/course-product-schema";
+import { serializeCourseProduct } from "../features/courses/queries";
 import { hasPermission } from "../lib/rbac/permissions";
 
 describe("course product management", () => {
@@ -83,6 +84,20 @@ describe("course product management", () => {
     expect(source).toContain("take");
     expect(source).toContain("subject: true");
     expect(source).toContain("grade: true");
+  });
+
+  it("serializes course product prices before passing them to client components", () => {
+    const source = readFileSync(join(process.cwd(), "features/courses/queries.ts"), "utf8");
+    const serialized = serializeCourseProduct({
+      id: "course-product-1",
+      price: {
+        toString: () => "9600.00",
+      },
+    });
+
+    expect(serialized.price).toBe("9600.00");
+    expect(typeof serialized.price).toBe("string");
+    expect(source).toContain("return courseProduct ? serializeCourseProduct(courseProduct) : null");
   });
 
   it("renders course product management pages and route states", () => {

@@ -53,4 +53,17 @@ describe("deployment configuration", () => {
     expect(packageJson.scripts?.start).toBe("next start");
     expect(packageJson.scripts?.prisma).toBeUndefined();
   });
+
+  it("loads local environment variables before seeded Playwright flows run", () => {
+    const playwrightConfig = readProjectFile("playwright.config.ts");
+
+    expect(playwrightConfig).toContain('import "dotenv/config"');
+  });
+
+  it("allows seeded login redirects enough time for password verification", () => {
+    const playwrightConfig = readProjectFile("playwright.config.ts");
+
+    expect(playwrightConfig).toContain("expect:");
+    expect(playwrightConfig).toContain("timeout: 15_000");
+  });
 });

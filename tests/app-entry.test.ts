@@ -22,13 +22,27 @@ describe("app entry", () => {
     expect(helper).toContain("http://localhost:3000/login");
   });
 
-  it("starts an isolated EduOS PostgreSQL container for local demos", () => {
+  it("starts a local EduOS PostgreSQL database without requiring Docker Desktop", () => {
     const helper = readProjectFile("start-eduos.ps1");
 
-    expect(helper).toContain("eduos-postgres");
-    expect(helper).toContain("55432:5432");
-    expect(helper).toContain("postgresql://eduos:eduos_password@localhost:55432/eduos_dev");
+    expect(helper).toContain("Find-PostgresBin");
+    expect(helper).toContain("Initialize-LocalPostgres");
+    expect(helper).toContain("Start-LocalPostgres");
+    expect(helper).toContain("Ensure-LocalDatabase");
+    expect(helper).toContain("postgresql://${dbUser}:${dbPassword}@localhost:${dbPort}/${dbName}");
     expect(helper).toContain("pnpm exec prisma db push");
     expect(helper).toContain("pnpm prisma db seed");
+    expect(helper).not.toContain("docker run");
+    expect(helper).not.toContain("eduos-postgres");
+  });
+
+  it("reuses an already running EduOS dev server instead of launching another one", () => {
+    const helper = readProjectFile("start-eduos.ps1");
+
+    expect(helper).toContain("Test-AppReady");
+    expect(helper).toContain("Wait-AppReady");
+    expect(helper).toContain("Get-ListeningProcessId");
+    expect(helper).toContain("taskkill /PID");
+    expect(helper).toContain("pnpm dev -- --port 3000");
   });
 });

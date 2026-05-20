@@ -9,6 +9,15 @@ export type CourseProductListFilters = {
   pageSize?: number;
 };
 
+export function serializeCourseProduct<T extends { price: { toString(): string } }>(
+  courseProduct: T,
+): Omit<T, "price"> & { price: string } {
+  return {
+    ...courseProduct,
+    price: courseProduct.price.toString(),
+  };
+}
+
 export async function getCourseProductList(
   tenantId: string,
   filters: CourseProductListFilters = {},
@@ -51,7 +60,7 @@ export async function getCourseProductList(
   ]);
 
   return {
-    items,
+    items: items.map((item) => serializeCourseProduct(item)),
     total,
     page,
     pageSize,
@@ -60,7 +69,7 @@ export async function getCourseProductList(
 }
 
 export async function getCourseProductById(tenantId: string, courseProductId: string) {
-  return prisma.courseProduct.findFirst({
+  const courseProduct = await prisma.courseProduct.findFirst({
     where: {
       id: courseProductId,
       tenantId,
@@ -70,6 +79,8 @@ export async function getCourseProductById(tenantId: string, courseProductId: st
       grade: true,
     },
   });
+
+  return courseProduct ? serializeCourseProduct(courseProduct) : null;
 }
 
 export async function getCourseProductFormOptions(tenantId: string) {
