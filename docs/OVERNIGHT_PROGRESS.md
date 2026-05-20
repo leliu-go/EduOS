@@ -11,7 +11,7 @@ Run date: 2026-05-21
 | Stage 2 | PWA install capability | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (83 files / 314 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 3 | Version and update detection | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (84 files / 317 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 4 | Cloud resource management first stage | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 321 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 5 | Permission matrix upgrade | Pending | Pending |
+| Stage 5 | Permission matrix upgrade | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 323 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Pending | Pending |
 | Stage 7 | Activity Engine first stage for word check-in | Pending | Pending |
 | Stage 8 | Windows installer RFC | Pending | Pending |
@@ -58,3 +58,10 @@ Run date: 2026-05-21
 - Wrote `docs/rfcs/RFC-CloudResourceManagement.md`.
 - Added resource storage `.env.example` placeholders.
 - Recorded paid cloud storage and production credential work in `docs/HUMAN_ACTIONS.md`.
+
+## Stage 5 Summary
+
+- Added productization permissions for resource downloads, activities, MFA/security policy, version visibility, and update administration.
+- Kept `security:policy:manage`, `security:mfa:enforce`, and `updates:manage` at the super-admin/organization-admin boundary.
+- Added `docs/PERMISSION_MATRIX.md` to document role boundaries and productization permission intent.
+- Added RBAC tests covering student, parent, teacher, finance, campus admin, and organization admin boundaries.

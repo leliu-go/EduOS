@@ -8,6 +8,7 @@
 - Safe fallback implemented: Local commit `281c760 docs: add lightweight release artifact rules` exists on `main`
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+- Resolution: Resolved by a later successful `git push origin main` that pushed through `1b108fd`.
 - Resolution: Resolved by a later successful `git push origin main` that pushed through `953ca85`.
 
 ## 2026-05-21 Stage 3 Push Retry

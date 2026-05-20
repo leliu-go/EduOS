@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 
 import type { CurrentUser } from "../lib/auth/current-user";
 import { PermissionDeniedError, requirePermission } from "../lib/rbac/require-permission";
@@ -50,6 +51,41 @@ describe("RBAC permissions", () => {
   it("prevents finance users from mutating schedules unless explicitly allowed", () => {
     expect(hasPermission("FINANCE", "finance:reports:view")).toBe(true);
     expect(hasPermission("FINANCE", "scheduling:mutate")).toBe(false);
+  });
+
+  it("adds productization permissions without broadening role boundaries", () => {
+    expect(hasPermission("ORG_ADMIN", "security:policy:manage")).toBe(true);
+    expect(hasPermission("ORG_ADMIN", "security:mfa:enforce")).toBe(true);
+    expect(hasPermission("ORG_ADMIN", "activities:manage")).toBe(true);
+    expect(hasPermission("ORG_ADMIN", "version:view")).toBe(true);
+
+    expect(hasPermission("CAMPUS_ADMIN", "activities:manage")).toBe(true);
+    expect(hasPermission("CAMPUS_ADMIN", "security:policy:manage")).toBe(false);
+
+    expect(hasPermission("TEACHER", "activities:progress:view")).toBe(true);
+    expect(hasPermission("TEACHER", "activities:manage")).toBe(false);
+
+    expect(hasPermission("STUDENT", "resources:download")).toBe(true);
+    expect(hasPermission("STUDENT", "activities:viewOwn")).toBe(true);
+    expect(hasPermission("STUDENT", "activities:checkIn")).toBe(true);
+    expect(hasPermission("STUDENT", "activities:manage")).toBe(false);
+    expect(hasPermission("STUDENT", "security:mfa:enforce")).toBe(false);
+
+    expect(hasPermission("PARENT", "activities:viewOwn")).toBe(true);
+    expect(hasPermission("PARENT", "activities:checkIn")).toBe(false);
+
+    expect(hasPermission("FINANCE", "security:mfa:manage")).toBe(true);
+    expect(hasPermission("FINANCE", "security:policy:manage")).toBe(false);
+    expect(hasPermission("FINANCE", "activities:manage")).toBe(false);
+  });
+
+  it("documents the upgraded role permission matrix", () => {
+    const matrix = readFileSync("docs/PERMISSION_MATRIX.md", "utf8");
+
+    expect(matrix).toContain("resources:download");
+    expect(matrix).toContain("activities:checkIn");
+    expect(matrix).toContain("security:mfa:enforce");
+    expect(matrix).toContain("version:view");
   });
 
   it("requires permissions on the server using the current user role", async () => {
