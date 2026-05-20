@@ -32,6 +32,7 @@ const sidebarItems = [
   { label: "排课", href: "/dashboard/scheduling", icon: CalendarDays },
   { label: "考勤课消", href: "/dashboard/course-accounts", icon: ClipboardCheck },
   { label: "续费预警", href: "/dashboard/renewals", icon: Repeat2 },
+  { label: "财务报表", href: "/dashboard/finance-reports", icon: Landmark },
   { label: "支付流水", href: "/dashboard/payments", icon: WalletCards },
   { label: "课消流水", href: "/dashboard/course-consumptions", icon: ScrollText },
   { label: "课程资源", href: "/dashboard/resources", icon: Library },
