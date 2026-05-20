@@ -11,6 +11,8 @@ import { calculateCourseAccountBalance } from "@/features/course-accounts/balanc
 import { CourseConsumptionLedgerCard } from "@/features/course-consumptions/ledger-card";
 import { getStudentCourseConsumptionLedger } from "@/features/course-consumptions/queries";
 import { getStudentEnrolledCourses } from "@/features/enrollments/queries";
+import { LearningTaskCard } from "@/features/learning/learning-task-card";
+import { getStudentLearningStats, getStudentLearningTasks } from "@/features/learning/queries";
 import { getStudentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -56,18 +58,28 @@ export default async function StudentHomePage() {
     nextPath: "/student",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [enrolledCourses, timetable, checkInSchedules, consumptionLedger] = await Promise.all([
+  const [
+    enrolledCourses,
+    timetable,
+    checkInSchedules,
+    consumptionLedger,
+    learningTasks,
+    learningStats,
+  ] = await Promise.all([
     getStudentEnrolledCourses(currentUser.tenantId, currentUser.id),
     getStudentTimetable(currentUser.tenantId, currentUser.id),
     getStudentCheckInSchedules(currentUser.tenantId, currentUser.id),
     getStudentCourseConsumptionLedger(currentUser.tenantId, currentUser.id, { limit: 5 }),
+    getStudentLearningTasks(currentUser.tenantId, currentUser.id),
+    getStudentLearningStats(currentUser.tenantId, currentUser.id),
   ]);
 
   if (
     enrolledCourses.length === 0 &&
     timetable.length === 0 &&
     checkInSchedules.length === 0 &&
-    consumptionLedger.length === 0
+    consumptionLedger.length === 0 &&
+    learningTasks.length === 0
   ) {
     return <EmptyState title="暂无已报名课程" description="报名完成后，可在这里查看自己的课程。" />;
   }
@@ -79,6 +91,31 @@ export default async function StudentHomePage() {
           <h2 className="text-base font-semibold tracking-normal text-foreground">今日签到</h2>
           {checkInSchedules.map((schedule) => (
             <StudentCheckInCard key={schedule.id} schedule={schedule} />
+          ))}
+        </section>
+      ) : null}
+
+      {learningTasks.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">今日学习打卡</h2>
+          <Card>
+            <CardContent className="grid grid-cols-2 gap-3 p-4 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">连续完成</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">
+                  {learningStats.currentStreak} 天
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">近 30 天完成率</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">
+                  {learningStats.completionRate}%
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          {learningTasks.map((task) => (
+            <LearningTaskCard key={task.id} task={task} />
           ))}
         </section>
       ) : null}

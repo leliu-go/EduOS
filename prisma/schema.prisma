@@ -199,6 +199,18 @@ enum HomeworkCorrectionStatus {
   NEEDS_REVISION
 }
 
+enum LearningTaskType {
+  READING
+  MEMORIZATION
+  PRACTICE
+  SPECIAL_TRAINING
+}
+
+enum LearningTaskStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -227,6 +239,8 @@ model Tenant {
   homeworks   Homework[]
   homeworkSubmissions HomeworkSubmission[]
   homeworkCorrections HomeworkCorrection[]
+  learningTasks LearningTask[]
+  learningTaskCheckIns LearningTaskCheckIn[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -290,6 +304,7 @@ model User {
   scheduleChangeLogs ScheduleChangeLog[] @relation("ScheduleChangeLogActor")
   confirmedCheckIns CheckIn[] @relation("CheckInConfirmedBy")
   assignedHomeworks Homework[] @relation("HomeworkAssignedBy")
+  assignedLearningTasks LearningTask[] @relation("LearningTaskAssignedBy")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -378,6 +393,8 @@ model StudentProfile {
   resourcePermissions ResourcePermission[]
   assignedHomeworks Homework[] @relation("HomeworkStudent")
   homeworkSubmissions HomeworkSubmission[]
+  assignedLearningTasks LearningTask[] @relation("LearningTaskStudent")
+  learningTaskCheckIns LearningTaskCheckIn[]
   attendances Attendance[]
   checkIns    CheckIn[]
   createdAt DateTime       @default(now())
@@ -558,6 +575,7 @@ model ClassGroup {
   resources        Resource[]
   resourcePermissions ResourcePermission[]
   homeworks        Homework[]
+  learningTasks    LearningTask[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -917,4 +935,51 @@ model HomeworkCorrection {
   @@index([tenantId, teacherId])
   @@index([tenantId, status])
   @@index([tenantId, correctedAt])
+}
+
+model LearningTask {
+  id               String                @id @default(cuid())
+  tenantId         String
+  tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  taskType         LearningTaskType
+  targetDate       DateTime
+  status           LearningTaskStatus    @default(ACTIVE)
+  assignedByUserId String?
+  assignedByUser   User?                 @relation("LearningTaskAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+  classGroupId     String?
+  classGroup       ClassGroup?           @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  studentId        String?
+  student          StudentProfile?       @relation("LearningTaskStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  checkIns         LearningTaskCheckIn[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, taskType])
+  @@index([tenantId, targetDate])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, studentId])
+}
+
+model LearningTaskCheckIn {
+  id          String         @id @default(cuid())
+  tenantId    String
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        LearningTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  checkedInAt DateTime       @default(now())
+  note        String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([tenantId, taskId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, taskId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, checkedInAt])
 }
