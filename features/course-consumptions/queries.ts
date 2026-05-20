@@ -99,6 +99,7 @@ export async function getParentCourseConsumptionLedger(
         guardians: {
           some: {
             guardian: {
+              tenantId,
               userId,
             },
           },

@@ -79,6 +79,7 @@ export async function getParentCourseAccounts(tenantId: string, userId: string) 
         guardians: {
           some: {
             guardian: {
+              tenantId,
               userId,
             },
           },
