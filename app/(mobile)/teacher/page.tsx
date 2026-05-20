@@ -1,6 +1,14 @@
 import Link from "next/link";
-import { BookOpen, ClipboardCheck, FilePenLine, Target } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  ChevronRight,
+  ClipboardCheck,
+  FilePenLine,
+  Target,
+} from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -18,47 +26,67 @@ export default async function TeacherHomePage() {
   const dashboard = await getTeacherClassDashboard(currentUser.tenantId, currentUser.id);
   const metrics = [
     {
-      label: "今日课次",
+      label: "今日课程",
       value: dashboard.todayLessons.length,
+      description: "今日课次安排",
+      href: "#today-lessons",
       icon: <BookOpen className="size-4 text-primary" aria-hidden="true" />,
     },
     {
       label: "待点名",
       value: dashboard.pendingAttendance.length,
+      description: "课前课后快速点名",
+      href: "#pending-attendance",
       icon: <ClipboardCheck className="size-4 text-primary" aria-hidden="true" />,
     },
     {
       label: "待批改",
       value: dashboard.pendingCorrections.length,
+      description: "进入作业批改台",
+      href: "/teacher/homework",
       icon: <FilePenLine className="size-4 text-primary" aria-hidden="true" />,
     },
     {
-      label: "班级薄弱点",
-      value: dashboard.classWeakness.length,
-      icon: <Target className="size-4 text-primary" aria-hidden="true" />,
+      label: "需关注学生",
+      value: dashboard.attentionStudents.length,
+      description: "查看错题和订正跟进",
+      href: "/teacher/classes",
+      icon: <AlertTriangle className="size-4 text-primary" aria-hidden="true" />,
     },
   ];
 
   return (
     <div className="grid gap-4">
       <section className="grid grid-cols-2 gap-3">
-        {metrics.map((metric) => (
-          <Card key={metric.label} className="shadow-none">
-            <CardContent className="grid gap-2 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-muted-foreground">{metric.label}</span>
-                {metric.icon}
-              </div>
-              <p className="text-2xl font-semibold tracking-normal text-foreground">
-                {metric.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {metrics.map((metric) => {
+          const card = (
+            <Card className="h-full shadow-none">
+              <CardContent className="grid gap-2 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-muted-foreground">{metric.label}</span>
+                  <span className="flex items-center gap-2">
+                    {metric.icon}
+                    <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                  </span>
+                </div>
+                <p className="text-2xl font-semibold tracking-normal text-foreground">
+                  {metric.value}
+                </p>
+                <p className="line-clamp-2 text-xs text-muted-foreground">{metric.description}</p>
+              </CardContent>
+            </Card>
+          );
+
+          return (
+            <Link key={metric.label} href={metric.href} className="block h-full">
+              {card}
+            </Link>
+          );
+        })}
       </section>
 
-      <section className="grid gap-3">
-        <h2 className="text-base font-semibold tracking-normal text-foreground">今日课次</h2>
+      <section id="today-lessons" className="grid gap-3 scroll-mt-4">
+        <h2 className="text-base font-semibold tracking-normal text-foreground">今日课程</h2>
         {dashboard.todayLessons.length > 0 ? (
           dashboard.todayLessons.map((schedule) => (
             <div key={schedule.id} className="grid gap-2">
@@ -87,7 +115,7 @@ export default async function TeacherHomePage() {
         )}
       </section>
 
-      <section className="grid gap-3">
+      <section id="pending-attendance" className="grid gap-3 scroll-mt-4">
         <h2 className="text-base font-semibold tracking-normal text-foreground">待点名课程</h2>
         {dashboard.pendingAttendance.length > 0 ? (
           dashboard.pendingAttendance.map((schedule) => (
@@ -95,6 +123,41 @@ export default async function TeacherHomePage() {
           ))
         ) : (
           <EmptyState title="暂无待点名" description="当前没有需要处理的点名课程。" />
+        )}
+      </section>
+
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">需关注学生</h2>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/teacher/classes">
+              <Target className="size-4" aria-hidden="true" />
+              班级详情
+            </Link>
+          </Button>
+        </div>
+        {dashboard.attentionStudents.length > 0 ? (
+          dashboard.attentionStudents.map((student) => (
+            <Card key={student.id} className="shadow-none">
+              <CardContent className="flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="line-clamp-1 text-sm font-medium text-foreground">{student.name}</p>
+                  <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                    {student.grade}
+                    {student.school ? ` · ${student.school}` : ""}
+                  </p>
+                </div>
+                <Badge variant="secondary" className="shrink-0">
+                  {student.attentionCount} 条待跟进
+                </Badge>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <EmptyState
+            title="暂无需重点关注学生"
+            description="错题订正或掌握情况异常时会在这里提醒。"
+          />
         )}
       </section>
 
