@@ -39,6 +39,10 @@ export const checkInConfirmFormSchema = z.object({
   checkInId: z.string().cuid(),
 });
 
+export const qrCheckInFormSchema = z.object({
+  token: z.string().trim().min(32).max(1200),
+});
+
 export function getAttendanceRecordFormValues(formData: FormData) {
   const studentIds = formData
     .getAll("studentId")
@@ -66,7 +70,14 @@ export function getCheckInConfirmFormValues(formData: FormData) {
   });
 }
 
+export function getQrCheckInFormValues(formData: FormData) {
+  return qrCheckInFormSchema.safeParse({
+    token: formData.get("token"),
+  });
+}
+
 export type AttendanceStatusValue = (typeof attendanceStatusValues)[number];
 export type AttendanceRecordFormValues = z.infer<typeof attendanceRecordFormSchema>;
 export type StudentCheckInFormValues = z.infer<typeof studentCheckInFormSchema>;
 export type CheckInConfirmFormValues = z.infer<typeof checkInConfirmFormSchema>;
+export type QrCheckInFormValues = z.infer<typeof qrCheckInFormSchema>;

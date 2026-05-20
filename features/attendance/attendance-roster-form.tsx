@@ -1,17 +1,19 @@
 import { ClipboardCheck } from "lucide-react";
+import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  attendanceStatusLabels,
-  attendanceStatusValues,
-} from "@/features/attendance/attendance-schema";
-import {
   confirmStudentCheckInAction,
   recordLessonAttendanceAction,
 } from "@/features/attendance/actions";
+import {
+  attendanceStatusLabels,
+  attendanceStatusValues,
+} from "@/features/attendance/attendance-schema";
+import { createScheduleCheckInQrCode } from "@/features/attendance/check-in-token";
 import type { getTeacherAttendanceSchedules } from "@/features/attendance/queries";
 
 type AttendanceSchedule = Awaited<ReturnType<typeof getTeacherAttendanceSchedules>>[number];
@@ -20,7 +22,11 @@ type AttendanceRosterFormProps = {
   schedule: AttendanceSchedule;
 };
 
-export function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
+export async function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
+  const qrCode = await createScheduleCheckInQrCode({
+    tenantId: schedule.tenantId,
+    scheduleId: schedule.id,
+  });
   const attendanceByStudentId = new Map(
     schedule.attendances.map((attendance) => [attendance.studentId, attendance]),
   );
@@ -31,10 +37,23 @@ export function AttendanceRosterForm({ schedule }: AttendanceRosterFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ClipboardCheck className="size-4" aria-hidden="true" />
-          课堂点名
-        </CardTitle>
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ClipboardCheck className="size-4" aria-hidden="true" />
+            课堂点名
+          </CardTitle>
+          <div className="grid justify-items-center gap-1">
+            <Image
+              src={qrCode.dataUrl}
+              alt="课堂签到二维码"
+              width={96}
+              height={96}
+              unoptimized
+              className="rounded-md border"
+            />
+            <span className="text-xs text-muted-foreground">扫码签到</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <form action={recordLessonAttendanceAction} className="grid gap-3">

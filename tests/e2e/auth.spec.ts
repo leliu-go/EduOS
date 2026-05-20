@@ -14,6 +14,7 @@ const protectedRoutes = [
   { route: "/dashboard/scheduling", next: "/dashboard" },
   { route: "/teacher/classes", next: "/teacher" },
   { route: "/student", next: "/student" },
+  { route: "/student/check-in/sample-token", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
 ];

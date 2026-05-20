@@ -10,9 +10,11 @@ import { requirePermission } from "@/lib/rbac/require-permission";
 import {
   getAttendanceRecordFormValues,
   getCheckInConfirmFormValues,
+  getQrCheckInFormValues,
   getStudentCheckInFormValues,
   type AttendanceRecordFormValues,
 } from "./attendance-schema";
+import { verifyCheckInQrToken } from "./check-in-token";
 
 const activeAttendanceScheduleStatuses = ["SCHEDULED", "RESCHEDULED", "MAKE_UP"] as const;
 
@@ -241,6 +243,14 @@ export async function createStudentCheckInAction(formData: FormData) {
               },
             },
           },
+          enrollments: {
+            some: {
+              status: "ACTIVE",
+              student: {
+                userId: currentUser.id,
+              },
+            },
+          },
         },
       },
       include: {
@@ -290,6 +300,105 @@ export async function createStudentCheckInAction(formData: FormData) {
         tenantId: currentUser.tenantId,
         actorUserId: currentUser.id,
         action: "checkIn.record",
+        entityType: "checkIn",
+        entityId: checkIn.id,
+        afterJson: checkInSnapshot(checkIn),
+      },
+      tx,
+    );
+
+    return { status: "ok" as const };
+  });
+
+  if (result.status === "invalid_scope") {
+    redirectWithStudentCheckInError("invalid_scope");
+  }
+
+  revalidatePath("/student");
+  redirect("/student?checkIn=recorded");
+}
+
+export async function createStudentQrCheckInAction(formData: FormData) {
+  const currentUser = await requirePermission("route:student", {
+    nextPath: "/student",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsed = getQrCheckInFormValues(formData);
+
+  if (!parsed.success) {
+    redirectWithStudentCheckInError("invalid_qr");
+  }
+
+  const payload = verifyCheckInQrToken(parsed.data.token);
+
+  if (!payload || payload.tenantId !== currentUser.tenantId) {
+    redirectWithStudentCheckInError("invalid_qr");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const schedule = await tx.schedule.findFirst({
+      where: {
+        id: payload.scheduleId,
+        tenantId: currentUser.tenantId,
+        status: {
+          in: [...activeAttendanceScheduleStatuses],
+        },
+        classGroup: {
+          students: {
+            some: {
+              student: {
+                userId: currentUser.id,
+              },
+            },
+          },
+        },
+      },
+      include: {
+        classGroup: {
+          select: {
+            students: {
+              where: {
+                student: {
+                  userId: currentUser.id,
+                },
+              },
+              select: {
+                studentId: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+    const studentId = schedule?.classGroup.students[0]?.studentId;
+
+    if (!schedule || !studentId) {
+      return { status: "invalid_scope" as const };
+    }
+
+    const checkIn = await tx.checkIn.upsert({
+      where: {
+        tenantId_scheduleId_studentId: {
+          tenantId: currentUser.tenantId,
+          scheduleId: schedule.id,
+          studentId,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: currentUser.tenantId,
+        scheduleId: schedule.id,
+        studentId,
+        checkedInAt: new Date(),
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "checkIn.qrRecord",
         entityType: "checkIn",
         entityId: checkIn.id,
         afterJson: checkInSnapshot(checkIn),
