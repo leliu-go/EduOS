@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 const attendanceScheduleStatuses = ["SCHEDULED", "RESCHEDULED", "MAKE_UP"] as const;
 const studentCheckInScheduleTake = 6;
 const teacherAttendanceScheduleTake = 8;
+const parentAttendanceRecordTake = 20;
 
 function startOfDay(value: Date) {
   const date = new Date(value);
@@ -108,5 +109,44 @@ export async function getTeacherAttendanceSchedules(
     },
     orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
     take: teacherAttendanceScheduleTake,
+  });
+}
+
+export async function getParentAttendanceRecords(
+  tenantId: string,
+  userId: string,
+  options: { limit?: number } = {},
+) {
+  return prisma.attendance.findMany({
+    where: {
+      tenantId,
+      student: {
+        guardians: {
+          some: {
+            guardian: {
+              tenantId,
+              userId,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      student: true,
+      schedule: {
+        include: {
+          lesson: true,
+          classGroup: {
+            include: {
+              courseProduct: true,
+            },
+          },
+          campus: true,
+          teacher: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: "desc" }],
+    take: options.limit ?? parentAttendanceRecordTake,
   });
 }
