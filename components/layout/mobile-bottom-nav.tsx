@@ -25,7 +25,7 @@ const mobileNavItems: Record<MobileRole, MobileNavItem[]> = {
     { label: "课表", href: "/student/schedule", icon: CalendarDays },
     { label: "作业", href: "/student/homework", icon: NotebookPen },
     { label: "错题", href: "/student/mistakes", icon: BookOpen },
-    { label: "我的", href: "/student/me", icon: UserCircle },
+    { label: "资源", href: "/student/resources", icon: Library },
   ],
   teacher: [
     { label: "首页", href: "/teacher", icon: Home, active: true },

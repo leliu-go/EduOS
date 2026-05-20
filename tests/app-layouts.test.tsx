@@ -34,7 +34,10 @@ describe("app layouts", () => {
     expect(within(navigation).getByRole("link", { name: "课表" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "作业" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "错题" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "我的" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "资源" })).toHaveAttribute(
+      "href",
+      "/student/resources",
+    );
   });
 
   it("renders teacher and parent mobile shells with separate nav labels", () => {

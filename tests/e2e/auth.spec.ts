@@ -17,6 +17,8 @@ const protectedRoutes = [
   { route: "/teacher/classes", next: "/teacher" },
   { route: "/teacher/resources", next: "/teacher" },
   { route: "/student", next: "/student" },
+  { route: "/student/resources", next: "/student" },
+  { route: "/student/resources/sample-resource", next: "/student" },
   { route: "/student/check-in/sample-token", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },

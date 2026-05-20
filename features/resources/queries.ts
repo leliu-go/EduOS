@@ -157,6 +157,121 @@ export async function getTeacherResourceLibrary(
   return getResourceLibrary(tenantId, filters, { teacherUserId: userId });
 }
 
+function getStudentVisibleResourceWhere(tenantId: string, userId: string, resourceId?: string) {
+  const directStudentPermission = {
+    permissions: {
+      some: {
+        canView: true,
+        target: "STUDENT" as const,
+        student: {
+          userId,
+        },
+      },
+    },
+  };
+
+  return {
+    tenantId,
+    status: "ACTIVE" as const,
+    ...(resourceId ? { id: resourceId } : {}),
+    AND: [
+      {
+        OR: [
+          directStudentPermission,
+          {
+            permissions: {
+              some: {
+                canView: true,
+                target: "CLASS_GROUP" as const,
+                classGroup: {
+                  students: {
+                    some: {
+                      student: {
+                        userId,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            permissions: {
+              some: {
+                canView: true,
+                target: "ROLE" as const,
+                roleKey: "STUDENT" as const,
+              },
+            },
+          },
+        ],
+      },
+      {
+        OR: [
+          directStudentPermission,
+          {
+            courseProduct: {
+              enrollments: {
+                some: {
+                  status: "ACTIVE" as const,
+                  student: {
+                    userId,
+                  },
+                },
+              },
+            },
+          },
+          {
+            classGroup: {
+              enrollments: {
+                some: {
+                  status: "ACTIVE" as const,
+                  student: {
+                    userId,
+                  },
+                },
+              },
+            },
+          },
+          {
+            lesson: {
+              classGroup: {
+                enrollments: {
+                  some: {
+                    status: "ACTIVE" as const,
+                    student: {
+                      userId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
+export async function getStudentVisibleResources(tenantId: string, userId: string) {
+  return prisma.resource.findMany({
+    where: getStudentVisibleResourceWhere(tenantId, userId),
+    include: resourceInclude,
+    orderBy: [{ createdAt: "desc" }],
+  });
+}
+
+export async function getStudentResourceDetail(
+  tenantId: string,
+  userId: string,
+  resourceId: string,
+) {
+  return prisma.resource.findFirst({
+    where: getStudentVisibleResourceWhere(tenantId, userId, resourceId),
+    include: resourceInclude,
+  });
+}
+
 export async function getResourceLibraryOptions(
   tenantId: string,
   scope: ResourceLibraryScope = {},
