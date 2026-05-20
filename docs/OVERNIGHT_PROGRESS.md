@@ -10,7 +10,7 @@ Run date: 2026-05-21
 | Stage 1 | Size audit and lightweight rules | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (82 files / 311 tests) |
 | Stage 2 | PWA install capability | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (83 files / 314 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 3 | Version and update detection | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (84 files / 317 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 4 | Cloud resource management first stage | Pending | Pending |
+| Stage 4 | Cloud resource management first stage | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 321 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 5 | Permission matrix upgrade | Pending | Pending |
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Pending | Pending |
 | Stage 7 | Activity Engine first stage for word check-in | Pending | Pending |
@@ -50,3 +50,11 @@ Run date: 2026-05-21
 - Added `/api/version` and `/api/update-manifest` safe public endpoints.
 - Added non-disruptive update banner, version badge, and admin version page.
 - Added `CHANGELOG.md` and `docs/VERSIONING_AND_UPDATES.md`.
+
+## Stage 4 Summary
+
+- Added `ResourceStorageProvider`, local development provider, and cloud placeholder provider.
+- Added resource file access policy for tenant staff, teachers, students, and parents.
+- Wrote `docs/rfcs/RFC-CloudResourceManagement.md`.
+- Added resource storage `.env.example` placeholders.
+- Recorded paid cloud storage and production credential work in `docs/HUMAN_ACTIONS.md`.

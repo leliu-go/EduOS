@@ -9,9 +9,9 @@ playwright-report
 coverage
 dist
 logs
-public/uploads
-storage
-resources
+/public/uploads
+/storage
+/resources
 .env
 .env*.local
 *.log
