@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
 import { getCourseConsumptionLedger } from "@/features/course-consumptions/queries";
+import { CourseConsumptionReversalDialog } from "@/features/course-consumptions/reversal-dialog";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 type CourseConsumptionLedgerPageProps = {
@@ -79,6 +80,15 @@ function getLedgerColumns(): Array<DataTableColumn<CourseConsumptionLedgerItem>>
       cell: (item) => <Badge variant="secondary">{item.consumedHours} 课时</Badge>,
     },
     {
+      key: "status",
+      header: "状态",
+      cell: (item) => (
+        <Badge variant={item.reversedAt ? "outline" : "secondary"}>
+          {item.reversedAt ? "已冲销" : "有效"}
+        </Badge>
+      ),
+    },
+    {
       key: "balance",
       header: "当前余额",
       cell: (item) => {
@@ -90,6 +100,16 @@ function getLedgerColumns(): Array<DataTableColumn<CourseConsumptionLedgerItem>>
           </span>
         );
       },
+    },
+    {
+      key: "actions",
+      header: "操作",
+      cell: (item) => (
+        <CourseConsumptionReversalDialog
+          courseConsumptionId={item.id}
+          disabled={Boolean(item.reversedAt)}
+        />
+      ),
     },
   ];
 }

@@ -8,6 +8,7 @@ export type CourseConsumptionLedgerCardItem = {
   id: string;
   consumedHours: number;
   createdAt: Date;
+  reversedAt: Date | null;
   student: {
     name: string;
   };
@@ -58,7 +59,9 @@ function CourseConsumptionLedgerCard({
               {item.courseProduct.subject.name} · {item.courseProduct.grade.name}
             </p>
           </div>
-          <Badge variant="secondary">扣 {item.consumedHours} 课时</Badge>
+          <Badge variant={item.reversedAt ? "outline" : "secondary"}>
+            {item.reversedAt ? "已冲销" : `扣 ${item.consumedHours} 课时`}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-muted-foreground">

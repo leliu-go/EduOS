@@ -717,6 +717,9 @@ model CourseConsumption {
   courseAccount   CourseAccount  @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
   consumedHours   Int
   reason          String?
+  reversedAt      DateTime?
+  reversedByUserId String?
+  reversalReason  String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -726,4 +729,5 @@ model CourseConsumption {
   @@index([tenantId, courseAccountId])
   @@index([tenantId, courseProductId])
   @@index([tenantId, createdAt])
+  @@index([tenantId, reversedAt])
 }
