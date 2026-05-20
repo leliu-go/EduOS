@@ -6,13 +6,41 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
 import { getParentCourseAccounts } from "@/features/course-accounts/queries";
 import { homeworkCorrectionStatusLabels } from "@/features/homework/homework-schema";
-import { getParentHomeworkCorrections } from "@/features/homework/queries";
+import {
+  getParentHomeworkCorrections,
+  getParentHomeworkReminders,
+} from "@/features/homework/queries";
+import { homeworkReminderStatusLabels } from "@/features/homework/reminders";
 import { getParentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
+type ParentHomeworkReminder = Awaited<ReturnType<typeof getParentHomeworkReminders>>[number];
+
 function formatDateTime(value: Date) {
   return `${value.toISOString().slice(0, 10)} ${value.toISOString().slice(11, 16)}`;
+}
+
+function ParentHomeworkReminderCard({ reminder }: { reminder: ParentHomeworkReminder }) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle>{reminder.homework.title}</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">{reminder.student.name}</p>
+          </div>
+          <Badge variant={reminder.status === "OVERDUE" ? "destructive" : "secondary"}>
+            {homeworkReminderStatusLabels[reminder.status]}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-2 text-sm text-muted-foreground">
+        <p>截止时间：{formatDateTime(reminder.homework.dueAt)}</p>
+        <p className="line-clamp-2">{reminder.homework.instructions}</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default async function ParentHomePage() {
@@ -20,13 +48,19 @@ export default async function ParentHomePage() {
     nextPath: "/parent",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [accounts, timetable, homeworkCorrections] = await Promise.all([
+  const [accounts, timetable, homeworkCorrections, homeworkReminders] = await Promise.all([
     getParentCourseAccounts(currentUser.tenantId, currentUser.id),
     getParentTimetable(currentUser.tenantId, currentUser.id),
     getParentHomeworkCorrections(currentUser.tenantId, currentUser.id),
+    getParentHomeworkReminders(currentUser.tenantId, currentUser.id),
   ]);
 
-  if (accounts.length === 0 && timetable.length === 0 && homeworkCorrections.length === 0) {
+  if (
+    accounts.length === 0 &&
+    timetable.length === 0 &&
+    homeworkCorrections.length === 0 &&
+    homeworkReminders.length === 0
+  ) {
     return (
       <EmptyState
         title="暂无学习动态"
@@ -60,6 +94,15 @@ export default async function ParentHomePage() {
               />
             );
           })}
+        </section>
+      ) : null}
+
+      {homeworkReminders.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">作业提醒</h2>
+          {homeworkReminders.map((reminder) => (
+            <ParentHomeworkReminderCard key={reminder.id} reminder={reminder} />
+          ))}
         </section>
       ) : null}
 

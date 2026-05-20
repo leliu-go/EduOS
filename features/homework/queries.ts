@@ -1,6 +1,8 @@
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
+import { getHomeworkReminderStatus, needsStudentAction } from "./reminders";
+
 type HomeworkScope = {
   teacherUserId?: string;
 };
@@ -156,6 +158,37 @@ export async function getStudentHomeworkList(tenantId: string, userId: string) {
   });
 }
 
+export async function getStudentHomeworkReminders(
+  tenantId: string,
+  userId: string,
+  now = new Date(),
+) {
+  const homeworks = await getStudentHomeworkList(tenantId, userId);
+
+  return homeworks.flatMap((homework) => {
+    const latestSubmission = homework.submissions[0];
+    const status = getHomeworkReminderStatus(
+      {
+        dueAt: homework.dueAt,
+        needsStudentAction: needsStudentAction(latestSubmission),
+      },
+      now,
+    );
+
+    if (!status) {
+      return [];
+    }
+
+    return [
+      {
+        id: homework.id,
+        homework,
+        status,
+      },
+    ];
+  });
+}
+
 export async function getTeacherHomeworkSubmissionsForCorrection(
   tenantId: string,
   teacherUserId: string,
@@ -193,6 +226,215 @@ export async function getTeacherHomeworkSubmissionsForCorrection(
     },
     orderBy: [{ submittedAt: "desc" }],
     take: 50,
+  });
+}
+
+function uniqueStudents(students: Array<{ id: string; name: string }>) {
+  return [...new Map(students.map((student) => [student.id, student])).values()];
+}
+
+export async function getParentHomeworkReminders(
+  tenantId: string,
+  parentUserId: string,
+  now = new Date(),
+) {
+  const guardianWhere = {
+    guardians: {
+      some: {
+        guardian: {
+          tenantId,
+          userId: parentUserId,
+        },
+      },
+    },
+  };
+  const homeworks = await prisma.homework.findMany({
+    where: {
+      tenantId,
+      status: "ASSIGNED",
+      OR: [
+        {
+          student: guardianWhere,
+        },
+        {
+          classGroup: {
+            students: {
+              some: {
+                student: guardianWhere,
+              },
+            },
+          },
+        },
+        {
+          lesson: {
+            classGroup: {
+              students: {
+                some: {
+                  student: guardianWhere,
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+    include: {
+      classGroup: {
+        include: {
+          students: {
+            where: {
+              student: guardianWhere,
+            },
+            include: {
+              student: true,
+            },
+          },
+        },
+      },
+      lesson: {
+        include: {
+          classGroup: {
+            include: {
+              students: {
+                where: {
+                  student: guardianWhere,
+                },
+                include: {
+                  student: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      student: true,
+      submissions: {
+        where: {
+          student: guardianWhere,
+        },
+        include: {
+          student: true,
+        },
+        orderBy: [{ attemptNumber: "desc" }],
+      },
+    },
+    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+    take: 50,
+  });
+
+  return homeworks.flatMap((homework) => {
+    const students = uniqueStudents([
+      ...(homework.student ? [homework.student] : []),
+      ...(homework.classGroup?.students.map((entry) => entry.student) ?? []),
+      ...(homework.lesson?.classGroup.students.map((entry) => entry.student) ?? []),
+    ]);
+
+    return students.flatMap((student) => {
+      const latestSubmission = homework.submissions.find(
+        (submission) => submission.studentId === student.id,
+      );
+      const status = getHomeworkReminderStatus(
+        {
+          dueAt: homework.dueAt,
+          needsStudentAction: needsStudentAction(latestSubmission),
+        },
+        now,
+      );
+
+      if (!status) {
+        return [];
+      }
+
+      return [
+        {
+          id: `${homework.id}-${student.id}`,
+          homework,
+          student,
+          status,
+        },
+      ];
+    });
+  });
+}
+
+export async function getTeacherNotSubmittedHomework(
+  tenantId: string,
+  teacherUserId: string,
+  now = new Date(),
+) {
+  const homeworks = await prisma.homework.findMany({
+    where: {
+      ...getTeacherHomeworkWhere(tenantId, teacherUserId),
+      status: "ASSIGNED",
+    },
+    include: {
+      classGroup: {
+        include: {
+          courseProduct: true,
+          students: {
+            include: {
+              student: true,
+            },
+          },
+        },
+      },
+      lesson: {
+        include: {
+          classGroup: {
+            include: {
+              students: {
+                include: {
+                  student: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      student: true,
+      submissions: {
+        orderBy: [{ attemptNumber: "desc" }],
+        select: {
+          studentId: true,
+        },
+      },
+    },
+    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+    take: 50,
+  });
+
+  return homeworks.flatMap((homework) => {
+    const students = uniqueStudents([
+      ...(homework.student ? [homework.student] : []),
+      ...(homework.classGroup?.students.map((entry) => entry.student) ?? []),
+      ...(homework.lesson?.classGroup.students.map((entry) => entry.student) ?? []),
+    ]);
+
+    return students.flatMap((student) => {
+      const hasSubmission = homework.submissions.some(
+        (submission) => submission.studentId === student.id,
+      );
+      const status = getHomeworkReminderStatus(
+        {
+          dueAt: homework.dueAt,
+          needsStudentAction: !hasSubmission,
+        },
+        now,
+      );
+
+      if (!status) {
+        return [];
+      }
+
+      return [
+        {
+          id: `${homework.id}-${student.id}`,
+          homework,
+          student,
+          status,
+        },
+      ];
+    });
   });
 }
 
