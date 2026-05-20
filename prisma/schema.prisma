@@ -263,6 +263,13 @@ enum NotificationStatus {
   ARCHIVED
 }
 
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -304,6 +311,7 @@ model Tenant {
   attendances Attendance[]
   checkIns    CheckIn[]
   notifications Notification[]
+  orders      Order[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -471,6 +479,7 @@ model StudentProfile {
   guardians StudentGuardian[]
   classGroups ClassGroupStudent[]
   enrollments Enrollment[]
+  orders      Order[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
   resourcePermissions ResourcePermission[]
@@ -503,6 +512,7 @@ model GuardianProfile {
   email     String?
   status    GuardianStatus @default(ACTIVE)
   students  StudentGuardian[]
+  orders    Order[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -729,6 +739,7 @@ model CourseProduct {
   status      CourseProductStatus @default(ACTIVE)
   classGroups ClassGroup[]
   enrollments Enrollment[]
+  orders      Order[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
   resources   Resource[]
@@ -815,6 +826,35 @@ model CourseAccount {
   @@index([tenantId, studentId])
 }
 
+model Order {
+  id              String         @id @default(cuid())
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderNo         String
+  studentId       String
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId      String?
+  guardian        GuardianProfile? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  courseProductId String?
+  courseProduct   CourseProduct? @relation(fields: [courseProductId], references: [id], onDelete: SetNull)
+  enrollments     Enrollment[]
+  totalAmount     Decimal
+  payableAmount   Decimal
+  currency        String         @default("CNY")
+  status          OrderStatus    @default(PENDING_PAYMENT)
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([tenantId, orderNo])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, studentId])
+  @@index([tenantId, guardianId])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, createdAt])
+}
+
 model Enrollment {
   id              String           @id @default(cuid())
   tenantId        String
@@ -827,6 +867,8 @@ model Enrollment {
   classGroup      ClassGroup?      @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
   courseAccountId String
   courseAccount   CourseAccount    @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
+  orderId         String?
+  order           Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
   purchasedHours  Int
   status          EnrollmentStatus @default(ACTIVE)
   enrolledAt      DateTime
@@ -839,6 +881,7 @@ model Enrollment {
   @@index([tenantId, studentId])
   @@index([tenantId, courseProductId])
   @@index([tenantId, classGroupId])
+  @@index([tenantId, orderId])
 }
 
 model Lesson {
