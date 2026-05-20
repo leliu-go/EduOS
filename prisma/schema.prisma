@@ -286,6 +286,13 @@ enum PaymentMethod {
   OTHER
 }
 
+enum RefundStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 enum ContractTemplateStatus {
   ACTIVE
   INACTIVE
@@ -343,6 +350,7 @@ model Tenant {
   notifications Notification[]
   orders      Order[]
   payments   Payment[]
+  refunds    Refund[]
   contractTemplates ContractTemplate[]
   contracts   Contract[]
   createdAt   DateTime     @default(now())
@@ -405,6 +413,8 @@ model User {
   assignedHomeworks Homework[] @relation("HomeworkAssignedBy")
   assignedLearningTasks LearningTask[] @relation("LearningTaskAssignedBy")
   receivedNotifications Notification[] @relation("NotificationRecipient")
+  requestedRefunds Refund[] @relation("RefundRequestedBy")
+  approvedRefunds Refund[] @relation("RefundApprovedBy")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -514,6 +524,7 @@ model StudentProfile {
   enrollments Enrollment[]
   orders      Order[]
   payments    Payment[]
+  refunds     Refund[]
   contracts   Contract[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
@@ -549,6 +560,7 @@ model GuardianProfile {
   students  StudentGuardian[]
   orders    Order[]
   payments  Payment[]
+  refunds   Refund[]
   contracts Contract[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -854,6 +866,7 @@ model CourseAccount {
   status          CourseAccountStatus @default(ACTIVE)
   enrollments     Enrollment[]
   courseConsumptions CourseConsumption[]
+  refunds         Refund[]
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
@@ -880,6 +893,7 @@ model Order {
   currency        String         @default("CNY")
   status          OrderStatus    @default(PENDING_PAYMENT)
   payments        Payment[]
+  refunds         Refund[]
   notes           String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -909,6 +923,7 @@ model Payment {
   status        PaymentStatus   @default(PENDING)
   paidAt        DateTime?
   transactionNo String?
+  refunds       Refund[]
   notes         String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -919,6 +934,45 @@ model Payment {
   @@index([tenantId, guardianId])
   @@index([tenantId, status])
   @@index([tenantId, paidAt])
+}
+
+model Refund {
+  id                String         @id @default(cuid())
+  tenantId          String
+  tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderId           String?
+  order             Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  paymentId         String?
+  payment           Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  courseAccountId   String
+  courseAccount     CourseAccount  @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
+  studentId         String
+  student           StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId        String?
+  guardian          GuardianProfile? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  amount            Decimal
+  currency          String         @default("CNY")
+  refundHours       Int
+  reason            String
+  approvalNote      String?
+  status            RefundStatus   @default(PENDING_APPROVAL)
+  requestedByUserId String?
+  requestedByUser   User?          @relation("RefundRequestedBy", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  approvedByUserId  String?
+  approvedByUser    User?          @relation("RefundApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  approvedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, orderId])
+  @@index([tenantId, paymentId])
+  @@index([tenantId, courseAccountId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, guardianId])
+  @@index([tenantId, status])
+  @@index([tenantId, approvedByUserId])
+  @@index([tenantId, createdAt])
 }
 
 model ContractTemplate {
