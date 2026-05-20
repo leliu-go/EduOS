@@ -103,6 +103,16 @@ export async function getStudentKnowledgePointWeaknessStats(tenantId: string, us
   });
 }
 
+export async function getStudentKnowledgePointWeaknessStatsByStudentId(
+  tenantId: string,
+  studentId: string,
+) {
+  return getKnowledgePointWeaknessStats(tenantId, {
+    tenantId,
+    studentId,
+  });
+}
+
 export async function getParentErrorRecords(tenantId: string, parentUserId: string) {
   return prisma.errorRecord.findMany({
     where: {
