@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { getRoleLandingPath } from "@/lib/auth/landing-path";
 import { verifyPassword } from "@/lib/auth/password";
 import { setAuthSession, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-cookie";
 import { loginSchema } from "@/lib/auth/validation";
@@ -73,7 +74,7 @@ export async function loginAction(formData: FormData) {
     expiresAt: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
   });
 
-  redirect("/dashboard");
+  redirect(getRoleLandingPath(membership.role.key));
 }
 
 export async function logoutAction() {
