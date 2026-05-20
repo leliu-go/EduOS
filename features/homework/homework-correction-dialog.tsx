@@ -45,7 +45,7 @@ export function HomeworkCorrectionDialog({
           <DialogTitle>批改作业</DialogTitle>
           <DialogDescription>
             {submission.student.name} · {submission.homework.title} · 第 {submission.attemptNumber}{" "}
-            次提交
+            次提交。可标记完成，或要求学生继续订正。
           </DialogDescription>
         </DialogHeader>
         <form action={correctHomeworkSubmissionAction} className="grid gap-5">

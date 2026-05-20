@@ -268,6 +268,16 @@ async function canCorrectHomeworkSubmission(
   });
 }
 
+type LatestHomeworkSubmission = {
+  id: string;
+  attemptNumber: number;
+  status: string;
+} | null;
+
+function canSubmitHomeworkAttempt(latestSubmission: LatestHomeworkSubmission) {
+  return !latestSubmission || latestSubmission.status === "NEEDS_REVISION";
+}
+
 export async function createHomeworkAction(formData: FormData) {
   const parsed = getHomeworkCreateValues(formData);
   const returnTo = parsed.success ? parsed.data.returnTo : "/teacher/homework";
@@ -350,7 +360,7 @@ export async function submitHomeworkAction(formData: FormData) {
     });
 
     if (!studentProfile) {
-      return null;
+      return { status: "invalid_homework" as const };
     }
 
     const homework = await tx.homework.findFirst({
@@ -392,20 +402,30 @@ export async function submitHomeworkAction(formData: FormData) {
     });
 
     if (!homework) {
-      return null;
+      return { status: "invalid_homework" as const };
     }
 
-    const latestSubmission = await tx.homeworkSubmission.aggregate({
+    const latestSubmission = await tx.homeworkSubmission.findFirst({
       where: {
         tenantId: currentUser.tenantId,
         homeworkId: homework.id,
         studentId: studentProfile.id,
       },
-      _max: {
+      orderBy: {
+        attemptNumber: "desc",
+      },
+      select: {
+        id: true,
         attemptNumber: true,
+        status: true,
       },
     });
-    const attemptNumber = (latestSubmission._max.attemptNumber ?? 0) + 1;
+
+    if (!canSubmitHomeworkAttempt(latestSubmission)) {
+      return { status: "invalid_revision_state" as const };
+    }
+
+    const attemptNumber = latestSubmission ? latestSubmission.attemptNumber + 1 : 1;
     const attachments = buildSubmissionAttachments(parsed.data);
 
     const createdSubmission = await tx.homeworkSubmission.create({
@@ -424,19 +444,30 @@ export async function submitHomeworkAction(formData: FormData) {
       {
         tenantId: currentUser.tenantId,
         actorUserId: currentUser.id,
-        action: "homework.submit",
+        action: latestSubmission ? "homework.revise" : "homework.submit",
         entityType: "homeworkSubmission",
         entityId: createdSubmission.id,
+        beforeJson: latestSubmission
+          ? {
+              previousSubmissionId: latestSubmission.id,
+              attemptNumber: latestSubmission.attemptNumber,
+              status: latestSubmission.status,
+            }
+          : undefined,
         afterJson: homeworkSubmissionSnapshot(createdSubmission),
       },
       tx,
     );
 
-    return createdSubmission;
+    return { status: "created" as const, submission: createdSubmission };
   });
 
-  if (!submission) {
+  if (submission.status === "invalid_homework") {
     redirectWithHomeworkError(returnTo, "invalid_homework");
+  }
+
+  if (submission.status === "invalid_revision_state") {
+    redirectWithHomeworkError(returnTo, "invalid_revision_state");
   }
 
   revalidatePath("/student/homework");

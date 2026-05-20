@@ -41,7 +41,8 @@ describe("homework submission", () => {
     expect(source).toContain("student: {");
     expect(source).toContain("classGroup: {");
     expect(source).toContain("lesson: {");
-    expect(source).toContain("_max");
+    expect(source).toContain("homeworkSubmission.findFirst");
+    expect(source).toContain("canSubmitHomeworkAttempt");
     expect(source).toContain("attemptNumber");
     expect(source).toContain("tx.homeworkSubmission.create");
     expect(source).toContain('status: "PENDING_CORRECTION"');

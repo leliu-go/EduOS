@@ -82,9 +82,16 @@ export const homeworkSubmissionSchema = z
 export const homeworkCorrectionStatusValues = ["CORRECTED", "NEEDS_REVISION"] as const;
 
 export const homeworkCorrectionStatusLabels = {
-  CORRECTED: "已批改",
+  CORRECTED: "已完成",
   NEEDS_REVISION: "需订正",
 } as const satisfies Record<(typeof homeworkCorrectionStatusValues)[number], string>;
+
+export const homeworkSubmissionStatusLabels = {
+  SUBMITTED: "已提交",
+  PENDING_CORRECTION: "待批改",
+  CORRECTED: "已完成",
+  NEEDS_REVISION: "需订正",
+} as const;
 
 export const homeworkCorrectionSchema = z.object({
   submissionId: z.string().cuid(),

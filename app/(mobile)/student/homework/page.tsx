@@ -1,7 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { homeworkCorrectionStatusLabels } from "@/features/homework/homework-schema";
+import {
+  homeworkCorrectionStatusLabels,
+  homeworkSubmissionStatusLabels,
+} from "@/features/homework/homework-schema";
 import { getStudentHomeworkList } from "@/features/homework/queries";
 import { HomeworkSubmissionForm } from "@/features/homework/homework-submission-form";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -32,9 +35,14 @@ function getLatestCorrection(homework: StudentHomework) {
   return getLatestSubmission(homework)?.corrections[0];
 }
 
+function canSubmitRevision(latestSubmission: ReturnType<typeof getLatestSubmission>) {
+  return !latestSubmission || latestSubmission.status === "NEEDS_REVISION";
+}
+
 function StudentHomeworkCard({ homework }: { homework: StudentHomework }) {
   const latestSubmission = getLatestSubmission(homework);
   const latestCorrection = getLatestCorrection(homework);
+  const canSubmit = canSubmitRevision(latestSubmission);
 
   return (
     <Card>
@@ -45,7 +53,7 @@ function StudentHomeworkCard({ homework }: { homework: StudentHomework }) {
             <p className="mt-1 text-xs text-muted-foreground">{getTargetLabel(homework)}</p>
           </div>
           <Badge variant={latestSubmission ? "secondary" : "outline"}>
-            {latestSubmission ? latestSubmission.status : "待提交"}
+            {latestSubmission ? homeworkSubmissionStatusLabels[latestSubmission.status] : "待提交"}
           </Badge>
         </div>
       </CardHeader>
@@ -72,7 +80,46 @@ function StudentHomeworkCard({ homework }: { homework: StudentHomework }) {
             {latestCorrection.comment ? <p>{latestCorrection.comment}</p> : null}
           </div>
         ) : null}
-        <HomeworkSubmissionForm homeworkId={homework.id} />
+        {homework.submissions.length > 0 ? (
+          <div className="grid gap-2 rounded-md border p-3">
+            <p className="font-medium text-foreground">提交记录</p>
+            {homework.submissions.map((submission) => {
+              const correction = submission.corrections[0];
+
+              return (
+                <div key={submission.id} className="grid gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>
+                      第 {submission.attemptNumber} 次 · {formatDateTime(submission.submittedAt)}
+                    </span>
+                    <Badge variant="outline">
+                      {homeworkSubmissionStatusLabels[submission.status]}
+                    </Badge>
+                  </div>
+                  {correction ? (
+                    <p>
+                      反馈：{homeworkCorrectionStatusLabels[correction.status]}
+                      {correction.score !== null ? ` · ${correction.score} 分` : ""}
+                      {correction.comment ? ` · ${correction.comment}` : ""}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+        {canSubmit ? (
+          <HomeworkSubmissionForm
+            homeworkId={homework.id}
+            mode={latestSubmission ? "revise" : "submit"}
+          />
+        ) : (
+          <p className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+            {latestSubmission?.status === "CORRECTED"
+              ? "作业已完成，无需再次提交。"
+              : "已提交，等待老师批改。"}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

@@ -139,7 +139,7 @@ export async function getStudentHomeworkList(tenantId: string, userId: string) {
           },
         },
         orderBy: [{ attemptNumber: "desc" }],
-        take: 1,
+        take: 5,
         include: {
           corrections: {
             include: {

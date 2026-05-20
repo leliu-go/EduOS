@@ -6,17 +6,43 @@ import { Label } from "@/components/ui/label";
 
 import { submitHomeworkAction } from "./actions";
 
-export function HomeworkSubmissionForm({ homeworkId }: { homeworkId: string }) {
+type HomeworkSubmissionMode = "submit" | "revise";
+
+const submissionCopy = {
+  submit: {
+    label: "提交说明",
+    placeholder: "填写完成情况、答案说明或补充说明",
+    button: "提交作业",
+  },
+  revise: {
+    label: "订正说明",
+    placeholder: "填写订正内容、修改说明或补充材料",
+    button: "提交订正",
+  },
+} as const satisfies Record<
+  HomeworkSubmissionMode,
+  { label: string; placeholder: string; button: string }
+>;
+
+export function HomeworkSubmissionForm({
+  homeworkId,
+  mode = "submit",
+}: {
+  homeworkId: string;
+  mode?: HomeworkSubmissionMode;
+}) {
+  const copy = submissionCopy[mode];
+
   return (
     <form action={submitHomeworkAction} className="grid gap-3 rounded-md border bg-muted/30 p-3">
       <input type="hidden" name="homeworkId" value={homeworkId} />
       <input type="hidden" name="returnTo" value="/student/homework" />
       <div className="grid gap-2">
-        <Label htmlFor={`homework-content-${homeworkId}`}>提交说明</Label>
+        <Label htmlFor={`homework-content-${homeworkId}`}>{copy.label}</Label>
         <textarea
           id={`homework-content-${homeworkId}`}
           name="contentText"
-          placeholder="填写完成情况、答案说明或补充说明"
+          placeholder={copy.placeholder}
           className="min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         />
       </div>
@@ -40,7 +66,7 @@ export function HomeworkSubmissionForm({ homeworkId }: { homeworkId: string }) {
       </div>
       <Button type="submit" className="justify-self-start">
         <Send className="size-4" aria-hidden="true" />
-        提交作业
+        {copy.button}
       </Button>
     </form>
   );
