@@ -1,0 +1,24 @@
+# EduOS PWA Install Guide
+
+EduOS uses one EduOS PWA for administrators, finance staff, academic staff, teachers, students, and parents. Everyone installs the same cloud-hosted app and uses the same login screen. Server-side RBAC sends each account to the correct dashboard after login.
+
+## Install
+
+1. Open the EduOS cloud URL in Chrome or Edge.
+2. Sign in with your EduOS account.
+3. Use the browser install button or the EduOS install prompt.
+4. Launch EduOS from the desktop or start menu.
+
+## Cache And Privacy Rules
+
+Do not cache login pages, auth/session data, `/api/` responses, admin pages, teacher pages, student pages, parent pages, finance data, private student data, or full resource libraries.
+
+The service worker only caches static shell assets such as the app icon and safe static files. Business pages and protected data stay network-first and permission-checked on the server.
+
+## Resource Policy
+
+Course resources, videos, word books, question banks, and uploaded files are cloud-managed. Local devices may only cache authorized resources on demand after server-side permission checks.
+
+## Recommended Distribution
+
+Use PWA first. A future Windows installer should only be a lightweight shell for the same cloud app and must not bundle the database, backend, `node_modules`, or resources.
