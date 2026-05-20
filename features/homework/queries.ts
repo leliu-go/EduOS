@@ -83,6 +83,70 @@ export async function getTeacherHomeworkList(tenantId: string, teacherUserId: st
   });
 }
 
+export async function getStudentHomeworkList(tenantId: string, userId: string) {
+  return prisma.homework.findMany({
+    where: {
+      tenantId,
+      status: "ASSIGNED",
+      OR: [
+        {
+          student: {
+            userId,
+          },
+        },
+        {
+          classGroup: {
+            students: {
+              some: {
+                student: {
+                  userId,
+                },
+              },
+            },
+          },
+        },
+        {
+          lesson: {
+            classGroup: {
+              students: {
+                some: {
+                  student: {
+                    userId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+    include: {
+      classGroup: {
+        include: {
+          courseProduct: true,
+        },
+      },
+      lesson: {
+        include: {
+          classGroup: true,
+        },
+      },
+      student: true,
+      submissions: {
+        where: {
+          student: {
+            userId,
+          },
+        },
+        orderBy: [{ attemptNumber: "desc" }],
+        take: 1,
+      },
+    },
+    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+    take: 50,
+  });
+}
+
 export async function getHomeworkAssignmentOptions(tenantId: string, scope: HomeworkScope = {}) {
   const teacherClassScope = scope.teacherUserId
     ? {

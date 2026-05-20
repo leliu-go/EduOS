@@ -8,7 +8,12 @@ import type { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
-import { getHomeworkCreateValues, type HomeworkCreateValues } from "./homework-schema";
+import {
+  getHomeworkCreateValues,
+  getHomeworkSubmissionValues,
+  type HomeworkCreateValues,
+  type HomeworkSubmissionValues,
+} from "./homework-schema";
 
 type HomeworkActor = {
   id: string;
@@ -44,6 +49,52 @@ function homeworkSnapshot(input: {
     lessonId: input.lessonId,
     studentId: input.studentId,
   };
+}
+
+function homeworkSubmissionSnapshot(input: {
+  id: string;
+  tenantId: string;
+  homeworkId: string;
+  studentId: string;
+  attemptNumber: number;
+  status: string;
+  contentText: string | null;
+  attachmentsJson: unknown;
+  submittedAt: Date;
+}) {
+  return {
+    id: input.id,
+    tenantId: input.tenantId,
+    homeworkId: input.homeworkId,
+    studentId: input.studentId,
+    attemptNumber: input.attemptNumber,
+    status: input.status,
+    contentText: input.contentText,
+    attachmentsJson: input.attachmentsJson,
+    submittedAt: input.submittedAt,
+  };
+}
+
+function buildSubmissionAttachments(values: HomeworkSubmissionValues) {
+  const attachments: Array<{ type: "FILE" | "IMAGE"; fileName: string | null; url: string }> = [];
+
+  if (values.fileUrl) {
+    attachments.push({
+      type: "FILE",
+      fileName: values.fileName ?? null,
+      url: values.fileUrl,
+    });
+  }
+
+  if (values.imageUrl) {
+    attachments.push({
+      type: "IMAGE",
+      fileName: null,
+      url: values.imageUrl,
+    });
+  }
+
+  return attachments.length > 0 ? attachments : undefined;
 }
 
 async function canAssignHomeworkTarget(
@@ -189,4 +240,124 @@ export async function createHomeworkAction(formData: FormData) {
   revalidatePath("/dashboard/homework");
   revalidatePath("/teacher/homework");
   redirect(`${returnTo}?homework=created`);
+}
+
+export async function submitHomeworkAction(formData: FormData) {
+  const parsed = getHomeworkSubmissionValues(formData);
+  const returnTo = parsed.success ? parsed.data.returnTo : "/student/homework";
+  const currentUser = await requirePermission("homework:submit", {
+    nextPath: returnTo,
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+
+  if (!parsed.success) {
+    redirectWithHomeworkError(returnTo, "invalid_submission");
+  }
+
+  const submission = await prisma.$transaction(async (tx) => {
+    const studentProfile = await tx.studentProfile.findFirst({
+      where: {
+        tenantId: currentUser.tenantId,
+        userId: currentUser.id,
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!studentProfile) {
+      return null;
+    }
+
+    const homework = await tx.homework.findFirst({
+      where: {
+        id: parsed.data.homeworkId,
+        tenantId: currentUser.tenantId,
+        status: "ASSIGNED",
+        OR: [
+          {
+            student: {
+              userId: currentUser.id,
+            },
+          },
+          {
+            classGroup: {
+              students: {
+                some: {
+                  studentId: studentProfile.id,
+                },
+              },
+            },
+          },
+          {
+            lesson: {
+              classGroup: {
+                students: {
+                  some: {
+                    studentId: studentProfile.id,
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!homework) {
+      return null;
+    }
+
+    const latestSubmission = await tx.homeworkSubmission.aggregate({
+      where: {
+        tenantId: currentUser.tenantId,
+        homeworkId: homework.id,
+        studentId: studentProfile.id,
+      },
+      _max: {
+        attemptNumber: true,
+      },
+    });
+    const attemptNumber = (latestSubmission._max.attemptNumber ?? 0) + 1;
+    const attachments = buildSubmissionAttachments(parsed.data);
+
+    const createdSubmission = await tx.homeworkSubmission.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        homeworkId: homework.id,
+        studentId: studentProfile.id,
+        attemptNumber,
+        status: "PENDING_CORRECTION",
+        contentText: parsed.data.contentText ?? null,
+        ...(attachments ? { attachmentsJson: attachments } : {}),
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "homework.submit",
+        entityType: "homeworkSubmission",
+        entityId: createdSubmission.id,
+        afterJson: homeworkSubmissionSnapshot(createdSubmission),
+      },
+      tx,
+    );
+
+    return createdSubmission;
+  });
+
+  if (!submission) {
+    redirectWithHomeworkError(returnTo, "invalid_homework");
+  }
+
+  revalidatePath("/student/homework");
+  revalidatePath("/teacher/homework");
+  revalidatePath("/dashboard/homework");
+  redirect(`${returnTo}?homework=submitted`);
 }

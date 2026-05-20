@@ -7,6 +7,20 @@ function optionalCuid() {
   );
 }
 
+function optionalText(maxLength: number) {
+  return z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().max(maxLength).optional(),
+  );
+}
+
+function optionalUrl() {
+  return z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().url().max(500).optional(),
+  );
+}
+
 function dateTimeValue() {
   return z.preprocess((value) => {
     if (typeof value === "string") {
@@ -51,6 +65,20 @@ export const homeworkCreateSchema = z
     },
   );
 
+export const homeworkSubmissionSchema = z
+  .object({
+    homeworkId: z.string().cuid(),
+    contentText: optionalText(4000),
+    fileName: optionalText(160),
+    fileUrl: optionalUrl(),
+    imageUrl: optionalUrl(),
+    returnTo: z.enum(["/student/homework"]).default("/student/homework"),
+  })
+  .refine((values) => Boolean(values.contentText || values.fileUrl || values.imageUrl), {
+    path: ["contentText"],
+    message: "Submission must include text, image, or file metadata.",
+  });
+
 export function getHomeworkCreateValues(formData: FormData) {
   return homeworkCreateSchema.safeParse({
     title: formData.get("title"),
@@ -63,4 +91,16 @@ export function getHomeworkCreateValues(formData: FormData) {
   });
 }
 
+export function getHomeworkSubmissionValues(formData: FormData) {
+  return homeworkSubmissionSchema.safeParse({
+    homeworkId: formData.get("homeworkId"),
+    contentText: formData.get("contentText"),
+    fileName: formData.get("fileName"),
+    fileUrl: formData.get("fileUrl"),
+    imageUrl: formData.get("imageUrl"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
+}
+
 export type HomeworkCreateValues = z.infer<typeof homeworkCreateSchema>;
+export type HomeworkSubmissionValues = z.infer<typeof homeworkSubmissionSchema>;
