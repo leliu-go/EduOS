@@ -39,6 +39,7 @@ export const permissions = [
   "homework:manage",
   "homework:submit",
   "homework:correct",
+  "lessonFeedback:manage",
   "mistakes:viewOwn",
   "mistakes:manage",
   "reports:institution:view",
@@ -88,6 +89,7 @@ export const permissionMatrix = {
     "resources:manage",
     "homework:manage",
     "homework:correct",
+    "lessonFeedback:manage",
     "mistakes:manage",
   ],
   ACADEMIC: [
@@ -106,6 +108,7 @@ export const permissionMatrix = {
     "resources:manage",
     "homework:manage",
     "homework:correct",
+    "lessonFeedback:manage",
     "mistakes:manage",
   ],
   FINANCE: [
@@ -124,6 +127,7 @@ export const permissionMatrix = {
     "resources:viewOwn",
     "homework:manage",
     "homework:correct",
+    "lessonFeedback:manage",
     "mistakes:manage",
   ],
   STUDENT: [

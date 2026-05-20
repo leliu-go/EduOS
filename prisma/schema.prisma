@@ -282,6 +282,7 @@ model Tenant {
   questionKnowledgePoints QuestionKnowledgePoint[]
   errorRecords ErrorRecord[]
   lessons     Lesson[]
+  lessonFeedbacks LessonFeedback[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
   attendances Attendance[]
@@ -434,6 +435,7 @@ model StudentProfile {
   assignedHomeworks Homework[] @relation("HomeworkStudent")
   homeworkSubmissions HomeworkSubmission[]
   errorRecords ErrorRecord[]
+  lessonFeedbacks LessonFeedback[]
   assignedLearningTasks LearningTask[] @relation("LearningTaskStudent")
   learningTaskCheckIns LearningTaskCheckIn[]
   attendances Attendance[]
@@ -505,6 +507,7 @@ model TeacherProfile {
   lessons               Lesson[]
   schedules             Schedule[]
   homeworkCorrections   HomeworkCorrection[]
+  lessonFeedbacks       LessonFeedback[]
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -809,6 +812,7 @@ model Lesson {
   schedules    Schedule[]
   resources    Resource[]
   homeworks    Homework[]
+  feedbacks    LessonFeedback[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -816,6 +820,32 @@ model Lesson {
   @@index([tenantId, status])
   @@index([tenantId, classGroupId])
   @@index([tenantId, teacherId])
+}
+
+model LessonFeedback {
+  id          String         @id @default(cuid())
+  tenantId    String
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  content     String
+  performance String
+  mastery     String
+  homework    String
+  suggestion  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([tenantId, lessonId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, teacherId])
+  @@index([tenantId, updatedAt])
 }
 
 model Schedule {

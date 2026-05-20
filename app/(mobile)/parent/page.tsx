@@ -11,11 +11,13 @@ import {
   getParentHomeworkReminders,
 } from "@/features/homework/queries";
 import { homeworkReminderStatusLabels } from "@/features/homework/reminders";
+import { getParentLessonFeedback } from "@/features/lesson-feedback/queries";
 import { getParentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 type ParentHomeworkReminder = Awaited<ReturnType<typeof getParentHomeworkReminders>>[number];
+type ParentLessonFeedback = Awaited<ReturnType<typeof getParentLessonFeedback>>[number];
 
 function formatDateTime(value: Date) {
   return `${value.toISOString().slice(0, 10)} ${value.toISOString().slice(11, 16)}`;
@@ -43,23 +45,51 @@ function ParentHomeworkReminderCard({ reminder }: { reminder: ParentHomeworkRemi
   );
 }
 
+function ParentLessonFeedbackCard({ feedback }: { feedback: ParentLessonFeedback }) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle>{feedback.lesson.title}</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {feedback.student.name} · {feedback.lesson.classGroup.name}
+            </p>
+          </div>
+          <Badge variant="secondary">{feedback.teacher.name}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-2 text-sm text-muted-foreground">
+        <p>课堂内容：{feedback.content}</p>
+        <p>课堂表现：{feedback.performance}</p>
+        <p>掌握情况：{feedback.mastery}</p>
+        <p>课后作业：{feedback.homework}</p>
+        <p>学习建议：{feedback.suggestion}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default async function ParentHomePage() {
   const currentUser = await requirePermission("route:parent", {
     nextPath: "/parent",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [accounts, timetable, homeworkCorrections, homeworkReminders] = await Promise.all([
-    getParentCourseAccounts(currentUser.tenantId, currentUser.id),
-    getParentTimetable(currentUser.tenantId, currentUser.id),
-    getParentHomeworkCorrections(currentUser.tenantId, currentUser.id),
-    getParentHomeworkReminders(currentUser.tenantId, currentUser.id),
-  ]);
+  const [accounts, timetable, homeworkCorrections, homeworkReminders, lessonFeedbacks] =
+    await Promise.all([
+      getParentCourseAccounts(currentUser.tenantId, currentUser.id),
+      getParentTimetable(currentUser.tenantId, currentUser.id),
+      getParentHomeworkCorrections(currentUser.tenantId, currentUser.id),
+      getParentHomeworkReminders(currentUser.tenantId, currentUser.id),
+      getParentLessonFeedback(currentUser.tenantId, currentUser.id),
+    ]);
 
   if (
     accounts.length === 0 &&
     timetable.length === 0 &&
     homeworkCorrections.length === 0 &&
-    homeworkReminders.length === 0
+    homeworkReminders.length === 0 &&
+    lessonFeedbacks.length === 0
   ) {
     return (
       <EmptyState
@@ -102,6 +132,15 @@ export default async function ParentHomePage() {
           <h2 className="text-base font-semibold tracking-normal text-foreground">作业提醒</h2>
           {homeworkReminders.map((reminder) => (
             <ParentHomeworkReminderCard key={reminder.id} reminder={reminder} />
+          ))}
+        </section>
+      ) : null}
+
+      {lessonFeedbacks.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">课后反馈</h2>
+          {lessonFeedbacks.map((feedback) => (
+            <ParentLessonFeedbackCard key={feedback.id} feedback={feedback} />
           ))}
         </section>
       ) : null}

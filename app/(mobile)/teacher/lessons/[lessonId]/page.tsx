@@ -4,16 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LessonFeedbackForm } from "@/features/lesson-feedback/lesson-feedback-form";
+import { getTeacherLessonFeedbackContext } from "@/features/lesson-feedback/queries";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
 import {
   getResourceReleaseLabel,
   ResourceReleaseDialog,
 } from "@/features/resources/resource-release-dialog";
-import {
-  getResourceLibraryOptions,
-  getTeacherLessonResourceContext,
-  getTeacherLessonResources,
-} from "@/features/resources/queries";
+import { getResourceLibraryOptions, getTeacherLessonResources } from "@/features/resources/queries";
 import { resourceTypeLabels } from "@/features/resources/resource-schema";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
@@ -71,7 +69,7 @@ export default async function TeacherLessonResourcesPage({
   });
   const { lessonId } = await params;
   const [lesson, resources, options] = await Promise.all([
-    getTeacherLessonResourceContext(currentUser.tenantId, currentUser.id, lessonId),
+    getTeacherLessonFeedbackContext(currentUser.tenantId, currentUser.id, lessonId),
     getTeacherLessonResources(currentUser.tenantId, currentUser.id, lessonId),
     getResourceLibraryOptions(currentUser.tenantId, { teacherUserId: currentUser.id }),
   ]);
@@ -101,6 +99,22 @@ export default async function TeacherLessonResourcesPage({
           defaultLessonId={lessonId}
         />
       </div>
+
+      <section className="grid gap-3">
+        <h3 className="text-sm font-semibold tracking-normal text-foreground">课后反馈</h3>
+        {lesson.students.length > 0 ? (
+          lesson.students.map((student) => (
+            <LessonFeedbackForm
+              key={student.id}
+              lessonId={lesson.id}
+              returnTo={`/teacher/lessons/${lessonId}`}
+              student={student}
+            />
+          ))
+        ) : (
+          <EmptyState title="暂无学生" description="班级添加学生后，可为本课次填写课后反馈。" />
+        )}
+      </section>
 
       {resources.length > 0 ? (
         resources.map((resource) => (
