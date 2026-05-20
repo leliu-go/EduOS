@@ -9,3 +9,9 @@ lib/generated
 tsconfig.tsbuildinfo
 .env
 .env*.local
+.local
+public/uploads
+storage
+resources
+logs
+dist

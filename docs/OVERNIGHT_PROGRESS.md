@@ -7,7 +7,7 @@ Run date: 2026-05-21
 | Stage | Scope | Status | Verification |
 | --- | --- | --- | --- |
 | Stage 0 | Rules, docs merge, productization plan | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (81 files / 309 tests) |
-| Stage 1 | Size audit and lightweight rules | Pending | Pending |
+| Stage 1 | Size audit and lightweight rules | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (82 files / 311 tests) |
 | Stage 2 | PWA install capability | Pending | Pending |
 | Stage 3 | Version and update detection | Pending | Pending |
 | Stage 4 | Cloud resource management first stage | Pending | Pending |
@@ -29,3 +29,10 @@ Run date: 2026-05-21
 - Copied overnight run package docs into root `docs/`.
 - Created overnight progress, blocker, human-action, and implementation-plan records.
 - No high-risk action was executed.
+
+## Stage 1 Summary
+
+- Measured local size drivers: `.next` about 5199.88 MB, `node_modules` about 1206.53 MB, `.local` about 68.15 MB.
+- Documented source/deployment/user-install artifact boundaries in `docs/SIZE_AUDIT.md` and `docs/RELEASE_ARTIFACT_RULES.md`.
+- Added `.dockerignore` and extended `.gitignore` for generated local artifacts, uploads, local storage, and resource payloads.
+- No generated caches or local database files were deleted.
