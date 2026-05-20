@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { classGroupStatusLabels } from "@/features/classes/class-group-schema";
 import { getTeacherClassGroups } from "@/features/classes/queries";
+import { getTeacherClassWeaknessStats } from "@/features/mistakes/queries";
+import { KnowledgePointWeaknessStats } from "@/features/mistakes/weakness-stats-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 function formatDate(value: Date) {
@@ -16,7 +18,10 @@ export default async function TeacherClassesPage() {
     nextPath: "/teacher/classes",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const classGroups = await getTeacherClassGroups(currentUser.tenantId, currentUser.id);
+  const [classGroups, weaknessStats] = await Promise.all([
+    getTeacherClassGroups(currentUser.tenantId, currentUser.id),
+    getTeacherClassWeaknessStats(currentUser.tenantId, currentUser.id),
+  ]);
 
   if (classGroups.length === 0) {
     return <EmptyState title="暂无班级" description="当前账号暂未绑定主讲班级。" />;
@@ -24,6 +29,7 @@ export default async function TeacherClassesPage() {
 
   return (
     <div className="grid gap-4">
+      <KnowledgePointWeaknessStats title="班级高频薄弱点" stats={weaknessStats} />
       {classGroups.map((classGroup) => (
         <Card key={classGroup.id}>
           <CardHeader>
