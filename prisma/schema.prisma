@@ -286,6 +286,20 @@ enum PaymentMethod {
   OTHER
 }
 
+enum ContractTemplateStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  SIGNED
+  CANCELLED
+  EXPIRED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -329,6 +343,8 @@ model Tenant {
   notifications Notification[]
   orders      Order[]
   payments   Payment[]
+  contractTemplates ContractTemplate[]
+  contracts   Contract[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -498,6 +514,7 @@ model StudentProfile {
   enrollments Enrollment[]
   orders      Order[]
   payments    Payment[]
+  contracts   Contract[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
   resourcePermissions ResourcePermission[]
@@ -532,6 +549,7 @@ model GuardianProfile {
   students  StudentGuardian[]
   orders    Order[]
   payments  Payment[]
+  contracts Contract[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -903,6 +921,57 @@ model Payment {
   @@index([tenantId, paidAt])
 }
 
+model ContractTemplate {
+  id          String                 @id @default(cuid())
+  tenantId    String
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  version     String
+  contentJson Json
+  status      ContractTemplateStatus @default(ACTIVE)
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  enrollments Enrollment[]
+  contracts   Contract[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, effectiveFrom])
+  @@index([tenantId, createdAt])
+}
+
+model Contract {
+  id             String           @id @default(cuid())
+  tenantId       String
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  templateId     String
+  template       ContractTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  enrollmentId   String?
+  enrollment     Enrollment?      @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  studentId      String
+  student        StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId     String?
+  guardian       GuardianProfile? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  status         ContractStatus   @default(PENDING_SIGNATURE)
+  termsSnapshot  Json?
+  signedAt       DateTime?
+  signatureUrl   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, templateId])
+  @@index([tenantId, enrollmentId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, guardianId])
+  @@index([tenantId, status])
+  @@index([tenantId, signedAt])
+  @@index([tenantId, createdAt])
+}
+
 model Enrollment {
   id              String           @id @default(cuid())
   tenantId        String
@@ -917,6 +986,10 @@ model Enrollment {
   courseAccount   CourseAccount    @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
   orderId         String?
   order           Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  contractRequired Boolean          @default(false)
+  contractTemplateId String?
+  contractTemplate ContractTemplate? @relation(fields: [contractTemplateId], references: [id], onDelete: SetNull)
+  contracts       Contract[]
   purchasedHours  Int
   status          EnrollmentStatus @default(ACTIVE)
   enrolledAt      DateTime
@@ -930,6 +1003,7 @@ model Enrollment {
   @@index([tenantId, courseProductId])
   @@index([tenantId, classGroupId])
   @@index([tenantId, orderId])
+  @@index([tenantId, contractTemplateId])
 }
 
 model Lesson {
