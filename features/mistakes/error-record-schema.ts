@@ -15,3 +15,15 @@ export const errorReasonLabels = {
   CARELESS: "粗心失误",
   OTHER: "其他",
 } as const satisfies Record<(typeof errorReasonValues)[number], string>;
+
+export const errorRecordStatusLabels = {
+  PENDING_CORRECTION: "待订正",
+  CORRECTED: "已订正",
+  MASTERED: "已掌握",
+} as const;
+
+export const errorRecordSourceTypeLabels = {
+  HOMEWORK_SUBMISSION: "作业提交",
+  ASSESSMENT_RESULT: "测评结果",
+  MANUAL: "手动记录",
+} as const;

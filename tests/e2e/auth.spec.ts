@@ -21,6 +21,7 @@ const protectedRoutes = [
   { route: "/teacher/lessons/sample-lesson", next: "/teacher" },
   { route: "/student", next: "/student" },
   { route: "/student/homework", next: "/student" },
+  { route: "/student/mistakes", next: "/student" },
   { route: "/student/resources", next: "/student" },
   { route: "/student/resources/sample-resource", next: "/student" },
   { route: "/student/lessons/sample-lesson/resources", next: "/student" },
@@ -28,6 +29,7 @@ const protectedRoutes = [
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
   { route: "/parent/consumption", next: "/parent" },
+  { route: "/parent/mistakes", next: "/parent" },
 ];
 
 for (const { route, next } of protectedRoutes) {
