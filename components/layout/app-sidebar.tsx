@@ -10,6 +10,7 @@ import {
   Library,
   NotebookPen,
   School,
+  ScrollText,
   Settings,
   Users,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const sidebarItems = [
   { label: "班级", href: "/dashboard/classes", icon: Library },
   { label: "排课", href: "/dashboard/scheduling", icon: CalendarDays },
   { label: "考勤课消", href: "/dashboard/course-accounts", icon: ClipboardCheck },
+  { label: "课消流水", href: "/dashboard/course-consumptions", icon: ScrollText },
   { label: "作业", href: "#", icon: NotebookPen },
   { label: "数据看板", href: "#", icon: BarChart3 },
   { label: "财务", href: "#", icon: Landmark },

@@ -11,12 +11,14 @@ const protectedRoutes = [
   { route: "/dashboard/classes", next: "/dashboard" },
   { route: "/dashboard/enrollments", next: "/dashboard" },
   { route: "/dashboard/course-accounts", next: "/dashboard" },
+  { route: "/dashboard/course-consumptions", next: "/dashboard" },
   { route: "/dashboard/scheduling", next: "/dashboard" },
   { route: "/teacher/classes", next: "/teacher" },
   { route: "/student", next: "/student" },
   { route: "/student/check-in/sample-token", next: "/student" },
   { route: "/teacher", next: "/teacher" },
   { route: "/parent", next: "/parent" },
+  { route: "/parent/consumption", next: "/parent" },
 ];
 
 for (const { route, next } of protectedRoutes) {

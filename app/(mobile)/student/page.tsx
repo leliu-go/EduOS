@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getStudentCheckInSchedules } from "@/features/attendance/queries";
 import { StudentCheckInCard } from "@/features/attendance/student-check-in-card";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
+import { CourseConsumptionLedgerCard } from "@/features/course-consumptions/ledger-card";
+import { getStudentCourseConsumptionLedger } from "@/features/course-consumptions/queries";
 import { getStudentEnrolledCourses } from "@/features/enrollments/queries";
 import { getStudentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
@@ -52,13 +54,19 @@ export default async function StudentHomePage() {
     nextPath: "/student",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [enrolledCourses, timetable, checkInSchedules] = await Promise.all([
+  const [enrolledCourses, timetable, checkInSchedules, consumptionLedger] = await Promise.all([
     getStudentEnrolledCourses(currentUser.tenantId, currentUser.id),
     getStudentTimetable(currentUser.tenantId, currentUser.id),
     getStudentCheckInSchedules(currentUser.tenantId, currentUser.id),
+    getStudentCourseConsumptionLedger(currentUser.tenantId, currentUser.id, { limit: 5 }),
   ]);
 
-  if (enrolledCourses.length === 0 && timetable.length === 0 && checkInSchedules.length === 0) {
+  if (
+    enrolledCourses.length === 0 &&
+    timetable.length === 0 &&
+    checkInSchedules.length === 0 &&
+    consumptionLedger.length === 0
+  ) {
     return <EmptyState title="暂无已报名课程" description="报名完成后，可在这里查看自己的课程。" />;
   }
 
@@ -88,6 +96,15 @@ export default async function StudentHomePage() {
               classGroupName={schedule.classGroup.name}
               teacherName={schedule.teacher.name}
             />
+          ))}
+        </section>
+      ) : null}
+
+      {consumptionLedger.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">课消记录</h2>
+          {consumptionLedger.map((item) => (
+            <CourseConsumptionLedgerCard key={item.id} item={item} />
           ))}
         </section>
       ) : null}
