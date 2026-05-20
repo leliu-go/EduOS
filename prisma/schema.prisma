@@ -247,6 +247,22 @@ enum ErrorRecordStatus {
   MASTERED
 }
 
+enum NotificationEventType {
+  SCHEDULE_CREATED
+  SCHEDULE_CHANGED
+  ATTENDANCE_CONFIRMED
+  COURSE_CONSUMPTION_CREATED
+  HOMEWORK_ASSIGNED
+  HOMEWORK_CORRECTED
+  REPORT_AVAILABLE
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -287,6 +303,7 @@ model Tenant {
   scheduleChangeLogs ScheduleChangeLog[]
   attendances Attendance[]
   checkIns    CheckIn[]
+  notifications Notification[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -346,6 +363,7 @@ model User {
   confirmedCheckIns CheckIn[] @relation("CheckInConfirmedBy")
   assignedHomeworks Homework[] @relation("HomeworkAssignedBy")
   assignedLearningTasks LearningTask[] @relation("LearningTaskAssignedBy")
+  receivedNotifications Notification[] @relation("NotificationRecipient")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -411,6 +429,30 @@ model AuditLog {
   @@index([tenantId, actorUserId])
   @@index([tenantId, action])
   @@index([tenantId, entityType, entityId])
+}
+
+model Notification {
+  id              String                @id @default(cuid())
+  tenantId        String
+  tenant          Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  recipientUserId String?
+  recipientUser   User?                 @relation("NotificationRecipient", fields: [recipientUserId], references: [id], onDelete: SetNull)
+  recipientRoleKey RoleKey?
+  eventType       NotificationEventType
+  status          NotificationStatus    @default(UNREAD)
+  title           String
+  body            String
+  href            String?
+  entityType      String?
+  entityId        String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, recipientUserId, status])
+  @@index([tenantId, recipientRoleKey, status])
+  @@index([tenantId, eventType])
+  @@index([tenantId, createdAt])
 }
 
 model StudentProfile {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Bell, Building2, Search, UserCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,10 @@ function AppTopbar() {
         <Building2 className="size-4" aria-hidden="true" />
         全部校区
       </Button>
-      <Button variant="ghost" size="icon" aria-label="通知">
-        <Bell className="size-4" aria-hidden="true" />
+      <Button asChild variant="ghost" size="icon">
+        <Link href="/dashboard/notifications" aria-label="通知">
+          <Bell className="size-4" aria-hidden="true" />
+        </Link>
       </Button>
       <Button variant="ghost" size="icon" aria-label="当前用户">
         <UserCircle className="size-5" aria-hidden="true" />

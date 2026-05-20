@@ -15,7 +15,10 @@ describe("app layouts", () => {
     expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("搜索学生、教师、课程")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "当前校区：全部校区" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "通知" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "通知" })).toHaveAttribute(
+      "href",
+      "/dashboard/notifications",
+    );
     expect(screen.getByRole("heading", { name: "机构工作台" })).toBeInTheDocument();
   });
 
