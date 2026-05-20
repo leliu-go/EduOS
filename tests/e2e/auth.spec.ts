@@ -11,6 +11,7 @@ const protectedRoutes = [
   { route: "/dashboard/classes", next: "/dashboard" },
   { route: "/dashboard/enrollments", next: "/dashboard" },
   { route: "/dashboard/course-accounts", next: "/dashboard" },
+  { route: "/dashboard/renewals", next: "/dashboard" },
   { route: "/dashboard/course-consumptions", next: "/dashboard" },
   { route: "/dashboard/resources", next: "/dashboard" },
   { route: "/dashboard/homework", next: "/dashboard" },
