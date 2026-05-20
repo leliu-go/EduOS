@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { BookOpen, CalendarDays } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getStudentCheckInSchedules } from "@/features/attendance/queries";
@@ -85,17 +87,23 @@ export default async function StudentHomePage() {
         <section className="grid gap-3">
           <h2 className="text-base font-semibold tracking-normal text-foreground">近期课表</h2>
           {timetable.map((schedule) => (
-            <TimetableCard
-              key={schedule.id}
-              title={schedule.lesson?.title ?? schedule.classGroup.name}
-              courseName={schedule.classGroup.courseProduct.name}
-              startAt={schedule.startAt}
-              endAt={schedule.endAt}
-              status={schedule.status}
-              campusName={schedule.campus.name}
-              classGroupName={schedule.classGroup.name}
-              teacherName={schedule.teacher.name}
-            />
+            <div key={schedule.id} className="grid gap-2">
+              <TimetableCard
+                title={schedule.lesson?.title ?? schedule.classGroup.name}
+                courseName={schedule.classGroup.courseProduct.name}
+                startAt={schedule.startAt}
+                endAt={schedule.endAt}
+                status={schedule.status}
+                campusName={schedule.campus.name}
+                classGroupName={schedule.classGroup.name}
+                teacherName={schedule.teacher.name}
+              />
+              {schedule.lesson?.id ? (
+                <Button asChild variant="outline" size="sm" className="justify-self-start">
+                  <Link href={`/student/lessons/${schedule.lesson.id}/resources`}>课次资源</Link>
+                </Button>
+              ) : null}
+            </div>
           ))}
         </section>
       ) : null}

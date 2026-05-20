@@ -25,7 +25,13 @@ export const resourceStatusLabels = {
   ARCHIVED: "已归档",
 } as const;
 
-const allowedReturnPaths = ["/dashboard/resources", "/teacher/resources"] as const;
+function isAllowedResourceReturnPath(value: string) {
+  return (
+    value === "/dashboard/resources" ||
+    value === "/teacher/resources" ||
+    /^\/teacher\/lessons\/[^/?#]+$/.test(value)
+  );
+}
 
 function optionalCuid() {
   return z.preprocess(
@@ -58,7 +64,12 @@ export const resourceFormSchema = z
     courseProductId: optionalCuid(),
     classGroupId: optionalCuid(),
     lessonId: optionalCuid(),
-    returnTo: z.enum(allowedReturnPaths).default("/dashboard/resources"),
+    returnTo: z
+      .preprocess(
+        (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
+        z.string().refine(isAllowedResourceReturnPath).optional(),
+      )
+      .default("/dashboard/resources"),
   })
   .refine((values) => Boolean(values.courseProductId || values.classGroupId || values.lessonId), {
     message: "Resource must bind to a course, class, or lesson.",

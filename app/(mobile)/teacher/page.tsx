@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AttendanceRosterForm } from "@/features/attendance/attendance-roster-form";
 import { getTeacherAttendanceSchedules } from "@/features/attendance/queries";
@@ -25,17 +28,23 @@ export default async function TeacherHomePage() {
         <section className="grid gap-3">
           <h2 className="text-base font-semibold tracking-normal text-foreground">近期课表</h2>
           {timetable.map((schedule) => (
-            <TimetableCard
-              key={schedule.id}
-              title={schedule.lesson?.title ?? schedule.classGroup.name}
-              courseName={schedule.classGroup.courseProduct.name}
-              startAt={schedule.startAt}
-              endAt={schedule.endAt}
-              status={schedule.status}
-              campusName={schedule.campus.name}
-              roomName={schedule.room.name}
-              classGroupName={schedule.classGroup.name}
-            />
+            <div key={schedule.id} className="grid gap-2">
+              <TimetableCard
+                title={schedule.lesson?.title ?? schedule.classGroup.name}
+                courseName={schedule.classGroup.courseProduct.name}
+                startAt={schedule.startAt}
+                endAt={schedule.endAt}
+                status={schedule.status}
+                campusName={schedule.campus.name}
+                roomName={schedule.room.name}
+                classGroupName={schedule.classGroup.name}
+              />
+              {schedule.lesson?.id ? (
+                <Button asChild variant="outline" size="sm" className="justify-self-start">
+                  <Link href={`/teacher/lessons/${schedule.lesson.id}`}>课次资源</Link>
+                </Button>
+              ) : null}
+            </div>
           ))}
         </section>
       ) : null}

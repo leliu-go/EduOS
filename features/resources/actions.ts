@@ -169,5 +169,8 @@ export async function createResourceMetadataAction(formData: FormData) {
 
   revalidatePath("/dashboard/resources");
   revalidatePath("/teacher/resources");
+  if (returnTo.startsWith("/teacher/lessons/")) {
+    revalidatePath(returnTo);
+  }
   redirect(`${returnTo}?resource=created`);
 }

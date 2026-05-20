@@ -50,12 +50,14 @@ function SelectField({
   label,
   children,
   required = false,
+  defaultValue,
 }: {
   id: string;
   name: string;
   label: string;
   children: ReactNode;
   required?: boolean;
+  defaultValue?: string;
 }) {
   return (
     <div className="grid gap-2">
@@ -63,6 +65,7 @@ function SelectField({
       <select
         id={id}
         name={name}
+        defaultValue={defaultValue}
         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         required={required}
       >
@@ -75,9 +78,11 @@ function SelectField({
 export function ResourceCreateDialog({
   options,
   returnTo,
+  defaultLessonId,
 }: {
   options: ResourceCreateDialogOptions;
-  returnTo: "/dashboard/resources" | "/teacher/resources";
+  returnTo: "/dashboard/resources" | "/teacher/resources" | `/teacher/lessons/${string}`;
+  defaultLessonId?: string;
 }) {
   const hasBindingOptions =
     options.courseProducts.length > 0 ||
@@ -144,7 +149,12 @@ export function ResourceCreateDialog({
                   </option>
                 ))}
               </SelectField>
-              <SelectField id="resource-lesson" name="lessonId" label="课节">
+              <SelectField
+                id="resource-lesson"
+                name="lessonId"
+                label="课节"
+                defaultValue={defaultLessonId}
+              >
                 <option value="">不绑定课节</option>
                 {options.lessons.map((lesson) => (
                   <option key={lesson.id} value={lesson.id}>

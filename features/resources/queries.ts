@@ -157,7 +157,56 @@ export async function getTeacherResourceLibrary(
   return getResourceLibrary(tenantId, filters, { teacherUserId: userId });
 }
 
-function getStudentVisibleResourceWhere(tenantId: string, userId: string, resourceId?: string) {
+export async function getTeacherLessonResources(
+  tenantId: string,
+  userId: string,
+  lessonId: string,
+) {
+  return prisma.resource.findMany({
+    where: {
+      tenantId,
+      lessonId,
+      status: "ACTIVE",
+      lesson: {
+        teacher: {
+          userId,
+        },
+      },
+    },
+    include: resourceInclude,
+    orderBy: [{ createdAt: "desc" }],
+  });
+}
+
+export async function getTeacherLessonResourceContext(
+  tenantId: string,
+  userId: string,
+  lessonId: string,
+) {
+  return prisma.lesson.findFirst({
+    where: {
+      id: lessonId,
+      tenantId,
+      teacher: {
+        userId,
+      },
+    },
+    include: {
+      classGroup: true,
+    },
+  });
+}
+
+type StudentVisibleResourceFilters = {
+  resourceId?: string;
+  lessonId?: string;
+};
+
+function getStudentVisibleResourceWhere(
+  tenantId: string,
+  userId: string,
+  filters: StudentVisibleResourceFilters = {},
+) {
   const directStudentPermission = {
     permissions: {
       some: {
@@ -173,7 +222,8 @@ function getStudentVisibleResourceWhere(tenantId: string, userId: string, resour
   return {
     tenantId,
     status: "ACTIVE" as const,
-    ...(resourceId ? { id: resourceId } : {}),
+    ...(filters.resourceId ? { id: filters.resourceId } : {}),
+    ...(filters.lessonId ? { lessonId: filters.lessonId } : {}),
     AND: [
       {
         OR: [
@@ -261,13 +311,25 @@ export async function getStudentVisibleResources(tenantId: string, userId: strin
   });
 }
 
+export async function getStudentLessonResources(
+  tenantId: string,
+  userId: string,
+  lessonId: string,
+) {
+  return prisma.resource.findMany({
+    where: getStudentVisibleResourceWhere(tenantId, userId, { lessonId }),
+    include: resourceInclude,
+    orderBy: [{ createdAt: "desc" }],
+  });
+}
+
 export async function getStudentResourceDetail(
   tenantId: string,
   userId: string,
   resourceId: string,
 ) {
   return prisma.resource.findFirst({
-    where: getStudentVisibleResourceWhere(tenantId, userId, resourceId),
+    where: getStudentVisibleResourceWhere(tenantId, userId, { resourceId }),
     include: resourceInclude,
   });
 }
