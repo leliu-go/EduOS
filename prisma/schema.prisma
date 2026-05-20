@@ -211,6 +211,21 @@ enum LearningTaskStatus {
   ARCHIVED
 }
 
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_IN_BLANK
+  SHORT_ANSWER
+  ESSAY
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -242,6 +257,8 @@ model Tenant {
   learningTasks LearningTask[]
   learningTaskCheckIns LearningTaskCheckIn[]
   knowledgePoints KnowledgePoint[]
+  questions   Question[]
+  questionKnowledgePoints QuestionKnowledgePoint[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -542,6 +559,7 @@ model KnowledgePoint {
   parentId  String?
   parent    KnowledgePoint? @relation("KnowledgePointHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children  KnowledgePoint[] @relation("KnowledgePointHierarchy")
+  questions QuestionKnowledgePoint[]
   status    ConfigStatus @default(ACTIVE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -553,6 +571,44 @@ model KnowledgePoint {
   @@index([tenantId, parentId])
   @@index([tenantId, chapter])
   @@index([tenantId, sortOrder])
+}
+
+model Question {
+  id             String               @id @default(cuid())
+  tenantId       String
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stem           String
+  answer         String
+  explanation    String?
+  difficulty     QuestionDifficulty
+  questionType   QuestionType
+  status         ConfigStatus         @default(ACTIVE)
+  knowledgePoints QuestionKnowledgePoint[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, difficulty])
+  @@index([tenantId, questionType])
+  @@index([tenantId, createdAt])
+}
+
+model QuestionKnowledgePoint {
+  id               String         @id @default(cuid())
+  tenantId         String
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  knowledgePointId String
+  knowledgePoint   KnowledgePoint @relation(fields: [knowledgePointId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([tenantId, questionId, knowledgePointId])
+  @@index([tenantId])
+  @@index([tenantId, questionId])
+  @@index([tenantId, knowledgePointId])
 }
 
 model CourseProduct {
