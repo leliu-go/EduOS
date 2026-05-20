@@ -36,6 +36,23 @@
 - Safe fallback implemented: Activity schemas, role-aware policy helpers, word check-in progress logic, tests, and RFC.
 - Whether later tasks can continue: Yes. Release documentation can proceed without persisted activity data.
 
+## 2026-05-21 Stage 7 Push Retry
+
+- Stage or PZ task: Stage 7 / PZ10 Activity Engine first stage
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive or risky operation was attempted
+- Safe fallback implemented: Local commit `83d13b6 feat: add activity engine word checkin primitives` exists on `main`
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+
+## 2026-05-21 Stage 8 Windows Installer
+
+- Stage or PZ task: Stage 8 / PZ14 Windows installer RFC
+- Risk or failure type: Code signing, installer publishing, auto-update provider, and native shell permissions require human approval
+- What was intentionally not executed: No Windows installer, Tauri/Electron shell, code signing certificate, auto-update channel, or store publishing operation was created.
+- Safe fallback implemented: RFC, PWA-first installer strategy, and documentation tests.
+- Whether later tasks can continue: Yes. Release documentation can continue with PWA-first assumptions.
+
 When a blocker appears, record:
 
 - Stage or PZ task

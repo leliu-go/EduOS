@@ -30,6 +30,16 @@
 - What the user should do later: approve activity persistence models, audit event names, reporting indexes, and staged migration rollout.
 - Whether later tasks can continue: Yes.
 
+## Windows Installer Publishing
+
+- Stage or PZ task: Stage 8 / PZ14 Windows installer RFC
+- Risk type: Code signing, installer identity, native wrapper permissions, auto-update provider, and public publishing
+- Risky action intentionally not executed: No Windows installer, desktop shell, code signing certificate, auto-update channel, or store listing was created.
+- Safe fallback implemented: Windows installer RFC, PWA-first strategy, and tests that assert database, `node_modules`, and course resources must not be bundled.
+- Files created or updated: `docs/rfcs/RFC-WindowsInstaller.md`, `docs/WINDOWS_INSTALLER_STRATEGY.md`, `tests/windows-installer-strategy.test.ts`
+- What the user should do later: approve whether a desktop shell is needed, choose code signing and publishing channels, and complete native wrapper security review.
+- Whether later tasks can continue: Yes.
+
 When a high-risk item is downgraded, record:
 
 - Stage or PZ task

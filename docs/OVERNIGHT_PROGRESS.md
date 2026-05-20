@@ -14,7 +14,7 @@ Run date: 2026-05-21
 | Stage 5 | Permission matrix upgrade | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 323 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (86 files / 331 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 7 | Activity Engine first stage for word check-in | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (87 files / 338 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 8 | Windows installer RFC | Pending | Pending |
+| Stage 8 | Windows installer RFC | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (88 files / 339 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 9 | Release, update, rollback docs and scripts | Pending | Pending |
 | Stage 10 | Final review, tests, reports | Pending | Pending |
 
@@ -79,3 +79,10 @@ Run date: 2026-05-21
 - Added role-aware policy helpers for activity visibility, check-in submission, resource attachment, and resource use.
 - Added word check-in parsing and progress calculation helpers.
 - Added `docs/rfcs/RFC-ActivityEngine.md` and recorded persistence migration approval as a deferred human action.
+
+## Stage 8 Summary
+
+- Added `docs/rfcs/RFC-WindowsInstaller.md` and `docs/WINDOWS_INSTALLER_STRATEGY.md`.
+- Chose PWA first and documented Tauri/Electron as later options only after approval.
+- Documented that the installer must not bundle the database, `node_modules`, course resources, media, uploads, logs, caches, or secrets.
+- Recorded code signing, installer publishing, auto-update provider, and native wrapper review as human-approved actions.
