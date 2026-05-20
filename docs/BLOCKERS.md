@@ -53,6 +53,23 @@
 - Safe fallback implemented: RFC, PWA-first installer strategy, and documentation tests.
 - Whether later tasks can continue: Yes. Release documentation can continue with PWA-first assumptions.
 
+## 2026-05-21 Stage 8 Push Retry
+
+- Stage or PZ task: Stage 8 / PZ14 Windows installer RFC
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive or risky operation was attempted
+- Safe fallback implemented: Local commit `ef6db19 docs: add windows installer strategy` exists on `main`
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Failed to connect to github.com port 443 after 21111 ms: Could not connect to server`
+- Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+
+## 2026-05-21 Stage 9 Release Publishing
+
+- Stage or PZ task: Stage 9 / PZ15 release, update, and rollback
+- Risk or failure type: Production deployment, production migration, forced update, CDN invalidation, release tagging, and public publishing require human approval
+- What was intentionally not executed: No deployment, production database migration, release tag, forced update, CDN invalidation, code signing, or public publishing was executed.
+- Safe fallback implemented: Release process docs, update manifest spec, rollback plan, and local no-deploy release scripts.
+- Whether later tasks can continue: Yes. Final review can proceed using local verification evidence.
+
 When a blocker appears, record:
 
 - Stage or PZ task

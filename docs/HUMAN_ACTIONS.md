@@ -40,6 +40,16 @@
 - What the user should do later: approve whether a desktop shell is needed, choose code signing and publishing channels, and complete native wrapper security review.
 - Whether later tasks can continue: Yes.
 
+## Release Publishing And Rollback Operations
+
+- Stage or PZ task: Stage 9 / PZ15 release, update, and rollback
+- Risk type: Production deployment, production database migration, CDN invalidation, forced update, rollback, and release publishing
+- Risky action intentionally not executed: No deployment, production migration, code signing, CDN invalidation, forced update, release tag, or public publishing was executed.
+- Safe fallback implemented: Release process docs, update manifest spec, rollback plan, and local check scripts that do not deploy.
+- Files created or updated: `docs/RELEASE_PROCESS.md`, `docs/UPDATE_MANIFEST_SPEC.md`, `docs/ROLLBACK_PLAN.md`, `scripts/check-release.ps1`, `scripts/release.ps1`, `tests/release-process.test.ts`
+- What the user should do later: approve deployment target, migration plan, release channel, rollback target, and update manifest publication before a real production release.
+- Whether later tasks can continue: Yes.
+
 When a high-risk item is downgraded, record:
 
 - Stage or PZ task

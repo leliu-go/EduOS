@@ -15,7 +15,7 @@ Run date: 2026-05-21
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (86 files / 331 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 7 | Activity Engine first stage for word check-in | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (87 files / 338 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 8 | Windows installer RFC | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (88 files / 339 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 9 | Release, update, rollback docs and scripts | Pending | Pending |
+| Stage 9 | Release, update, rollback docs and scripts | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (89 files / 341 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 10 | Final review, tests, reports | Pending | Pending |
 
 ## Notes
@@ -86,3 +86,10 @@ Run date: 2026-05-21
 - Chose PWA first and documented Tauri/Electron as later options only after approval.
 - Documented that the installer must not bundle the database, `node_modules`, course resources, media, uploads, logs, caches, or secrets.
 - Recorded code signing, installer publishing, auto-update provider, and native wrapper review as human-approved actions.
+
+## Stage 9 Summary
+
+- Added `docs/RELEASE_PROCESS.md`, `docs/UPDATE_MANIFEST_SPEC.md`, and `docs/ROLLBACK_PLAN.md`.
+- Added `scripts/check-release.ps1` for local no-deploy release checks and `scripts/release.ps1` as a human-review checklist wrapper.
+- Added release process tests that execute the static release check and verify no deploy/sign/publish boundary language.
+- Recorded production deployment, production migration, forced update, CDN invalidation, release tagging, and public publishing as human-approved actions.
