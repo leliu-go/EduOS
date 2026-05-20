@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { homeworkCorrectionStatusLabels } from "@/features/homework/homework-schema";
 import { getStudentHomeworkList } from "@/features/homework/queries";
 import { HomeworkSubmissionForm } from "@/features/homework/homework-submission-form";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -27,8 +28,13 @@ function getLatestSubmission(homework: StudentHomework) {
   return homework.submissions[0];
 }
 
+function getLatestCorrection(homework: StudentHomework) {
+  return getLatestSubmission(homework)?.corrections[0];
+}
+
 function StudentHomeworkCard({ homework }: { homework: StudentHomework }) {
   const latestSubmission = getLatestSubmission(homework);
+  const latestCorrection = getLatestCorrection(homework);
 
   return (
     <Card>
@@ -54,6 +60,18 @@ function StudentHomeworkCard({ homework }: { homework: StudentHomework }) {
             </p>
           ) : null}
         </div>
+        {latestCorrection ? (
+          <div className="grid gap-2 rounded-md border bg-muted/30 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-medium text-foreground">批改反馈</p>
+              <Badge variant="secondary">
+                {homeworkCorrectionStatusLabels[latestCorrection.status]}
+              </Badge>
+            </div>
+            {latestCorrection.score !== null ? <p>分数：{latestCorrection.score}</p> : null}
+            {latestCorrection.comment ? <p>{latestCorrection.comment}</p> : null}
+          </div>
+        ) : null}
         <HomeworkSubmissionForm homeworkId={homework.id} />
       </CardContent>
     </Card>

@@ -79,6 +79,25 @@ export const homeworkSubmissionSchema = z
     message: "Submission must include text, image, or file metadata.",
   });
 
+export const homeworkCorrectionStatusValues = ["CORRECTED", "NEEDS_REVISION"] as const;
+
+export const homeworkCorrectionStatusLabels = {
+  CORRECTED: "已批改",
+  NEEDS_REVISION: "需订正",
+} as const satisfies Record<(typeof homeworkCorrectionStatusValues)[number], string>;
+
+export const homeworkCorrectionSchema = z.object({
+  submissionId: z.string().cuid(),
+  status: z.enum(homeworkCorrectionStatusValues),
+  score: z.preprocess(
+    (value) =>
+      value === null || (typeof value === "string" && value.trim() === "") ? undefined : value,
+    z.coerce.number().int().min(0).max(100).optional(),
+  ),
+  comment: z.string().trim().min(1).max(2000),
+  returnTo: z.enum(["/teacher/homework"]).default("/teacher/homework"),
+});
+
 export function getHomeworkCreateValues(formData: FormData) {
   return homeworkCreateSchema.safeParse({
     title: formData.get("title"),
@@ -102,5 +121,16 @@ export function getHomeworkSubmissionValues(formData: FormData) {
   });
 }
 
+export function getHomeworkCorrectionValues(formData: FormData) {
+  return homeworkCorrectionSchema.safeParse({
+    submissionId: formData.get("submissionId"),
+    status: formData.get("status"),
+    score: formData.get("score"),
+    comment: formData.get("comment"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
+}
+
 export type HomeworkCreateValues = z.infer<typeof homeworkCreateSchema>;
 export type HomeworkSubmissionValues = z.infer<typeof homeworkSubmissionSchema>;
+export type HomeworkCorrectionValues = z.infer<typeof homeworkCorrectionSchema>;

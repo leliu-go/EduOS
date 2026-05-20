@@ -9,8 +9,10 @@ import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 import {
+  getHomeworkCorrectionValues,
   getHomeworkCreateValues,
   getHomeworkSubmissionValues,
+  type HomeworkCorrectionValues,
   type HomeworkCreateValues,
   type HomeworkSubmissionValues,
 } from "./homework-schema";
@@ -72,6 +74,28 @@ function homeworkSubmissionSnapshot(input: {
     contentText: input.contentText,
     attachmentsJson: input.attachmentsJson,
     submittedAt: input.submittedAt,
+  };
+}
+
+function homeworkCorrectionSnapshot(input: {
+  id: string;
+  tenantId: string;
+  submissionId: string;
+  teacherId: string | null;
+  status: string;
+  score: number | null;
+  comment: string | null;
+  correctedAt: Date;
+}) {
+  return {
+    id: input.id,
+    tenantId: input.tenantId,
+    submissionId: input.submissionId,
+    teacherId: input.teacherId,
+    status: input.status,
+    score: input.score,
+    comment: input.comment,
+    correctedAt: input.correctedAt,
   };
 }
 
@@ -183,6 +207,65 @@ async function canAssignHomeworkTarget(
   }
 
   return false;
+}
+
+async function canCorrectHomeworkSubmission(
+  tx: Prisma.TransactionClient,
+  currentUser: HomeworkActor,
+  values: HomeworkCorrectionValues,
+) {
+  const isTeacher = currentUser.roleKey === "TEACHER";
+
+  return tx.homeworkSubmission.findFirst({
+    where: {
+      id: values.submissionId,
+      tenantId: currentUser.tenantId,
+      status: {
+        in: ["SUBMITTED", "PENDING_CORRECTION", "NEEDS_REVISION"],
+      },
+      ...(isTeacher
+        ? {
+            homework: {
+              OR: [
+                {
+                  classGroup: {
+                    primaryTeacher: {
+                      userId: currentUser.id,
+                    },
+                  },
+                },
+                {
+                  lesson: {
+                    teacher: {
+                      userId: currentUser.id,
+                    },
+                  },
+                },
+                {
+                  student: {
+                    classGroups: {
+                      some: {
+                        classGroup: {
+                          primaryTeacher: {
+                            userId: currentUser.id,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      homeworkId: true,
+      studentId: true,
+      status: true,
+    },
+  });
 }
 
 export async function createHomeworkAction(formData: FormData) {
@@ -360,4 +443,82 @@ export async function submitHomeworkAction(formData: FormData) {
   revalidatePath("/teacher/homework");
   revalidatePath("/dashboard/homework");
   redirect(`${returnTo}?homework=submitted`);
+}
+
+export async function correctHomeworkSubmissionAction(formData: FormData) {
+  const parsed = getHomeworkCorrectionValues(formData);
+  const returnTo = parsed.success ? parsed.data.returnTo : "/teacher/homework";
+  const currentUser = await requirePermission("homework:correct", {
+    nextPath: returnTo,
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+
+  if (!parsed.success) {
+    redirectWithHomeworkError(returnTo, "invalid_correction");
+  }
+
+  const correction = await prisma.$transaction(async (tx) => {
+    const submission = await canCorrectHomeworkSubmission(tx, currentUser, parsed.data);
+
+    if (!submission) {
+      return null;
+    }
+
+    const teacherProfile = await tx.teacherProfile.findFirst({
+      where: {
+        tenantId: currentUser.tenantId,
+        userId: currentUser.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const createdCorrection = await tx.homeworkCorrection.create({
+      data: {
+        tenantId: currentUser.tenantId,
+        submissionId: submission.id,
+        teacherId: teacherProfile?.id ?? null,
+        status: parsed.data.status,
+        score: parsed.data.score ?? null,
+        comment: parsed.data.comment,
+      },
+    });
+
+    await tx.homeworkSubmission.update({
+      where: {
+        id: submission.id,
+      },
+      data: {
+        status: parsed.data.status,
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "homework.correct",
+        entityType: "homeworkCorrection",
+        entityId: createdCorrection.id,
+        beforeJson: {
+          submissionId: submission.id,
+          status: submission.status,
+        },
+        afterJson: homeworkCorrectionSnapshot(createdCorrection),
+      },
+      tx,
+    );
+
+    return createdCorrection;
+  });
+
+  if (!correction) {
+    redirectWithHomeworkError(returnTo, "invalid_submission");
+  }
+
+  revalidatePath("/teacher/homework");
+  revalidatePath("/student/homework");
+  revalidatePath("/parent");
+  redirect(`${returnTo}?homework=corrected`);
 }

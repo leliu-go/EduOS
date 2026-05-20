@@ -140,10 +140,95 @@ export async function getStudentHomeworkList(tenantId: string, userId: string) {
         },
         orderBy: [{ attemptNumber: "desc" }],
         take: 1,
+        include: {
+          corrections: {
+            include: {
+              teacher: true,
+            },
+            orderBy: [{ correctedAt: "desc" }],
+            take: 1,
+          },
+        },
       },
     },
     orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
     take: 50,
+  });
+}
+
+export async function getTeacherHomeworkSubmissionsForCorrection(
+  tenantId: string,
+  teacherUserId: string,
+) {
+  return prisma.homeworkSubmission.findMany({
+    where: {
+      tenantId,
+      status: "PENDING_CORRECTION",
+      homework: getTeacherHomeworkWhere(tenantId, teacherUserId),
+    },
+    include: {
+      homework: {
+        include: {
+          classGroup: {
+            include: {
+              courseProduct: true,
+            },
+          },
+          lesson: {
+            include: {
+              classGroup: true,
+            },
+          },
+          student: true,
+        },
+      },
+      student: true,
+      corrections: {
+        include: {
+          teacher: true,
+        },
+        orderBy: [{ correctedAt: "desc" }],
+        take: 1,
+      },
+    },
+    orderBy: [{ submittedAt: "desc" }],
+    take: 50,
+  });
+}
+
+export async function getParentHomeworkCorrections(tenantId: string, parentUserId: string) {
+  return prisma.homeworkCorrection.findMany({
+    where: {
+      tenantId,
+      submission: {
+        student: {
+          guardians: {
+            some: {
+              guardian: {
+                tenantId,
+                userId: parentUserId,
+              },
+            },
+          },
+        },
+      },
+    },
+    include: {
+      teacher: true,
+      submission: {
+        include: {
+          student: true,
+          homework: {
+            include: {
+              classGroup: true,
+              lesson: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: [{ correctedAt: "desc" }],
+    take: 20,
   });
 }
 

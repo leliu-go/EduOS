@@ -1,26 +1,38 @@
-import { BookOpen, UserCircle } from "lucide-react";
+import { BookOpen, MessageSquareText, UserCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
 import { getParentCourseAccounts } from "@/features/course-accounts/queries";
+import { homeworkCorrectionStatusLabels } from "@/features/homework/homework-schema";
+import { getParentHomeworkCorrections } from "@/features/homework/queries";
 import { getParentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
+
+function formatDateTime(value: Date) {
+  return `${value.toISOString().slice(0, 10)} ${value.toISOString().slice(11, 16)}`;
+}
 
 export default async function ParentHomePage() {
   const currentUser = await requirePermission("route:parent", {
     nextPath: "/parent",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [accounts, timetable] = await Promise.all([
+  const [accounts, timetable, homeworkCorrections] = await Promise.all([
     getParentCourseAccounts(currentUser.tenantId, currentUser.id),
     getParentTimetable(currentUser.tenantId, currentUser.id),
+    getParentHomeworkCorrections(currentUser.tenantId, currentUser.id),
   ]);
 
-  if (accounts.length === 0 && timetable.length === 0) {
-    return <EmptyState title="暂无课时账户" description="绑定孩子报名后，可在这里查看剩余课时。" />;
+  if (accounts.length === 0 && timetable.length === 0 && homeworkCorrections.length === 0) {
+    return (
+      <EmptyState
+        title="暂无学习动态"
+        description="绑定孩子报名后，可在这里查看课表、课时和作业反馈。"
+      />
+    );
   }
 
   return (
@@ -48,6 +60,39 @@ export default async function ParentHomePage() {
               />
             );
           })}
+        </section>
+      ) : null}
+
+      {homeworkCorrections.length > 0 ? (
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold tracking-normal text-foreground">作业反馈</h2>
+          {homeworkCorrections.map((homeworkCorrection) => (
+            <Card key={homeworkCorrection.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>{homeworkCorrection.submission.homework.title}</CardTitle>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {homeworkCorrection.submission.student.name} · 第{" "}
+                      {homeworkCorrection.submission.attemptNumber} 次提交
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {homeworkCorrectionStatusLabels[homeworkCorrection.status]}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-2 text-sm text-muted-foreground">
+                <p className="flex items-center gap-2">
+                  <MessageSquareText className="size-4" aria-hidden="true" />
+                  {formatDateTime(homeworkCorrection.correctedAt)}
+                  {homeworkCorrection.teacher ? ` · ${homeworkCorrection.teacher.name}` : ""}
+                </p>
+                {homeworkCorrection.score !== null ? <p>分数：{homeworkCorrection.score}</p> : null}
+                {homeworkCorrection.comment ? <p>{homeworkCorrection.comment}</p> : null}
+              </CardContent>
+            </Card>
+          ))}
         </section>
       ) : null}
 
