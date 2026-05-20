@@ -207,6 +207,7 @@ function getStudentVisibleResourceWhere(
   userId: string,
   filters: StudentVisibleResourceFilters = {},
 ) {
+  const now = new Date();
   const directStudentPermission = {
     permissions: {
       some: {
@@ -298,6 +299,9 @@ function getStudentVisibleResourceWhere(
             },
           },
         ],
+      },
+      {
+        OR: [{ releaseAt: null }, { releaseAt: { lte: now } }],
       },
     ],
   };

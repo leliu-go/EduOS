@@ -54,6 +54,25 @@ function optionalUrl() {
   );
 }
 
+function optionalDateTime() {
+  return z.preprocess((value) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+
+      return trimmed ? new Date(trimmed) : undefined;
+    }
+
+    return value;
+  }, z.date().optional());
+}
+
+const resourceReturnToSchema = z
+  .preprocess(
+    (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
+    z.string().refine(isAllowedResourceReturnPath).optional(),
+  )
+  .default("/dashboard/resources");
+
 export const resourceFormSchema = z
   .object({
     title: z.string().trim().min(1).max(120),
@@ -64,17 +83,19 @@ export const resourceFormSchema = z
     courseProductId: optionalCuid(),
     classGroupId: optionalCuid(),
     lessonId: optionalCuid(),
-    returnTo: z
-      .preprocess(
-        (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
-        z.string().refine(isAllowedResourceReturnPath).optional(),
-      )
-      .default("/dashboard/resources"),
+    releaseAt: optionalDateTime(),
+    returnTo: resourceReturnToSchema,
   })
   .refine((values) => Boolean(values.courseProductId || values.classGroupId || values.lessonId), {
     message: "Resource must bind to a course, class, or lesson.",
     path: ["courseProductId"],
   });
+
+export const resourceReleaseSchema = z.object({
+  resourceId: z.string().cuid(),
+  releaseAt: optionalDateTime(),
+  returnTo: resourceReturnToSchema,
+});
 
 export function getResourceFormValues(formData: FormData) {
   return resourceFormSchema.safeParse({
@@ -86,9 +107,19 @@ export function getResourceFormValues(formData: FormData) {
     courseProductId: formData.get("courseProductId"),
     classGroupId: formData.get("classGroupId"),
     lessonId: formData.get("lessonId"),
+    releaseAt: formData.get("releaseAt"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
+}
+
+export function getResourceReleaseValues(formData: FormData) {
+  return resourceReleaseSchema.safeParse({
+    resourceId: formData.get("resourceId"),
+    releaseAt: formData.get("releaseAt"),
     returnTo: formData.get("returnTo") ?? undefined,
   });
 }
 
 export type ResourceTypeValue = (typeof resourceTypeValues)[number];
 export type ResourceFormValues = z.infer<typeof resourceFormSchema>;
+export type ResourceReleaseValues = z.infer<typeof resourceReleaseSchema>;

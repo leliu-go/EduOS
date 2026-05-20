@@ -1,4 +1,4 @@
-import { Library, Plus } from "lucide-react";
+import { CalendarClock, Library, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -126,6 +126,16 @@ export function ResourceCreateDialog({
               <Label htmlFor="resource-file-url">文件链接</Label>
               <Input id="resource-file-url" name="fileUrl" placeholder="https://..." />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="resource-release-at" className="flex items-center gap-2">
+              <CalendarClock className="size-4" aria-hidden="true" />
+              开放时间
+            </Label>
+            <Input id="resource-release-at" name="releaseAt" type="datetime-local" />
+            <p className="text-xs text-muted-foreground">
+              留空表示立即开放；设置未来时间后，学生端到时才可见。
+            </p>
           </div>
           <div className="rounded-md border bg-muted/30 p-3">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">

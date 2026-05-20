@@ -4,6 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
+import {
+  getResourceReleaseLabel,
+  ResourceReleaseDialog,
+} from "@/features/resources/resource-release-dialog";
 import { getResourceLibraryOptions, getTeacherResourceLibrary } from "@/features/resources/queries";
 import {
   resourceTypeLabels,
@@ -61,7 +65,11 @@ function TeacherResourceCard({ item }: { item: TeacherResourceItem }) {
           <Badge variant="secondary">{resourceTypeLabels[item.resourceType]}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">{getBindingLabel(item)}</CardContent>
+      <CardContent className="grid gap-3 text-sm text-muted-foreground">
+        <p>{getBindingLabel(item)}</p>
+        <p>开放时间：{getResourceReleaseLabel(item.releaseAt)}</p>
+        <ResourceReleaseDialog resource={item} returnTo="/teacher/resources" />
+      </CardContent>
     </Card>
   );
 }

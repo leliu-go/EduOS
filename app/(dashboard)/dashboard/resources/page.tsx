@@ -7,6 +7,10 @@ import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
+import {
+  getResourceReleaseLabel,
+  ResourceReleaseDialog,
+} from "@/features/resources/resource-release-dialog";
 import { getResourceLibrary, getResourceLibraryOptions } from "@/features/resources/queries";
 import {
   resourceStatusLabels,
@@ -125,6 +129,17 @@ function getResourceColumns(): Array<DataTableColumn<ResourceLibraryItem>> {
       key: "status",
       header: "状态",
       cell: (item) => <Badge variant="outline">{resourceStatusLabels[item.status]}</Badge>,
+    },
+    {
+      key: "releaseAt",
+      header: "开放时间",
+      cell: (item) => getResourceReleaseLabel(item.releaseAt),
+    },
+    {
+      key: "actions",
+      header: "操作",
+      cell: (item) => <ResourceReleaseDialog resource={item} returnTo="/dashboard/resources" />,
+      className: "text-right",
     },
   ];
 }

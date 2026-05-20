@@ -6,6 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
 import {
+  getResourceReleaseLabel,
+  ResourceReleaseDialog,
+} from "@/features/resources/resource-release-dialog";
+import {
   getResourceLibraryOptions,
   getTeacherLessonResourceContext,
   getTeacherLessonResources,
@@ -21,7 +25,13 @@ type TeacherLessonResourcesPageProps = {
 
 type TeacherLessonResource = Awaited<ReturnType<typeof getTeacherLessonResources>>[number];
 
-function TeacherLessonResourceCard({ resource }: { resource: TeacherLessonResource }) {
+function TeacherLessonResourceCard({
+  resource,
+  lessonId,
+}: {
+  resource: TeacherLessonResource;
+  lessonId: string;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -37,6 +47,7 @@ function TeacherLessonResourceCard({ resource }: { resource: TeacherLessonResour
       </CardHeader>
       <CardContent className="grid gap-3 text-sm text-muted-foreground">
         {resource.description ? <p>{resource.description}</p> : null}
+        <p>开放时间：{getResourceReleaseLabel(resource.releaseAt)}</p>
         {resource.fileUrl ? (
           <Button asChild variant="outline" size="sm" className="justify-self-start">
             <a href={resource.fileUrl} target="_blank" rel="noreferrer">
@@ -45,6 +56,7 @@ function TeacherLessonResourceCard({ resource }: { resource: TeacherLessonResour
             </a>
           </Button>
         ) : null}
+        <ResourceReleaseDialog resource={resource} returnTo={`/teacher/lessons/${lessonId}`} />
       </CardContent>
     </Card>
   );
@@ -92,7 +104,7 @@ export default async function TeacherLessonResourcesPage({
 
       {resources.length > 0 ? (
         resources.map((resource) => (
-          <TeacherLessonResourceCard key={resource.id} resource={resource} />
+          <TeacherLessonResourceCard key={resource.id} resource={resource} lessonId={lessonId} />
         ))
       ) : (
         <EmptyState

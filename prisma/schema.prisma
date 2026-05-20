@@ -772,6 +772,7 @@ model Resource {
   fileUrl         String?
   mimeType        String?
   fileSize        Int?
+  releaseAt       DateTime?
   courseProductId String?
   courseProduct   CourseProduct?       @relation(fields: [courseProductId], references: [id], onDelete: SetNull)
   classGroupId    String?
@@ -788,6 +789,7 @@ model Resource {
   @@index([tenantId, courseProductId])
   @@index([tenantId, classGroupId])
   @@index([tenantId, lessonId])
+  @@index([tenantId, releaseAt])
   @@index([tenantId, createdAt])
 }
 
