@@ -11,6 +11,7 @@ const baseUser: CurrentUser = {
   tenantId: "tenant_1",
   tenantName: "示例机构",
   tenantSlug: "demo",
+  campusId: null,
   roleId: "role_1",
   roleKey: "ORG_ADMIN",
 };

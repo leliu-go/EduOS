@@ -10,6 +10,7 @@ export type CurrentUser = {
   tenantId: string;
   tenantName: string;
   tenantSlug: string;
+  campusId: string | null;
   roleId: string;
   roleKey: RoleKey;
 };
@@ -45,6 +46,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
               status: true,
             },
           },
+          campusId: true,
           role: {
             select: {
               id: true,
@@ -78,6 +80,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     tenantId: membership.tenant.id,
     tenantName: membership.tenant.name,
     tenantSlug: membership.tenant.slug,
+    campusId: membership.campusId,
     roleId: membership.role.id,
     roleKey: membership.role.key,
   };
