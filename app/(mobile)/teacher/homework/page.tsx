@@ -5,6 +5,7 @@ import { HomeworkCorrectionDialog } from "@/features/homework/homework-correctio
 import { HomeworkCreateDialog } from "@/features/homework/homework-create-dialog";
 import {
   getHomeworkAssignmentOptions,
+  getHomeworkCorrectionOptions,
   getTeacherHomeworkList,
   getTeacherHomeworkSubmissionsForCorrection,
   getTeacherNotSubmittedHomework,
@@ -16,6 +17,7 @@ type TeacherHomework = Awaited<ReturnType<typeof getTeacherHomeworkList>>[number
 type TeacherCorrectionSubmission = Awaited<
   ReturnType<typeof getTeacherHomeworkSubmissionsForCorrection>
 >[number];
+type HomeworkCorrectionOptions = Awaited<ReturnType<typeof getHomeworkCorrectionOptions>>;
 type TeacherNotSubmittedHomework = Awaited<
   ReturnType<typeof getTeacherNotSubmittedHomework>
 >[number];
@@ -77,7 +79,13 @@ function getSubmissionTargetLabel(submission: TeacherCorrectionSubmission) {
   return "个人作业";
 }
 
-function TeacherCorrectionCard({ submission }: { submission: TeacherCorrectionSubmission }) {
+function TeacherCorrectionCard({
+  submission,
+  knowledgePoints,
+}: {
+  submission: TeacherCorrectionSubmission;
+  knowledgePoints: HomeworkCorrectionOptions["knowledgePoints"];
+}) {
   return (
     <Card>
       <CardHeader>
@@ -88,7 +96,7 @@ function TeacherCorrectionCard({ submission }: { submission: TeacherCorrectionSu
               {submission.student.name} · {getSubmissionTargetLabel(submission)}
             </p>
           </div>
-          <HomeworkCorrectionDialog submission={submission} />
+          <HomeworkCorrectionDialog submission={submission} knowledgePoints={knowledgePoints} />
         </div>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-muted-foreground">
@@ -130,12 +138,14 @@ export default async function TeacherHomeworkPage() {
     nextPath: "/teacher/homework",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [homeworkItems, pendingSubmissions, notSubmittedItems, options] = await Promise.all([
-    getTeacherHomeworkList(currentUser.tenantId, currentUser.id),
-    getTeacherHomeworkSubmissionsForCorrection(currentUser.tenantId, currentUser.id),
-    getTeacherNotSubmittedHomework(currentUser.tenantId, currentUser.id),
-    getHomeworkAssignmentOptions(currentUser.tenantId, { teacherUserId: currentUser.id }),
-  ]);
+  const [homeworkItems, pendingSubmissions, notSubmittedItems, options, correctionOptions] =
+    await Promise.all([
+      getTeacherHomeworkList(currentUser.tenantId, currentUser.id),
+      getTeacherHomeworkSubmissionsForCorrection(currentUser.tenantId, currentUser.id),
+      getTeacherNotSubmittedHomework(currentUser.tenantId, currentUser.id),
+      getHomeworkAssignmentOptions(currentUser.tenantId, { teacherUserId: currentUser.id }),
+      getHomeworkCorrectionOptions(currentUser.tenantId),
+    ]);
 
   return (
     <div className="grid gap-4">
@@ -156,7 +166,11 @@ export default async function TeacherHomeworkPage() {
         </div>
         {pendingSubmissions.length > 0 ? (
           pendingSubmissions.map((submission) => (
-            <TeacherCorrectionCard key={submission.id} submission={submission} />
+            <TeacherCorrectionCard
+              key={submission.id}
+              submission={submission}
+              knowledgePoints={correctionOptions.knowledgePoints}
+            />
           ))
         ) : (
           <EmptyState title="暂无待批改" description="学生提交作业后，会在这里进入批改流程。" />

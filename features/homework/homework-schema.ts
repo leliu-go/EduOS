@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { errorReasonValues } from "@/features/mistakes/error-record-schema";
+
 function optionalCuid() {
   return z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
@@ -102,6 +104,12 @@ export const homeworkCorrectionSchema = z.object({
     z.coerce.number().int().min(0).max(100).optional(),
   ),
   comment: z.string().trim().min(1).max(2000),
+  mistakeKnowledgePointId: optionalCuid(),
+  mistakeErrorReason: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.enum(errorReasonValues).default("CONCEPT_UNCLEAR"),
+  ),
+  mistakeNote: optionalText(1000),
   returnTo: z.enum(["/teacher/homework"]).default("/teacher/homework"),
 });
 
@@ -134,6 +142,9 @@ export function getHomeworkCorrectionValues(formData: FormData) {
     status: formData.get("status"),
     score: formData.get("score"),
     comment: formData.get("comment"),
+    mistakeKnowledgePointId: formData.get("mistakeKnowledgePointId"),
+    mistakeErrorReason: formData.get("mistakeErrorReason"),
+    mistakeNote: formData.get("mistakeNote"),
     returnTo: formData.get("returnTo") ?? undefined,
   });
 }

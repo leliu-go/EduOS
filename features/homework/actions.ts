@@ -99,6 +99,34 @@ function homeworkCorrectionSnapshot(input: {
   };
 }
 
+function errorRecordSnapshot(input: {
+  id: string;
+  tenantId: string;
+  studentId: string;
+  questionId: string | null;
+  homeworkSubmissionId: string | null;
+  sourceType: string;
+  sourceTitle: string | null;
+  knowledgePointId: string;
+  errorReason: string;
+  status: string;
+  note: string | null;
+}) {
+  return {
+    id: input.id,
+    tenantId: input.tenantId,
+    studentId: input.studentId,
+    questionId: input.questionId,
+    homeworkSubmissionId: input.homeworkSubmissionId,
+    sourceType: input.sourceType,
+    sourceTitle: input.sourceTitle,
+    knowledgePointId: input.knowledgePointId,
+    errorReason: input.errorReason,
+    status: input.status,
+    note: input.note,
+  };
+}
+
 function buildSubmissionAttachments(values: HomeworkSubmissionValues) {
   const attachments: Array<{ type: "FILE" | "IMAGE"; fileName: string | null; url: string }> = [];
 
@@ -264,6 +292,11 @@ async function canCorrectHomeworkSubmission(
       homeworkId: true,
       studentId: true,
       status: true,
+      homework: {
+        select: {
+          title: true,
+        },
+      },
     },
   });
 }
@@ -488,11 +521,11 @@ export async function correctHomeworkSubmissionAction(formData: FormData) {
     redirectWithHomeworkError(returnTo, "invalid_correction");
   }
 
-  const correction = await prisma.$transaction(async (tx) => {
+  const correctionResult = await prisma.$transaction(async (tx) => {
     const submission = await canCorrectHomeworkSubmission(tx, currentUser, parsed.data);
 
     if (!submission) {
-      return null;
+      return { status: "invalid_submission" as const };
     }
 
     const teacherProfile = await tx.teacherProfile.findFirst({
@@ -504,6 +537,23 @@ export async function correctHomeworkSubmissionAction(formData: FormData) {
         id: true,
       },
     });
+
+    if (parsed.data.mistakeKnowledgePointId) {
+      const knowledgePoint = await tx.knowledgePoint.findFirst({
+        where: {
+          id: parsed.data.mistakeKnowledgePointId,
+          tenantId: currentUser.tenantId,
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!knowledgePoint) {
+        return { status: "invalid_knowledge_point" as const };
+      }
+    }
 
     const createdCorrection = await tx.homeworkCorrection.create({
       data: {
@@ -541,11 +591,44 @@ export async function correctHomeworkSubmissionAction(formData: FormData) {
       tx,
     );
 
-    return createdCorrection;
+    if (parsed.data.mistakeKnowledgePointId) {
+      const createdErrorRecord = await tx.errorRecord.create({
+        data: {
+          tenantId: currentUser.tenantId,
+          studentId: submission.studentId,
+          questionId: null,
+          homeworkSubmissionId: submission.id,
+          sourceType: "HOMEWORK_SUBMISSION",
+          sourceTitle: submission.homework.title,
+          knowledgePointId: parsed.data.mistakeKnowledgePointId,
+          errorReason: parsed.data.mistakeErrorReason,
+          status: "PENDING_CORRECTION",
+          note: parsed.data.mistakeNote ?? null,
+        },
+      });
+
+      await writeAuditLog(
+        {
+          tenantId: currentUser.tenantId,
+          actorUserId: currentUser.id,
+          action: "errorRecord.createFromHomework",
+          entityType: "errorRecord",
+          entityId: createdErrorRecord.id,
+          afterJson: errorRecordSnapshot(createdErrorRecord),
+        },
+        tx,
+      );
+    }
+
+    return { status: "corrected" as const, correction: createdCorrection };
   });
 
-  if (!correction) {
+  if (correctionResult.status === "invalid_submission") {
     redirectWithHomeworkError(returnTo, "invalid_submission");
+  }
+
+  if (correctionResult.status === "invalid_knowledge_point") {
+    redirectWithHomeworkError(returnTo, "invalid_knowledge_point");
   }
 
   revalidatePath("/teacher/homework");

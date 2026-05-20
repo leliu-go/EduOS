@@ -474,6 +474,26 @@ export async function getParentHomeworkCorrections(tenantId: string, parentUserI
   });
 }
 
+export async function getHomeworkCorrectionOptions(tenantId: string) {
+  const knowledgePoints = await prisma.knowledgePoint.findMany({
+    where: {
+      tenantId,
+      status: "ACTIVE",
+    },
+    include: {
+      subject: true,
+      grade: true,
+      parent: true,
+    },
+    orderBy: [{ chapter: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
+    take: 200,
+  });
+
+  return {
+    knowledgePoints,
+  };
+}
+
 export async function getHomeworkAssignmentOptions(tenantId: string, scope: HomeworkScope = {}) {
   const teacherClassScope = scope.teacherUserId
     ? {
