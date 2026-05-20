@@ -70,21 +70,25 @@ describe("teacher attendance flow", () => {
 
   it("renders teacher attendance forms from teacher-owned schedules", () => {
     const queryPath = join(process.cwd(), "features/attendance/queries.ts");
+    const dashboardQueryPath = join(process.cwd(), "features/reports/teacher-class-dashboard.ts");
     const pagePath = join(process.cwd(), "app/(mobile)/teacher/page.tsx");
 
     expect(existsSync(queryPath)).toBe(true);
-    if (!existsSync(queryPath)) {
+    expect(existsSync(dashboardQueryPath)).toBe(true);
+    if (!existsSync(queryPath) || !existsSync(dashboardQueryPath)) {
       return;
     }
 
     const querySource = readFileSync(queryPath, "utf8");
+    const dashboardQuerySource = readFileSync(dashboardQueryPath, "utf8");
     const pageSource = readFileSync(pagePath, "utf8");
 
     expect(querySource).toContain("getTeacherAttendanceSchedules");
     expect(querySource).toContain("teacher:");
     expect(querySource).toContain("userId");
     expect(querySource).toContain("attendances:");
-    expect(pageSource).toContain("getTeacherAttendanceSchedules");
+    expect(dashboardQuerySource).toContain("getTeacherAttendanceSchedules");
+    expect(pageSource).toContain("dashboard.pendingAttendance");
     expect(pageSource).toContain("AttendanceRosterForm");
   });
 });

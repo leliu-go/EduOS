@@ -52,6 +52,10 @@ describe("student teacher parent timetables", () => {
   });
 
   it("renders mobile timetable cards for student, teacher, and parent portals", () => {
+    const teacherDashboardSource = readFileSync(
+      join(process.cwd(), "features/reports/teacher-class-dashboard.ts"),
+      "utf8",
+    );
     const studentPage = readFileSync(join(process.cwd(), "app/(mobile)/student/page.tsx"), "utf8");
     const teacherPage = readFileSync(join(process.cwd(), "app/(mobile)/teacher/page.tsx"), "utf8");
     const parentPage = readFileSync(join(process.cwd(), "app/(mobile)/parent/page.tsx"), "utf8");
@@ -59,7 +63,12 @@ describe("student teacher parent timetables", () => {
     expect(studentPage).toContain("getStudentTimetable");
     expect(studentPage).toContain("TimetableCard");
     expect(studentPage).not.toContain("room.name");
-    expect(teacherPage).toContain("getTeacherTimetable");
+    expect(teacherDashboardSource).toContain("prisma.schedule.findMany");
+    expect(teacherDashboardSource).toContain("teacher:");
+    expect(teacherDashboardSource).toContain("userId: teacherUserId");
+    expect(teacherDashboardSource).toContain("room: true");
+    expect(teacherPage).toContain("dashboard.todayLessons");
+    expect(teacherPage).toContain("TimetableCard");
     expect(teacherPage).toContain("room.name");
     expect(parentPage).toContain("getParentTimetable");
     expect(parentPage).toContain("studentNames");
