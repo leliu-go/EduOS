@@ -53,7 +53,7 @@ describe("multi-tenant foundation models", () => {
     expect(room).toContain("@@unique([tenantId, campusId, name])");
   });
 
-  it("defines the standard role keys without adding permissions yet", () => {
+  it("defines the standard role keys without storing generic permissions on Role", () => {
     for (const role of [
       "SUPER_ADMIN",
       "ORG_ADMIN",
@@ -67,6 +67,6 @@ describe("multi-tenant foundation models", () => {
       expect(schema).toContain(role);
     }
 
-    expect(schema).not.toContain("permission");
+    expect(getModelBlock("Role")).not.toContain("permissions");
   });
 });

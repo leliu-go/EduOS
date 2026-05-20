@@ -160,6 +160,27 @@ enum AttendanceStatus {
   MAKE_UP
 }
 
+enum ResourceType {
+  PPT
+  HANDOUT
+  VIDEO
+  AUDIO
+  WORKSHEET
+  ANSWER
+  EXPLANATION
+}
+
+enum ResourceStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ResourcePermissionTarget {
+  CLASS_GROUP
+  STUDENT
+  ROLE
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -183,6 +204,8 @@ model Tenant {
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
+  resources   Resource[]
+  resourcePermissions ResourcePermission[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -330,6 +353,7 @@ model StudentProfile {
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
+  resourcePermissions ResourcePermission[]
   attendances Attendance[]
   checkIns    CheckIn[]
   createdAt DateTime       @default(now())
@@ -477,6 +501,7 @@ model CourseProduct {
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
+  resources   Resource[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -505,6 +530,8 @@ model ClassGroup {
   enrollments      Enrollment[]
   lessons          Lesson[]
   schedules        Schedule[]
+  resources        Resource[]
+  resourcePermissions ResourcePermission[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -593,6 +620,7 @@ model Lesson {
   title        String
   status       LessonStatus  @default(PLANNED)
   schedules    Schedule[]
+  resources    Resource[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -730,4 +758,58 @@ model CourseConsumption {
   @@index([tenantId, courseProductId])
   @@index([tenantId, createdAt])
   @@index([tenantId, reversedAt])
+}
+
+model Resource {
+  id              String               @id @default(cuid())
+  tenantId        String
+  tenant          Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  resourceType    ResourceType
+  status          ResourceStatus       @default(ACTIVE)
+  fileName        String?
+  fileUrl         String?
+  mimeType        String?
+  fileSize        Int?
+  courseProductId String?
+  courseProduct   CourseProduct?       @relation(fields: [courseProductId], references: [id], onDelete: SetNull)
+  classGroupId    String?
+  classGroup      ClassGroup?          @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  lessonId        String?
+  lesson          Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  permissions     ResourcePermission[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, resourceType])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, createdAt])
+}
+
+model ResourcePermission {
+  id           String                   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resourceId   String
+  resource     Resource                 @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  target       ResourcePermissionTarget
+  classGroupId String?
+  classGroup   ClassGroup?              @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  studentId    String?
+  student      StudentProfile?          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  roleKey      RoleKey?
+  canView      Boolean                  @default(true)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([tenantId, resourceId])
+  @@index([tenantId, target])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, roleKey])
 }
