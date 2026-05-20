@@ -307,6 +307,19 @@ enum ContractStatus {
   EXPIRED
 }
 
+enum TeacherCompensationCalculationMode {
+  LESSON
+  HOUR
+  STUDENT_COUNT
+  CLASS_TYPE
+}
+
+enum TeacherCompensationRuleStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -353,6 +366,7 @@ model Tenant {
   refunds    Refund[]
   contractTemplates ContractTemplate[]
   contracts   Contract[]
+  teacherCompensationRules TeacherCompensationRule[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -609,6 +623,7 @@ model TeacherProfile {
   schedules             Schedule[]
   homeworkCorrections   HomeworkCorrection[]
   lessonFeedbacks       LessonFeedback[]
+  compensationRules      TeacherCompensationRule[]
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -792,6 +807,7 @@ model CourseProduct {
   courseAccounts CourseAccount[]
   courseConsumptions CourseConsumption[]
   resources   Resource[]
+  compensationRules TeacherCompensationRule[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -824,6 +840,7 @@ model ClassGroup {
   resourcePermissions ResourcePermission[]
   homeworks        Homework[]
   learningTasks    LearningTask[]
+  compensationRules TeacherCompensationRule[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -1023,6 +1040,38 @@ model Contract {
   @@index([tenantId, guardianId])
   @@index([tenantId, status])
   @@index([tenantId, signedAt])
+  @@index([tenantId, createdAt])
+}
+
+model TeacherCompensationRule {
+  id              String                              @id @default(cuid())
+  tenantId        String
+  tenant          Tenant                              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teacherId       String?
+  teacher         TeacherProfile?                     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  courseProductId String?
+  courseProduct   CourseProduct?                      @relation(fields: [courseProductId], references: [id], onDelete: SetNull)
+  classGroupId    String?
+  classGroup      ClassGroup?                         @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  classType       ClassType?
+  calculationMode TeacherCompensationCalculationMode
+  rateAmount      Decimal
+  classTypeRatesJson Json?
+  status          TeacherCompensationRuleStatus       @default(ACTIVE)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  notes           String?
+  createdAt       DateTime                            @default(now())
+  updatedAt       DateTime                            @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, teacherId])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, classType])
+  @@index([tenantId, calculationMode])
+  @@index([tenantId, status])
+  @@index([tenantId, effectiveFrom])
   @@index([tenantId, createdAt])
 }
 
