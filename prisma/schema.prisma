@@ -226,6 +226,27 @@ enum QuestionType {
   ESSAY
 }
 
+enum ErrorRecordSourceType {
+  HOMEWORK_SUBMISSION
+  ASSESSMENT_RESULT
+  MANUAL
+}
+
+enum ErrorReason {
+  CONCEPT_UNCLEAR
+  CALCULATION_ERROR
+  READING_ERROR
+  METHOD_ERROR
+  CARELESS
+  OTHER
+}
+
+enum ErrorRecordStatus {
+  PENDING_CORRECTION
+  CORRECTED
+  MASTERED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -259,6 +280,7 @@ model Tenant {
   knowledgePoints KnowledgePoint[]
   questions   Question[]
   questionKnowledgePoints QuestionKnowledgePoint[]
+  errorRecords ErrorRecord[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -411,6 +433,7 @@ model StudentProfile {
   resourcePermissions ResourcePermission[]
   assignedHomeworks Homework[] @relation("HomeworkStudent")
   homeworkSubmissions HomeworkSubmission[]
+  errorRecords ErrorRecord[]
   assignedLearningTasks LearningTask[] @relation("LearningTaskStudent")
   learningTaskCheckIns LearningTaskCheckIn[]
   attendances Attendance[]
@@ -560,6 +583,7 @@ model KnowledgePoint {
   parent    KnowledgePoint? @relation("KnowledgePointHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children  KnowledgePoint[] @relation("KnowledgePointHierarchy")
   questions QuestionKnowledgePoint[]
+  errorRecords ErrorRecord[]
   status    ConfigStatus @default(ACTIVE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -584,6 +608,7 @@ model Question {
   questionType   QuestionType
   status         ConfigStatus         @default(ACTIVE)
   knowledgePoints QuestionKnowledgePoint[]
+  errorRecords   ErrorRecord[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
@@ -609,6 +634,37 @@ model QuestionKnowledgePoint {
   @@index([tenantId])
   @@index([tenantId, questionId])
   @@index([tenantId, knowledgePointId])
+}
+
+model ErrorRecord {
+  id                   String                @id @default(cuid())
+  tenantId             String
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId            String
+  student              StudentProfile        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  questionId           String?
+  question             Question?             @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  homeworkSubmissionId String?
+  homeworkSubmission   HomeworkSubmission?   @relation(fields: [homeworkSubmissionId], references: [id], onDelete: SetNull)
+  sourceType           ErrorRecordSourceType
+  sourceTitle          String?
+  knowledgePointId     String
+  knowledgePoint       KnowledgePoint        @relation(fields: [knowledgePointId], references: [id], onDelete: Restrict)
+  errorReason          ErrorReason
+  status               ErrorRecordStatus     @default(PENDING_CORRECTION)
+  note                 String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, questionId])
+  @@index([tenantId, homeworkSubmissionId])
+  @@index([tenantId, knowledgePointId])
+  @@index([tenantId, sourceType])
+  @@index([tenantId, errorReason])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
 }
 
 model CourseProduct {
@@ -991,6 +1047,7 @@ model HomeworkSubmission {
   attachmentsJson Json?
   submittedAt     DateTime                 @default(now())
   corrections     HomeworkCorrection[]
+  errorRecords    ErrorRecord[]
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
