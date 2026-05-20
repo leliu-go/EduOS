@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   Home,
+  Library,
   NotebookPen,
   UserCircle,
 } from "lucide-react";
@@ -31,7 +32,7 @@ const mobileNavItems: Record<MobileRole, MobileNavItem[]> = {
     { label: "课表", href: "/teacher/schedule", icon: CalendarDays },
     { label: "班级", href: "/teacher/classes", icon: BookOpen },
     { label: "作业", href: "/teacher/homework", icon: NotebookPen },
-    { label: "我的", href: "/teacher/me", icon: UserCircle },
+    { label: "资源", href: "/teacher/resources", icon: Library },
   ],
   parent: [
     { label: "首页", href: "/parent", icon: Home, active: true },
