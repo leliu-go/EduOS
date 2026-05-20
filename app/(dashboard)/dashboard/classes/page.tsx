@@ -7,7 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClassGroupCreateDialog } from "@/features/classes/class-group-form-dialog";
 import { classGroupStatusLabels } from "@/features/classes/class-group-schema";
-import { getClassGroupFormOptions, getClassGroupList } from "@/features/classes/queries";
+import {
+  getClassGroupFormOptions,
+  getClassGroupList,
+  normalizeClassGroupListQuery,
+} from "@/features/classes/queries";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 type ClassGroupListPageProps = {
@@ -25,14 +29,27 @@ function formatDate(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
+function buildClassGroupsHref(page: number) {
+  const params = new URLSearchParams();
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const queryString = params.toString();
+
+  return queryString ? `/dashboard/classes?${queryString}` : "/dashboard/classes";
+}
+
 export default async function ClassGroupListPage({ searchParams }: ClassGroupListPageProps) {
   const currentUser = await requirePermission("classes:manage", {
     nextPath: "/dashboard/classes",
     unauthorizedRedirectTo: "/unauthorized",
   });
   const params = (await searchParams) ?? {};
-  const [classGroups, options] = await Promise.all([
-    getClassGroupList(currentUser.tenantId),
+  const query = normalizeClassGroupListQuery(params);
+  const [result, options] = await Promise.all([
+    getClassGroupList(currentUser.tenantId, query),
     getClassGroupFormOptions(currentUser.tenantId),
   ]);
   const errorMessage =
@@ -61,9 +78,9 @@ export default async function ClassGroupListPage({ searchParams }: ClassGroupLis
         </p>
       ) : null}
 
-      {classGroups.length > 0 ? (
+      {result.total > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {classGroups.map((classGroup) => (
+          {result.classGroups.map((classGroup) => (
             <Card key={classGroup.id}>
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">
@@ -98,6 +115,28 @@ export default async function ClassGroupListPage({ searchParams }: ClassGroupLis
               </CardContent>
             </Card>
           ))}
+          <div className="md:col-span-2 xl:col-span-3">
+            <div className="flex flex-col gap-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+              <span>
+                共 {result.total} 个班级，第 {result.page} / {result.pageCount} 页
+              </span>
+              <div className="flex gap-2">
+                <Button asChild variant="outline" size="sm" aria-disabled={result.page <= 1}>
+                  <Link href={buildClassGroupsHref(Math.max(1, result.page - 1))}>上一页</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  aria-disabled={result.page >= result.pageCount}
+                >
+                  <Link href={buildClassGroupsHref(Math.min(result.pageCount, result.page + 1))}>
+                    下一页
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <EmptyState

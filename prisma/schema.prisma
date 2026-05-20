@@ -860,6 +860,7 @@ model ClassGroup {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, status, startsAt, name])
   @@index([tenantId, courseProductId])
   @@index([tenantId, primaryTeacherId])
   @@index([tenantId, campusId])
