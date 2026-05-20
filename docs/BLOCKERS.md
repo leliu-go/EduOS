@@ -28,6 +28,14 @@
 - Safe fallback implemented: MFA policy helpers, TOTP placeholder provider, tenant-scoped model draft, `.env.example` placeholders, tests, and RFC.
 - Whether later tasks can continue: Yes. Activity Engine and release tasks do not require production MFA secrets.
 
+## 2026-05-21 Stage 7 Activity Persistence Migration
+
+- Stage or PZ task: Stage 7 / PZ10 Activity Engine first stage
+- Risk or failure type: New production persistence models, indexes, audit events, and reporting aggregation require human migration review
+- What was intentionally not executed: No Activity Engine Prisma migration, production data backfill, reporting aggregation job, or destructive model change was executed.
+- Safe fallback implemented: Activity schemas, role-aware policy helpers, word check-in progress logic, tests, and RFC.
+- Whether later tasks can continue: Yes. Release documentation can proceed without persisted activity data.
+
 When a blocker appears, record:
 
 - Stage or PZ task

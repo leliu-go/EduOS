@@ -13,7 +13,7 @@ Run date: 2026-05-21
 | Stage 4 | Cloud resource management first stage | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 321 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 5 | Permission matrix upgrade | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 323 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (86 files / 331 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 7 | Activity Engine first stage for word check-in | Pending | Pending |
+| Stage 7 | Activity Engine first stage for word check-in | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (87 files / 338 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 8 | Windows installer RFC | Pending | Pending |
 | Stage 9 | Release, update, rollback docs and scripts | Pending | Pending |
 | Stage 10 | Final review, tests, reports | Pending | Pending |
@@ -72,3 +72,10 @@ Run date: 2026-05-21
 - Added TOTP placeholder interfaces that never generate provisioning URIs, plain-text secrets, backup codes, or real verification results.
 - Added a tenant-scoped MFA credential model draft in code and `docs/rfcs/RFC-MFA-TOTP.md`.
 - Added MFA `.env.example` placeholders and recorded production encryption, backup-code pepper, recovery, and migration work in `docs/HUMAN_ACTIONS.md` and `docs/BLOCKERS.md`.
+
+## Stage 7 Summary
+
+- Added Activity Engine validation schemas for `WORD_CHECKIN`, class/student assignment, and student submissions.
+- Added role-aware policy helpers for activity visibility, check-in submission, resource attachment, and resource use.
+- Added word check-in parsing and progress calculation helpers.
+- Added `docs/rfcs/RFC-ActivityEngine.md` and recorded persistence migration approval as a deferred human action.

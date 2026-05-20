@@ -20,6 +20,16 @@
 - What the user should do later: choose and provision production encryption/KMS, generate backup-code pepper, approve a non-destructive MFA credential migration, define recovery identity checks, and test enrollment/challenge/recovery flows in staging.
 - Whether later tasks can continue: Yes.
 
+## Activity Engine Persistence Approval
+
+- Stage or PZ task: Stage 7 / PZ10 Activity Engine first stage
+- Risk type: New tenant-scoped activity persistence models, indexes, audit events, and migration rollout
+- Risky action intentionally not executed: No Activity Engine Prisma migration, production aggregation job, or reporting data backfill was executed.
+- Safe fallback implemented: Activity validation schemas, role-aware activity policy helpers, word check-in progress logic, tests, and RFC.
+- Files created or updated: `features/activities/*`, `tests/activity-engine.test.ts`, `docs/rfcs/RFC-ActivityEngine.md`
+- What the user should do later: approve activity persistence models, audit event names, reporting indexes, and staged migration rollout.
+- Whether later tasks can continue: Yes.
+
 When a high-risk item is downgraded, record:
 
 - Stage or PZ task

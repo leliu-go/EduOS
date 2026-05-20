@@ -1,12 +1,12 @@
 import type { RoleKey } from "@/lib/rbac/permissions";
 
-type ResourceFileActor = {
+export type ResourceFileActor = {
   tenantId: string;
   roleKey: RoleKey;
   userId: string;
 };
 
-type ResourceFileScope = {
+export type ResourceFileScope = {
   tenantId: string;
   ownerTeacherUserId?: string | null;
   studentUserIds?: readonly string[];
