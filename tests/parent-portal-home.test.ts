@@ -62,4 +62,23 @@ describe("parent portal home", () => {
       expect(existsSync(join(process.cwd(), routeFile))).toBe(true);
     }
   });
+
+  it("provides a protected parent profile page for the bottom navigation", () => {
+    const navSource = readFileSync(
+      join(process.cwd(), "components/layout/mobile-bottom-nav.tsx"),
+      "utf8",
+    );
+    const pagePath = join(process.cwd(), "app/(mobile)/parent/me/page.tsx");
+
+    expect(navSource).toContain('href: "/parent/me"');
+    expect(existsSync(pagePath)).toBe(true);
+    expect(existsSync(join(process.cwd(), "app/(mobile)/parent/me/loading.tsx"))).toBe(true);
+    expect(existsSync(join(process.cwd(), "app/(mobile)/parent/me/error.tsx"))).toBe(true);
+
+    const page = readFileSync(pagePath, "utf8");
+
+    expect(page).toContain('requirePermission("route:parent"');
+    expect(page).toContain("getStudentsForParentUser(currentUser.tenantId, currentUser.id)");
+    expect(page).toContain("currentUser.tenantName");
+  });
 });

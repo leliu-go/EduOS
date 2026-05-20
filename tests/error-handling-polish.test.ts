@@ -42,6 +42,28 @@ describe("error handling polish", () => {
     expect(toaster).toContain("containerAriaLabel");
   });
 
+  it("keeps protected detail routes wrapped with loading and error states", () => {
+    const detailRoutes = [
+      "app/(dashboard)/dashboard/campuses/[campusId]",
+      "app/(dashboard)/dashboard/classes/[classGroupId]",
+      "app/(dashboard)/dashboard/courses/[courseProductId]",
+      "app/(dashboard)/dashboard/students/[studentId]",
+      "app/(dashboard)/dashboard/teachers/[teacherId]",
+      "app/(mobile)/student/check-in/[token]",
+      "app/(mobile)/student/resources/[resourceId]",
+    ];
+
+    for (const route of detailRoutes) {
+      const loadingPath = join(rootDir, route, "loading.tsx");
+      const errorPath = join(rootDir, route, "error.tsx");
+
+      expect(existsSync(loadingPath), `${route} loading`).toBe(true);
+      expect(existsSync(errorPath), `${route} error`).toBe(true);
+      expect(readFileSync(loadingPath, "utf8")).toContain("LoadingState");
+      expect(readFileSync(errorPath, "utf8")).toContain("ErrorState");
+    }
+  });
+
   it("keeps key form and workflow error messages specific", () => {
     const studentsPage = readProjectFile("app/(dashboard)/dashboard/students/page.tsx");
     const coursesPage = readProjectFile("app/(dashboard)/dashboard/courses/page.tsx");
