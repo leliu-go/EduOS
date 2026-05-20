@@ -44,6 +44,7 @@
 - Safe fallback implemented: Local commit `83d13b6 feat: add activity engine word checkin primitives` exists on `main`
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+- Resolution: Resolved by a later successful `git push origin main` that pushed through `c2c0438`.
 
 ## 2026-05-21 Stage 8 Windows Installer
 
@@ -61,6 +62,7 @@
 - Safe fallback implemented: Local commit `ef6db19 docs: add windows installer strategy` exists on `main`
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Failed to connect to github.com port 443 after 21111 ms: Could not connect to server`
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+- Resolution: Resolved by a later successful `git push origin main` that pushed through `c2c0438`.
 
 ## 2026-05-21 Stage 9 Release Publishing
 
