@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+import { buildErrorReasonStats } from "./error-reason-stats";
+
 const errorRecordInclude = {
   student: true,
   question: true,
@@ -31,6 +33,23 @@ export async function getStudentErrorRecords(tenantId: string, userId: string) {
   });
 }
 
+export async function getStudentErrorReasonStats(tenantId: string, userId: string) {
+  const rows = await prisma.errorRecord.groupBy({
+    by: ["errorReason"],
+    where: {
+      tenantId,
+      student: {
+        userId,
+      },
+    },
+    _count: {
+      _all: true,
+    },
+  });
+
+  return buildErrorReasonStats(rows);
+}
+
 export async function getParentErrorRecords(tenantId: string, parentUserId: string) {
   return prisma.errorRecord.findMany({
     where: {
@@ -50,4 +69,28 @@ export async function getParentErrorRecords(tenantId: string, parentUserId: stri
     orderBy: [{ createdAt: "desc" }],
     take: 50,
   });
+}
+
+export async function getParentErrorReasonStats(tenantId: string, parentUserId: string) {
+  const rows = await prisma.errorRecord.groupBy({
+    by: ["errorReason"],
+    where: {
+      tenantId,
+      student: {
+        guardians: {
+          some: {
+            guardian: {
+              tenantId,
+              userId: parentUserId,
+            },
+          },
+        },
+      },
+    },
+    _count: {
+      _all: true,
+    },
+  });
+
+  return buildErrorReasonStats(rows);
 }
