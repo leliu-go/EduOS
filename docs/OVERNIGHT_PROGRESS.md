@@ -9,7 +9,7 @@ Run date: 2026-05-21
 | Stage 0 | Rules, docs merge, productization plan | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (81 files / 309 tests) |
 | Stage 1 | Size audit and lightweight rules | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (82 files / 311 tests) |
 | Stage 2 | PWA install capability | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (83 files / 314 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 3 | Version and update detection | Pending | Pending |
+| Stage 3 | Version and update detection | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (84 files / 317 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 4 | Cloud resource management first stage | Pending | Pending |
 | Stage 5 | Permission matrix upgrade | Pending | Pending |
 | Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Pending | Pending |
@@ -43,3 +43,10 @@ Run date: 2026-05-21
 - Added a service worker that caches static shell assets and keeps `/api/`, login, dashboard, teacher, student, parent, and unauthorized routes network-only.
 - Added a global install prompt that registers the service worker without blocking login.
 - Added `docs/PWA_INSTALL_GUIDE.md`.
+
+## Stage 3 Summary
+
+- Added package-version based runtime metadata in `lib/version/app-version.ts`.
+- Added `/api/version` and `/api/update-manifest` safe public endpoints.
+- Added non-disruptive update banner, version badge, and admin version page.
+- Added `CHANGELOG.md` and `docs/VERSIONING_AND_UPDATES.md`.
