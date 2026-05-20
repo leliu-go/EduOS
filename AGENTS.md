@@ -188,3 +188,64 @@ Build the first demonstrable MVP in this order:
 10. Homework
 11. Mistake notebook
 12. Reports and dashboards
+
+## Productization Principles
+
+1. EduOS must remain one application with role-based access. Do not split it into separate principal, teacher, student, or parent apps.
+2. Use the same login entry. Route users to different dashboards after server-side role checks.
+3. Cloud-hosted Web/PWA is the first distribution model.
+4. A Windows installer, if implemented later, must be a lightweight desktop shell and must not bundle database, full backend, node_modules, or resources.
+5. Resources must be cloud-managed through storage provider abstraction. Local machines only cache authorized resources.
+6. Code must stay maintainable: no god components, god services, giant utils, unnecessary abstractions, or unrelated refactors.
+
+## Overnight Continue Rules
+
+1. Automatically continue low-risk tasks.
+2. For destructive migrations, real secrets, paid cloud services, production deployment, code signing, or irreversible actions: do not execute the risky action.
+3. For high-risk items, create RFCs, provider interfaces, local providers, `.env.example`, setup guides, and `docs/HUMAN_ACTIONS.md`, then continue.
+4. Do not pause just because a task requires a future human decision.
+5. Stop only if repository integrity is at risk, the project root is unclear, continuing would weaken security, or the same quality gate fails 3 times and blocks most later work.
+
+## Distribution Rules
+
+Do not include in release artifacts or installers:
+
+- `node_modules/`
+- `.next/cache/`
+- `test-results/`
+- `playwright-report/`
+- `coverage/`
+- local database files
+- uploaded resources
+- videos, word books, question banks, handouts
+- `.env` files
+- secrets or service keys
+
+## PWA Cache Rules
+
+Service worker must not cache auth tokens, sessions, finance data, student private data, admin-only responses, teacher-only responses, or full resource libraries.
+
+## Cloud Resource Rules
+
+1. Store metadata in DB.
+2. Store files through provider abstraction.
+3. Use local provider only for development.
+4. Create signed URLs only after server-side permission checks.
+5. Never expose cloud storage keys to client.
+
+## MFA Rules
+
+1. SUPER_ADMIN must require MFA.
+2. ORG_ADMIN/principal and FINANCE should support forced MFA by tenant policy.
+3. TOTP secrets must be encrypted.
+4. Backup codes must be hashed.
+5. MFA events must be audited.
+6. Do not log TOTP codes or secrets.
+
+## Activity Rules
+
+1. Admin/principal can create and publish activities.
+2. Students only see assigned published activities.
+3. Teachers only see own class activities.
+4. Activity resources must pass resource permission checks.
+5. Publish/pause/end/assignment changes must be audited.

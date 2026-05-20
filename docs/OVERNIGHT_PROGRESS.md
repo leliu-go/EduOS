@@ -1,0 +1,31 @@
+# EduOS Overnight Productization Progress
+
+Run date: 2026-05-21
+
+## Status
+
+| Stage | Scope | Status | Verification |
+| --- | --- | --- | --- |
+| Stage 0 | Rules, docs merge, productization plan | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (81 files / 309 tests) |
+| Stage 1 | Size audit and lightweight rules | Pending | Pending |
+| Stage 2 | PWA install capability | Pending | Pending |
+| Stage 3 | Version and update detection | Pending | Pending |
+| Stage 4 | Cloud resource management first stage | Pending | Pending |
+| Stage 5 | Permission matrix upgrade | Pending | Pending |
+| Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Pending | Pending |
+| Stage 7 | Activity Engine first stage for word check-in | Pending | Pending |
+| Stage 8 | Windows installer RFC | Pending | Pending |
+| Stage 9 | Release, update, rollback docs and scripts | Pending | Pending |
+| Stage 10 | Final review, tests, reports | Pending | Pending |
+
+## Notes
+
+- Existing uncommitted project changes were present before this overnight run. Productization changes should be staged and committed separately.
+- High-risk work will be downgraded to RFCs, provider abstractions, local mock providers, `.env.example` placeholders, and human action records.
+
+## Stage 0 Summary
+
+- Merged productization rules into root `AGENTS.md`.
+- Copied overnight run package docs into root `docs/`.
+- Created overnight progress, blocker, human-action, and implementation-plan records.
+- No high-risk action was executed.
