@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const errorReasonValues = [
   "CONCEPT_UNCLEAR",
   "CALCULATION_ERROR",
@@ -27,3 +29,17 @@ export const errorRecordSourceTypeLabels = {
   ASSESSMENT_RESULT: "测评结果",
   MANUAL: "手动记录",
 } as const;
+
+export const mistakeCorrectionSchema = z.object({
+  errorRecordId: z.string().cuid(),
+  returnTo: z.enum(["/student/mistakes", "/teacher/homework"]).default("/student/mistakes"),
+});
+
+export function getMistakeCorrectionValues(formData: FormData) {
+  return mistakeCorrectionSchema.safeParse({
+    errorRecordId: formData.get("errorRecordId"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
+}
+
+export type MistakeCorrectionValues = z.infer<typeof mistakeCorrectionSchema>;

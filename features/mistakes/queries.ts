@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 import { buildErrorReasonStats } from "./error-reason-stats";
+import { getTeacherErrorRecordScope } from "./scopes";
 
 const errorRecordInclude = {
   student: true,
@@ -93,4 +94,19 @@ export async function getParentErrorReasonStats(tenantId: string, parentUserId: 
   });
 
   return buildErrorReasonStats(rows);
+}
+
+export async function getTeacherMistakeCorrectionsForApproval(
+  tenantId: string,
+  teacherUserId: string,
+) {
+  return prisma.errorRecord.findMany({
+    where: {
+      ...getTeacherErrorRecordScope(tenantId, teacherUserId),
+      status: "CORRECTED",
+    },
+    include: errorRecordInclude,
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    take: 50,
+  });
 }

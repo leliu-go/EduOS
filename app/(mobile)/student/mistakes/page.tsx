@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorRecordCard } from "@/features/mistakes/error-record-card";
 import { ErrorReasonStats } from "@/features/mistakes/error-reason-stats-card";
+import { MistakeCorrectionActionForm } from "@/features/mistakes/mistake-correction-form";
 import { getStudentErrorReasonStats, getStudentErrorRecords } from "@/features/mistakes/queries";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
@@ -32,7 +33,19 @@ export default async function StudentMistakesPage() {
       <section className="grid gap-3">
         <h2 className="text-base font-semibold tracking-normal text-foreground">我的错题</h2>
         {records.map((item) => (
-          <ErrorRecordCard key={item.id} item={item} />
+          <ErrorRecordCard
+            key={item.id}
+            item={item}
+            action={
+              item.status === "PENDING_CORRECTION" ? (
+                <MistakeCorrectionActionForm
+                  errorRecordId={item.id}
+                  intent="submit"
+                  returnTo="/student/mistakes"
+                />
+              ) : null
+            }
+          />
         ))}
       </section>
     </section>

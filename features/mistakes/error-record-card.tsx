@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -59,9 +61,11 @@ function getKnowledgePointLabel(item: ErrorRecordCardItem) {
 
 export function ErrorRecordCard({
   item,
+  action,
   showStudent = false,
 }: {
   item: ErrorRecordCardItem;
+  action?: ReactNode;
   showStudent?: boolean;
 }) {
   return (
@@ -72,9 +76,12 @@ export function ErrorRecordCard({
             <CardTitle className="line-clamp-2">{getErrorRecordTitle(item)}</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">{getKnowledgePointLabel(item)}</p>
           </div>
-          <Badge variant={item.status === "MASTERED" ? "secondary" : "outline"}>
-            {errorRecordStatusLabels[item.status]}
-          </Badge>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <Badge variant={item.status === "MASTERED" ? "secondary" : "outline"}>
+              {errorRecordStatusLabels[item.status]}
+            </Badge>
+            {action}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-muted-foreground">

@@ -10,6 +10,9 @@ import {
   getTeacherHomeworkSubmissionsForCorrection,
   getTeacherNotSubmittedHomework,
 } from "@/features/homework/queries";
+import { ErrorRecordCard } from "@/features/mistakes/error-record-card";
+import { MistakeCorrectionActionForm } from "@/features/mistakes/mistake-correction-form";
+import { getTeacherMistakeCorrectionsForApproval } from "@/features/mistakes/queries";
 import { homeworkReminderStatusLabels } from "@/features/homework/reminders";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
@@ -20,6 +23,9 @@ type TeacherCorrectionSubmission = Awaited<
 type HomeworkCorrectionOptions = Awaited<ReturnType<typeof getHomeworkCorrectionOptions>>;
 type TeacherNotSubmittedHomework = Awaited<
   ReturnType<typeof getTeacherNotSubmittedHomework>
+>[number];
+type TeacherMistakeCorrection = Awaited<
+  ReturnType<typeof getTeacherMistakeCorrectionsForApproval>
 >[number];
 type HomeworkTarget = {
   classGroup: { name: string } | null;
@@ -133,19 +139,42 @@ function TeacherNotSubmittedCard({ item }: { item: TeacherNotSubmittedHomework }
   );
 }
 
+function TeacherMistakeCorrectionCard({ item }: { item: TeacherMistakeCorrection }) {
+  return (
+    <ErrorRecordCard
+      item={item}
+      showStudent
+      action={
+        <MistakeCorrectionActionForm
+          errorRecordId={item.id}
+          intent="approve"
+          returnTo="/teacher/homework"
+        />
+      }
+    />
+  );
+}
+
 export default async function TeacherHomeworkPage() {
   const currentUser = await requirePermission("homework:manage", {
     nextPath: "/teacher/homework",
     unauthorizedRedirectTo: "/unauthorized",
   });
-  const [homeworkItems, pendingSubmissions, notSubmittedItems, options, correctionOptions] =
-    await Promise.all([
-      getTeacherHomeworkList(currentUser.tenantId, currentUser.id),
-      getTeacherHomeworkSubmissionsForCorrection(currentUser.tenantId, currentUser.id),
-      getTeacherNotSubmittedHomework(currentUser.tenantId, currentUser.id),
-      getHomeworkAssignmentOptions(currentUser.tenantId, { teacherUserId: currentUser.id }),
-      getHomeworkCorrectionOptions(currentUser.tenantId),
-    ]);
+  const [
+    homeworkItems,
+    pendingSubmissions,
+    notSubmittedItems,
+    mistakeCorrections,
+    options,
+    correctionOptions,
+  ] = await Promise.all([
+    getTeacherHomeworkList(currentUser.tenantId, currentUser.id),
+    getTeacherHomeworkSubmissionsForCorrection(currentUser.tenantId, currentUser.id),
+    getTeacherNotSubmittedHomework(currentUser.tenantId, currentUser.id),
+    getTeacherMistakeCorrectionsForApproval(currentUser.tenantId, currentUser.id),
+    getHomeworkAssignmentOptions(currentUser.tenantId, { teacherUserId: currentUser.id }),
+    getHomeworkCorrectionOptions(currentUser.tenantId),
+  ]);
 
   return (
     <div className="grid gap-4">
@@ -174,6 +203,22 @@ export default async function TeacherHomeworkPage() {
           ))
         ) : (
           <EmptyState title="暂无待批改" description="学生提交作业后，会在这里进入批改流程。" />
+        )}
+      </section>
+
+      <section className="grid gap-3">
+        <div>
+          <h3 className="text-sm font-semibold tracking-normal text-foreground">待确认订正</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            学生提交错题订正后，由老师确认是否已经掌握。
+          </p>
+        </div>
+        {mistakeCorrections.length > 0 ? (
+          mistakeCorrections.map((item) => (
+            <TeacherMistakeCorrectionCard key={item.id} item={item} />
+          ))
+        ) : (
+          <EmptyState title="暂无待确认订正" description="学生提交错题订正后，会在这里等待确认。" />
         )}
       </section>
 
