@@ -79,6 +79,7 @@ export async function getParentTimetable(tenantId: string, userId: string, from 
               guardians: {
                 some: {
                   guardian: {
+                    tenantId,
                     userId,
                   },
                 },
@@ -99,6 +100,7 @@ export async function getParentTimetable(tenantId: string, userId: string, from 
                 guardians: {
                   some: {
                     guardian: {
+                      tenantId,
                       userId,
                     },
                   },
