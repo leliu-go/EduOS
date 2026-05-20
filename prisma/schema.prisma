@@ -182,6 +182,7 @@ model Tenant {
   classGroupStudents ClassGroupStudent[]
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
+  courseConsumptions CourseConsumption[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -328,6 +329,7 @@ model StudentProfile {
   classGroups ClassGroupStudent[]
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
+  courseConsumptions CourseConsumption[]
   attendances Attendance[]
   checkIns    CheckIn[]
   createdAt DateTime       @default(now())
@@ -474,6 +476,7 @@ model CourseProduct {
   classGroups ClassGroup[]
   enrollments Enrollment[]
   courseAccounts CourseAccount[]
+  courseConsumptions CourseConsumption[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -543,6 +546,7 @@ model CourseAccount {
   frozenHours     Int                 @default(0)
   status          CourseAccountStatus @default(ACTIVE)
   enrollments     Enrollment[]
+  courseConsumptions CourseConsumption[]
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
@@ -622,6 +626,7 @@ model Schedule {
   changeLogs       ScheduleChangeLog[]
   attendances      Attendance[]
   checkIns         CheckIn[]
+  courseConsumptions CourseConsumption[]
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
@@ -663,6 +668,7 @@ model Attendance {
   student    StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   status     AttendanceStatus
   notes      String?
+  courseConsumption CourseConsumption?
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
@@ -693,4 +699,31 @@ model CheckIn {
   @@index([tenantId, scheduleId])
   @@index([tenantId, studentId])
   @@index([tenantId, confirmedAt])
+}
+
+model CourseConsumption {
+  id              String         @id @default(cuid())
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  scheduleId      String
+  schedule        Schedule       @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  attendanceId    String?        @unique
+  attendance      Attendance?    @relation(fields: [attendanceId], references: [id], onDelete: SetNull)
+  studentId       String
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseProductId String
+  courseProduct   CourseProduct  @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  courseAccountId String
+  courseAccount   CourseAccount  @relation(fields: [courseAccountId], references: [id], onDelete: Restrict)
+  consumedHours   Int
+  reason          String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([tenantId, scheduleId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@index([tenantId, courseAccountId])
+  @@index([tenantId, courseProductId])
+  @@index([tenantId, createdAt])
 }

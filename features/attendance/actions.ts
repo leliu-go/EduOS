@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { writeAuditLog } from "@/lib/audit/audit-log";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/rbac/require-permission";
+import { createCourseConsumptionForAttendance } from "@/features/course-consumptions/auto-consumption";
 
 import {
   getAttendanceRecordFormValues,
@@ -111,6 +112,7 @@ export async function recordLessonAttendanceAction(formData: FormData) {
         },
         classGroup: {
           select: {
+            courseProductId: true,
             students: {
               select: {
                 studentId: true,
@@ -171,6 +173,23 @@ export async function recordLessonAttendanceAction(formData: FormData) {
       });
 
       updatedAttendances.push(attendance);
+      await createCourseConsumptionForAttendance(tx, {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        schedule: {
+          id: schedule.id,
+          startAt: schedule.startAt,
+          endAt: schedule.endAt,
+          classGroup: {
+            courseProductId: schedule.classGroup.courseProductId,
+          },
+        },
+        attendance: {
+          id: attendance.id,
+          studentId: attendance.studentId,
+          status: attendance.status,
+        },
+      });
     }
 
     const afterJson = {
@@ -346,6 +365,14 @@ export async function createStudentQrCheckInAction(formData: FormData) {
         classGroup: {
           students: {
             some: {
+              student: {
+                userId: currentUser.id,
+              },
+            },
+          },
+          enrollments: {
+            some: {
+              status: "ACTIVE",
               student: {
                 userId: currentUser.id,
               },

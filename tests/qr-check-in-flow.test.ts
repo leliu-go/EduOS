@@ -76,8 +76,14 @@ describe("QR check-in flow", () => {
     expect(actionSource).toContain("verifyCheckInQrToken");
     expect(actionSource).toContain('requirePermission("route:student"');
     expect(actionSource).toContain("tenantId: currentUser.tenantId");
-    expect(actionSource).toContain("userId: currentUser.id");
-    expect(actionSource).toContain("enrollments:");
+    const qrActionBody = actionSource.slice(
+      actionSource.indexOf("export async function createStudentQrCheckInAction"),
+      actionSource.indexOf("export async function confirmStudentCheckInAction"),
+    );
+
+    expect(qrActionBody).toContain("userId: currentUser.id");
+    expect(qrActionBody).toContain("enrollments:");
+    expect(qrActionBody).toContain('status: "ACTIVE"');
     expect(actionSource).toContain("tx.checkIn.upsert");
   });
 
