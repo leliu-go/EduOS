@@ -320,6 +320,18 @@ enum TeacherCompensationRuleStatus {
   ARCHIVED
 }
 
+enum ComplianceRuleType {
+  FORBIDDEN_SCHEDULING_WINDOW
+  MAX_PREPAID_HOURS
+  CONTRACT_REQUIRED
+  TEACHER_QUALIFICATION_REQUIRED
+}
+
+enum ComplianceRuleSeverity {
+  WARN
+  BLOCK
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -367,6 +379,7 @@ model Tenant {
   contractTemplates ContractTemplate[]
   contracts   Contract[]
   teacherCompensationRules TeacherCompensationRule[]
+  complianceRules ComplianceRule[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -1072,6 +1085,26 @@ model TeacherCompensationRule {
   @@index([tenantId, calculationMode])
   @@index([tenantId, status])
   @@index([tenantId, effectiveFrom])
+  @@index([tenantId, createdAt])
+}
+
+model ComplianceRule {
+  id          String                 @id @default(cuid())
+  tenantId    String
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  ruleType    ComplianceRuleType
+  severity    ComplianceRuleSeverity
+  configJson  Json
+  status      ConfigStatus           @default(ACTIVE)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@unique([tenantId, ruleType, name])
+  @@index([tenantId])
+  @@index([tenantId, ruleType])
+  @@index([tenantId, severity])
+  @@index([tenantId, status])
   @@index([tenantId, createdAt])
 }
 
