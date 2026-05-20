@@ -241,6 +241,7 @@ model Tenant {
   homeworkCorrections HomeworkCorrection[]
   learningTasks LearningTask[]
   learningTaskCheckIns LearningTaskCheckIn[]
+  knowledgePoints KnowledgePoint[]
   lessons     Lesson[]
   schedules   Schedule[]
   scheduleChangeLogs ScheduleChangeLog[]
@@ -482,6 +483,7 @@ model Subject {
   code      String?
   status    ConfigStatus @default(ACTIVE)
   courseProducts CourseProduct[]
+  knowledgePoints KnowledgePoint[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -498,6 +500,7 @@ model Grade {
   sortOrder Int          @default(0)
   status    ConfigStatus @default(ACTIVE)
   courseProducts CourseProduct[]
+  knowledgePoints KnowledgePoint[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -522,6 +525,34 @@ model Term {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, startsAt])
+}
+
+model KnowledgePoint {
+  id        String       @id @default(cuid())
+  tenantId  String
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  gradeId   String
+  grade     Grade        @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  chapter   String
+  name      String
+  code      String?
+  sortOrder Int          @default(0)
+  parentId  String?
+  parent    KnowledgePoint? @relation("KnowledgePointHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  KnowledgePoint[] @relation("KnowledgePointHierarchy")
+  status    ConfigStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([tenantId, subjectId, gradeId, chapter, name, parentId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, subjectId, gradeId])
+  @@index([tenantId, parentId])
+  @@index([tenantId, chapter])
+  @@index([tenantId, sortOrder])
 }
 
 model CourseProduct {
