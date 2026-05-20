@@ -12,7 +12,7 @@ Run date: 2026-05-21
 | Stage 3 | Version and update detection | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (84 files / 317 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 4 | Cloud resource management first stage | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 321 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 5 | Permission matrix upgrade | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (85 files / 323 tests); `pnpm test:e2e` pass (72 tests) |
-| Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Pending | Pending |
+| Stage 6 | MFA/TOTP plan, model/interface, safe hooks | Complete | `pnpm lint` pass; `pnpm typecheck` pass; `pnpm test` pass (86 files / 331 tests); `pnpm test:e2e` pass (72 tests) |
 | Stage 7 | Activity Engine first stage for word check-in | Pending | Pending |
 | Stage 8 | Windows installer RFC | Pending | Pending |
 | Stage 9 | Release, update, rollback docs and scripts | Pending | Pending |
@@ -65,3 +65,10 @@ Run date: 2026-05-21
 - Kept `security:policy:manage`, `security:mfa:enforce`, and `updates:manage` at the super-admin/organization-admin boundary.
 - Added `docs/PERMISSION_MATRIX.md` to document role boundaries and productization permission intent.
 - Added RBAC tests covering student, parent, teacher, finance, campus admin, and organization admin boundaries.
+
+## Stage 6 Summary
+
+- Added role-aware MFA policy helpers for high-privilege accounts and optional all-staff enforcement.
+- Added TOTP placeholder interfaces that never generate provisioning URIs, plain-text secrets, backup codes, or real verification results.
+- Added a tenant-scoped MFA credential model draft in code and `docs/rfcs/RFC-MFA-TOTP.md`.
+- Added MFA `.env.example` placeholders and recorded production encryption, backup-code pepper, recovery, and migration work in `docs/HUMAN_ACTIONS.md` and `docs/BLOCKERS.md`.
