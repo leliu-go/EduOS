@@ -46,6 +46,7 @@ Final verification:
 - Stage K release/rollback/update: strengthened release docs and `scripts/check-release.ps1` to check migration safety, `.env.production.local`, and service worker cache boundaries without deploying or signing.
 - Final commit: created local commit `f6b9eb0 productization: prepare aliyun staging and cloud client architecture`.
 - Final push retry: failed with GitHub HTTPS reset/timeout; recorded recovery docs and refreshed fallback artifacts under `artifacts/patches`, `artifacts/eduos-day2-stage.bundle`, and `artifacts/eduos-day2-source.tar.gz`.
+- Push recovery: `git push origin main` later succeeded and pushed `main` through `c0b1e09`.
 
 Environment:
 

@@ -42,8 +42,9 @@
 - Risk or failure type: Network failure while pushing to GitHub
 - What was intentionally not executed: No destructive retry workaround or credential change was attempted.
 - Safe fallback implemented: Local commits for Day 2 productization and push recovery docs exist on `main`; updated patch, bundle, and source archive artifacts were generated under `artifacts/`.
-- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
-- Whether later tasks can continue: Yes. Retry `git push origin main` when network connectivity to GitHub is stable, or use `docs/GITHUB_PUSH_RECOVERY.md`.
+- Exact blocker: GitHub HTTPS push failed from this machine with reset/timeout before recovery.
+- Whether later tasks can continue: Yes.
+- Resolution: Resolved by a later successful `git push origin main` that pushed through `c0b1e09`.
 
 ## 2026-05-21 Stage 7 Activity Persistence Migration
 

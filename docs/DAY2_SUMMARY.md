@@ -48,5 +48,5 @@ Date: 2026-05-21
 
 - Committed locally: `f6b9eb0 productization: prepare aliyun staging and cloud client architecture`.
 - Committed locally: `docs: record day 2 push recovery`.
-- Push result: failed with GitHub network reset/timeout from this machine.
+- Push result: recovered; `git push origin main` succeeded and pushed `main` through `c0b1e09`.
 - Recovery artifacts refreshed: `artifacts/patches`, `artifacts/eduos-day2-stage.bundle`, and `artifacts/eduos-day2-source.tar.gz`.
