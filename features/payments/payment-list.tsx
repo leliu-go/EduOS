@@ -51,7 +51,12 @@ export function PaymentList({ payments }: PaymentListProps) {
   return (
     <section className="grid gap-3">
       {payments.map((payment) => (
-        <Card key={payment.id} className="shadow-none">
+        <Card
+          key={payment.id}
+          className="shadow-none"
+          data-testid="finance-payment-card"
+          data-transaction-no={payment.transactionNo ?? ""}
+        >
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -70,7 +75,7 @@ export function PaymentList({ payments }: PaymentListProps) {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-4">
+          <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-5">
             <div>
               <p className="text-xs">收款金额</p>
               <p className="mt-1 font-semibold text-foreground">{formatPaymentAmount(payment)}</p>
@@ -86,6 +91,12 @@ export function PaymentList({ payments }: PaymentListProps) {
               <p className="text-xs">确认时间</p>
               <p className="mt-1 font-semibold text-foreground">
                 {formatPaymentDate(payment.paidAt)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs">交易号</p>
+              <p className="mt-1 break-all font-semibold text-foreground">
+                {payment.transactionNo ?? "未填写"}
               </p>
             </div>
             <div>

@@ -37,7 +37,7 @@ export function PaymentCreateDialog({ orders }: PaymentCreateDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button disabled={!hasOrders}>
+        <Button data-testid="finance-new-payment-button" disabled={!hasOrders}>
           <PlusCircle className="size-4" aria-hidden="true" />
           新增收款
         </Button>
@@ -47,12 +47,17 @@ export function PaymentCreateDialog({ orders }: PaymentCreateDialogProps) {
           <DialogTitle>新增收款</DialogTitle>
           <DialogDescription>录入线下已收或待确认款项，不会连接真实支付通道。</DialogDescription>
         </DialogHeader>
-        <form action={createManualPaymentAction} className="grid gap-5">
+        <form
+          action={createManualPaymentAction}
+          className="grid gap-5"
+          data-testid="finance-new-payment-form"
+        >
           <div className="grid gap-2">
             <Label htmlFor="payment-order">关联订单</Label>
             <select
               id="payment-order"
               name="orderId"
+              data-testid="finance-payment-order-select"
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               required
             >
@@ -131,7 +136,9 @@ export function PaymentCreateDialog({ orders }: PaymentCreateDialogProps) {
             />
           </div>
           <DialogFooter>
-            <Button type="submit">保存收款</Button>
+            <Button type="submit" data-testid="finance-payment-submit">
+              保存收款
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -506,6 +506,35 @@ async function seedGoldenPath() {
       },
     });
 
+    await tx.order.upsert({
+      where: {
+        tenantId_orderNo: {
+          tenantId: tenant.id,
+          orderNo: "QA-ORDER-20260522-UI-PAYMENT",
+        },
+      },
+      create: {
+        tenantId: tenant.id,
+        orderNo: "QA-ORDER-20260522-UI-PAYMENT",
+        studentId: student.id,
+        guardianId: guardian.id,
+        courseProductId: courseProduct.id,
+        totalAmount: "500",
+        payableAmount: "500",
+        status: "PENDING_PAYMENT",
+        notes: "QA_GOLDEN_PATH UI payment submission order",
+      },
+      update: {
+        studentId: student.id,
+        guardianId: guardian.id,
+        courseProductId: courseProduct.id,
+        totalAmount: "500",
+        payableAmount: "500",
+        status: "PENDING_PAYMENT",
+        notes: "QA_GOLDEN_PATH UI payment submission order",
+      },
+    });
+
     const payment = await upsertFirst(
       () =>
         tx.payment.findFirst({

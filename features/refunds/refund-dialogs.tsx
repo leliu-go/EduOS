@@ -51,7 +51,11 @@ export function RefundRequestDialog({ options }: RefundRequestDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" disabled={!hasAccounts}>
+        <Button
+          data-testid="finance-refund-request-button"
+          variant="outline"
+          disabled={!hasAccounts}
+        >
           <FileClock className="size-4" aria-hidden="true" />
           退费申请
         </Button>
@@ -63,7 +67,11 @@ export function RefundRequestDialog({ options }: RefundRequestDialogProps) {
             创建退费申请不会删除原订单和原收款，审批后才会调整课时账户并写入审计日志。
           </DialogDescription>
         </DialogHeader>
-        <form action={createRefundRequestAction} className="grid gap-5">
+        <form
+          action={createRefundRequestAction}
+          className="grid gap-5"
+          data-testid="finance-refund-request-form"
+        >
           <input type="hidden" name="studentId" value={selectedAccount?.studentId ?? ""} />
           <input type="hidden" name="guardianId" value={guardian?.id ?? ""} />
           <input type="hidden" name="orderId" value={selectedOrder?.id ?? ""} />
@@ -75,6 +83,7 @@ export function RefundRequestDialog({ options }: RefundRequestDialogProps) {
             <select
               id="refund-course-account"
               name="courseAccountId"
+              data-testid="finance-refund-course-account-select"
               value={selectedCourseAccountId}
               onChange={(event) => setSelectedCourseAccountId(event.target.value)}
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -107,7 +116,14 @@ export function RefundRequestDialog({ options }: RefundRequestDialogProps) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="refund-amount">退费金额</Label>
-              <Input id="refund-amount" name="amount" type="number" min="0.01" step="0.01" required />
+              <Input
+                id="refund-amount"
+                name="amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+              />
             </div>
           </div>
 
@@ -123,7 +139,9 @@ export function RefundRequestDialog({ options }: RefundRequestDialogProps) {
             />
           </div>
           <DialogFooter>
-            <Button type="submit">提交退费申请</Button>
+            <Button type="submit" data-testid="finance-refund-submit">
+              提交退费申请
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -137,7 +155,10 @@ export function RefundApprovalPanel({ options }: RefundRequestDialogProps) {
   }
 
   return (
-    <div className="grid gap-3 rounded-md border bg-card p-4">
+    <div
+      className="grid gap-3 rounded-md border bg-card p-4"
+      data-testid="finance-refund-approval-panel"
+    >
       <div>
         <h2 className="text-base font-semibold tracking-normal">待审核退费</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -145,7 +166,13 @@ export function RefundApprovalPanel({ options }: RefundRequestDialogProps) {
         </p>
       </div>
       {options.pendingRefunds.map((refund) => (
-        <form key={refund.id} action={approveRefundAction} className="grid gap-3 rounded-md border p-3">
+        <form
+          key={refund.id}
+          action={approveRefundAction}
+          className="grid gap-3 rounded-md border p-3"
+          data-testid="finance-refund-approval-form"
+          data-refund-id={refund.id}
+        >
           <input type="hidden" name="refundId" value={refund.id} />
           <div className="text-sm">
             <p className="font-medium">
@@ -165,7 +192,12 @@ export function RefundApprovalPanel({ options }: RefundRequestDialogProps) {
               required
             />
           </div>
-          <Button type="submit" variant="secondary" className="w-fit">
+          <Button
+            type="submit"
+            variant="secondary"
+            className="w-fit"
+            data-testid="finance-refund-approval-submit"
+          >
             <ShieldCheck className="size-4" aria-hidden="true" />
             审批通过
           </Button>
