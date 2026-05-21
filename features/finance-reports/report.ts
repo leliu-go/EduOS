@@ -23,6 +23,10 @@ export type FinanceReportSummary = {
     remainingHours: number;
     accountCount: number;
   };
+  receivables: {
+    pendingOrderAmount: number;
+    pendingOrderCount: number;
+  };
 };
 
 function decimalToNumber(value: DecimalLike | number | null | undefined) {
@@ -59,6 +63,7 @@ export async function getFinanceReportSummary(tenantId: string): Promise<Finance
     pendingPayments,
     approvedRefunds,
     pendingRefunds,
+    pendingOrders,
     courseConsumptions,
     courseAccountLiability,
   ] = await prisma.$transaction([
@@ -105,6 +110,18 @@ export async function getFinanceReportSummary(tenantId: string): Promise<Finance
       },
       _sum: {
         amount: true,
+      },
+      _count: {
+        _all: true,
+      },
+    }),
+    prisma.order.aggregate({
+      where: {
+        tenantId,
+        status: "PENDING_PAYMENT",
+      },
+      _sum: {
+        payableAmount: true,
       },
       _count: {
         _all: true,
@@ -176,6 +193,10 @@ export async function getFinanceReportSummary(tenantId: string): Promise<Finance
       remainingHours,
       accountCount: courseAccountLiability._count._all,
     },
+    receivables: {
+      pendingOrderAmount: roundMoney(decimalToNumber(pendingOrders._sum.payableAmount)),
+      pendingOrderCount: pendingOrders._count._all,
+    },
   };
 }
 
@@ -195,6 +216,8 @@ export function buildFinanceReportCsv(summary: FinanceReportSummary) {
     ],
     ["remainingCourseLiability.remainingHours", summary.remainingCourseLiability.remainingHours],
     ["remainingCourseLiability.accountCount", summary.remainingCourseLiability.accountCount],
+    ["receivables.pendingOrderAmount", summary.receivables.pendingOrderAmount],
+    ["receivables.pendingOrderCount", summary.receivables.pendingOrderCount],
   ];
 
   return rows.map(csvRow).join("\n");

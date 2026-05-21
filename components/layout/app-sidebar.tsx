@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   BookOpen,
   Building2,
   CalendarDays,
@@ -13,11 +12,13 @@ import {
   School,
   ScrollText,
   Settings,
+  ShieldCheck,
   Sparkles,
   Users,
   WalletCards,
 } from "lucide-react";
 
+import { getAppVersion } from "@/lib/version/app-version";
 import { cn } from "@/lib/utils";
 
 type SidebarIcon = typeof Home;
@@ -37,7 +38,7 @@ type SidebarGroup = {
 const sidebarGroups: SidebarGroup[] = [
   {
     label: "首页",
-    items: [{ label: "机构首页", href: "/dashboard", icon: Home, active: true }],
+    items: [{ label: "工作台", href: "/dashboard", icon: Home, active: true }],
   },
   {
     label: "招生",
@@ -75,21 +76,21 @@ const sidebarGroups: SidebarGroup[] = [
     ],
   },
   {
-    label: "数据",
-    items: [{ label: "数据看板", href: "/dashboard", icon: BarChart3 }],
-  },
-  {
     label: "设置",
     items: [
       { label: "账号", href: "/dashboard/accounts", icon: Users },
       { label: "基础配置", href: "/dashboard/academic-config", icon: Settings },
+      { label: "系统设置", href: "/dashboard/settings", icon: ShieldCheck },
+      { label: "版本与更新", href: "/dashboard/settings/version", icon: Sparkles },
     ],
   },
 ];
 
 function AppSidebar() {
+  const version = getAppVersion();
+
   return (
-    <aside className="hidden min-h-screen w-[17.5rem] shrink-0 border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)] lg:block">
+    <aside className="hidden min-h-screen w-[17.5rem] shrink-0 border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)] lg:flex lg:flex-col">
       <div className="flex h-20 items-center border-b px-5">
         <div className="flex items-center gap-3">
           <div className="flex size-11 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -101,7 +102,7 @@ function AppSidebar() {
           </div>
         </div>
       </div>
-      <nav aria-label="主导航" className="px-3 py-4">
+      <nav aria-label="主导航" className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
@@ -133,6 +134,16 @@ function AppSidebar() {
           ))}
         </div>
       </nav>
+      <div className="border-t px-5 py-4 text-xs text-muted-foreground">
+        <a
+          href="/dashboard/settings/version"
+          className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent hover:text-accent-foreground"
+          aria-label={`当前版本 v${version.version}`}
+        >
+          <span>当前版本</span>
+          <span className="font-medium text-foreground">v{version.version}</span>
+        </a>
+      </div>
     </aside>
   );
 }

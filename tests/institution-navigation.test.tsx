@@ -15,10 +15,12 @@ describe("institution navigation polish", () => {
 
     const navigation = screen.getByRole("navigation", { name: "主导航" });
 
-    for (const group of ["首页", "招生", "教务", "教学", "财务", "数据", "设置"]) {
+    for (const group of ["首页", "招生", "教务", "教学", "财务", "设置"]) {
       expect(within(navigation).getByText(group)).toBeInTheDocument();
     }
 
+    expect(within(navigation).queryByText("数据")).not.toBeInTheDocument();
+    expect(within(navigation).queryByRole("link", { name: "数据看板" })).not.toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "招生 CRM" })).toHaveAttribute(
       "href",
       "/dashboard/enrollments",
@@ -35,6 +37,10 @@ describe("institution navigation polish", () => {
       "href",
       "/dashboard/payments",
     );
+    expect(within(navigation).getByRole("link", { name: "版本与更新" })).toHaveAttribute(
+      "href",
+      "/dashboard/settings/version",
+    );
   });
 
   it("keeps sidebar routes explicit without placeholder links", () => {
@@ -42,6 +48,7 @@ describe("institution navigation polish", () => {
 
     expect(source).toContain("sidebarGroups");
     expect(source).not.toContain('href: "#"');
+    expect(source).not.toContain("数据看板");
     for (const href of [
       "/dashboard",
       "/dashboard/enrollments",
@@ -50,6 +57,7 @@ describe("institution navigation polish", () => {
       "/dashboard/payments",
       "/dashboard/finance-reports",
       "/dashboard/accounts",
+      "/dashboard/settings/version",
     ]) {
       expect(source).toContain(`href: "${href}"`);
     }

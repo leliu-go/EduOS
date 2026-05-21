@@ -19,6 +19,14 @@ variables. Secrets and connection strings are never included.
 
 EduOS uses a non-disruptive update banner. Users decide when to refresh so active attendance, finance, homework, or resource workflows are not interrupted.
 
+## Day 3 UI Locations
+
+- Sidebar bottom shows the current version as `v{package.json version}`.
+- Settings navigation includes `版本与更新` at `/dashboard/settings/version`.
+- The version page shows current version, build id, build time, short commit hash, release time, update manifest fields, and a manual `检查更新` button.
+- When a newer manifest is detected, users can choose `稍后` or `立即刷新`; EduOS does not force-refresh active forms.
+- The older `/dashboard/version` route now redirects to `/dashboard/settings/version` to avoid duplicate version pages.
+
 ## Future Release Flow
 
 Production release publishing, CDN invalidation, and app-store style rollout are high-risk operational tasks. They should be executed by a human operator using the release checklist after validating staging.

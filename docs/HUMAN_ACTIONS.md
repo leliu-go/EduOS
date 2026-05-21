@@ -79,3 +79,11 @@ When a high-risk item is downgraded, record:
 - Files created or updated
 - What the user should do later
 - Whether later tasks can continue
+
+## 2026-05-21 Day 3 Product Experience Follow-Ups
+
+- Review the new finance workflow and decide whether order creation/renewal should be a guided wizard in Day 4.
+- Decide refund approval policy: finance-only, principal final approval, or amount-based approval tiers.
+- Approve whether audit log UI should be exposed to finance staff or only admins.
+- Approve when to connect staging release manifest publishing; current UI only reads the safe local manifest endpoint.
+- Approve any real payment provider exploration separately. No real payment provider was connected in Day 3.

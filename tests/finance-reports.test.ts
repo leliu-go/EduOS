@@ -8,6 +8,7 @@ type FinanceReportModule = {
     refunds: { approvedAmount: number; pendingAmount: number; count: number };
     courseConsumptionRevenue: { consumedHours: number; estimatedRevenue: number };
     remainingCourseLiability: { remainingHours: number; accountCount: number };
+    receivables: { pendingOrderAmount: number; pendingOrderCount: number };
   }) => string;
 };
 
@@ -27,6 +28,7 @@ describe("finance reports", () => {
     expect(source).toContain("tenantId");
     expect(source).toContain("prisma.payment.aggregate");
     expect(source).toContain("prisma.refund.aggregate");
+    expect(source).toContain("prisma.order.aggregate");
     expect(source).toContain("prisma.courseConsumption.findMany");
     expect(source).toContain("prisma.courseAccount.aggregate");
 
@@ -37,11 +39,13 @@ describe("finance reports", () => {
       refunds: { approvedAmount: 200, pendingAmount: 50, count: 2 },
       courseConsumptionRevenue: { consumedHours: 8, estimatedRevenue: 640 },
       remainingCourseLiability: { remainingHours: 32, accountCount: 6 },
+      receivables: { pendingOrderAmount: 900, pendingOrderCount: 3 },
     });
 
     expect(csv).toContain("metric,value");
     expect(csv).toContain("payments.confirmedAmount,1200");
     expect(csv).toContain("remainingCourseLiability.remainingHours,32");
+    expect(csv).toContain("receivables.pendingOrderAmount,900");
   });
 
   it("renders a role-protected finance report page and export route", () => {
@@ -69,6 +73,10 @@ describe("finance reports", () => {
     expect(pageSource).toContain('requirePermission("finance:reports:view"');
     expect(pageSource).toContain("getFinanceReportSummary");
     expect(pageSource).toContain("/dashboard/finance-reports/export");
+    expect(pageSource).toContain("实收金额");
+    expect(pageSource).toContain("已课消收入");
+    expect(pageSource).toContain("未消课余额");
+    expect(pageSource).toContain("欠费/应收");
     expect(routeSource).toContain('requirePermission("finance:reports:view"');
     expect(routeSource).toContain("buildFinanceReportCsv");
     expect(routeSource).toContain("Content-Disposition");

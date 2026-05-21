@@ -36,19 +36,32 @@ describe("versioning and update detection", () => {
     expect(updateRoute).not.toContain("MFA_TOTP_SECRET_ENCRYPTION_KEY");
   });
 
-  it("adds a non-disruptive update banner and admin version page", () => {
+  it("adds non-disruptive update UI and admin version pages", () => {
     expect(existsSync(join(rootDir, "components/version/update-available-banner.tsx"))).toBe(true);
     expect(existsSync(join(rootDir, "components/version/version-badge.tsx"))).toBe(true);
+    expect(existsSync(join(rootDir, "components/version/version-update-panel.tsx"))).toBe(true);
     expect(existsSync(join(rootDir, "app/(dashboard)/dashboard/version/page.tsx"))).toBe(true);
+    expect(existsSync(join(rootDir, "app/(dashboard)/dashboard/settings/version/page.tsx"))).toBe(
+      true,
+    );
 
     const banner = readProjectFile("components/version/update-available-banner.tsx");
-    const versionPage = readProjectFile("app/(dashboard)/dashboard/version/page.tsx");
+    const updatePanel = readProjectFile("components/version/version-update-panel.tsx");
+    const versionPage = readProjectFile("app/(dashboard)/dashboard/settings/version/page.tsx");
+    const sidebar = readProjectFile("components/layout/app-sidebar.tsx");
     const changelog = readProjectFile("CHANGELOG.md");
 
     expect(banner).toContain("UpdateAvailableBanner");
     expect(banner).toContain("/api/update-manifest");
     expect(banner).toContain("稍后");
+    expect(banner).toContain("立即刷新");
+    expect(updatePanel).toContain("检查更新");
+    expect(updatePanel).toContain("刷新到新版");
     expect(versionPage).toContain('requirePermission("route:admin"');
+    expect(versionPage).toContain("当前版本");
+    expect(versionPage).toContain("build time");
+    expect(versionPage).toContain("short commit hash");
+    expect(sidebar).toContain("当前版本");
     expect(changelog).toContain("0.1.0");
   });
 });

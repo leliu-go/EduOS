@@ -1,7 +1,10 @@
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type CourseConsumptionLedgerFilters = {
   query?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   pageSize?: number;
 };
@@ -30,21 +33,36 @@ export async function getCourseConsumptionLedger(
   const pageSize = filters.pageSize ?? 10;
   const page = Math.max(filters.page ?? 1, 1);
   const skip = (page - 1) * pageSize;
-  const where = {
+  const andFilters: Prisma.CourseConsumptionWhereInput[] = [];
+
+  if (query) {
+    andFilters.push({
+      OR: [
+        { student: { name: { contains: query, mode: "insensitive" as const } } },
+        { courseProduct: { name: { contains: query, mode: "insensitive" as const } } },
+        {
+          schedule: {
+            classGroup: { name: { contains: query, mode: "insensitive" as const } },
+          },
+        },
+      ],
+    });
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    andFilters.push({
+      schedule: {
+        startAt: {
+          ...(filters.dateFrom ? { gte: new Date(`${filters.dateFrom}T00:00:00.000Z`) } : {}),
+          ...(filters.dateTo ? { lt: new Date(`${filters.dateTo}T23:59:59.999Z`) } : {}),
+        },
+      },
+    });
+  }
+
+  const where: Prisma.CourseConsumptionWhereInput = {
     tenantId,
-    ...(query
-      ? {
-          OR: [
-            { student: { name: { contains: query, mode: "insensitive" as const } } },
-            { courseProduct: { name: { contains: query, mode: "insensitive" as const } } },
-            {
-              schedule: {
-                classGroup: { name: { contains: query, mode: "insensitive" as const } },
-              },
-            },
-          ],
-        }
-      : {}),
+    ...(andFilters.length > 0 ? { AND: andFilters } : {}),
   };
 
   const [items, total] = await prisma.$transaction([

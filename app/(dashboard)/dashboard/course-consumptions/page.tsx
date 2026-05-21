@@ -22,6 +22,12 @@ function getStringParam(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getDateParam(value: string | string[] | undefined) {
+  const date = getStringParam(value);
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
+}
+
 function getPageParam(value: string | string[] | undefined) {
   const page = typeof value === "string" ? Number(value) : 1;
 
@@ -32,11 +38,29 @@ function formatDateTime(value: Date) {
   return value.toISOString().slice(0, 16).replace("T", " ");
 }
 
-function getCourseConsumptionsHref({ query, page }: { query: string; page: number }) {
+function getCourseConsumptionsHref({
+  query,
+  dateFrom,
+  dateTo,
+  page,
+}: {
+  query: string;
+  dateFrom: string;
+  dateTo: string;
+  page: number;
+}) {
   const searchParams = new URLSearchParams();
 
   if (query) {
     searchParams.set("q", query);
+  }
+
+  if (dateFrom) {
+    searchParams.set("dateFrom", dateFrom);
+  }
+
+  if (dateTo) {
+    searchParams.set("dateTo", dateTo);
   }
 
   if (page > 1) {
@@ -61,7 +85,7 @@ function getLedgerColumns(): Array<DataTableColumn<CourseConsumptionLedgerItem>>
       key: "course",
       header: "课程",
       cell: (item) =>
-        `${item.courseProduct.name} · ${item.courseProduct.subject.name}/${item.courseProduct.grade.name}`,
+        `${item.courseProduct.name} / ${item.courseProduct.subject.name}/${item.courseProduct.grade.name}`,
     },
     {
       key: "class",
@@ -84,7 +108,7 @@ function getLedgerColumns(): Array<DataTableColumn<CourseConsumptionLedgerItem>>
       header: "状态",
       cell: (item) => (
         <Badge variant={item.reversedAt ? "outline" : "secondary"}>
-          {item.reversedAt ? "已冲销" : "有效"}
+          {item.reversedAt ? "已冲正" : "有效"}
         </Badge>
       ),
     },
@@ -123,9 +147,13 @@ export default async function CourseConsumptionLedgerPage({
   });
   const params = (await searchParams) ?? {};
   const query = getStringParam(params.q);
+  const dateFrom = getDateParam(params.dateFrom);
+  const dateTo = getDateParam(params.dateTo);
   const page = getPageParam(params.page);
   const ledger = await getCourseConsumptionLedger(currentUser.tenantId, {
     query,
+    dateFrom,
+    dateTo,
     page,
   });
   const pageCount = ledger.pageCount;
@@ -135,7 +163,7 @@ export default async function CourseConsumptionLedgerPage({
       <div>
         <h1 className="text-2xl font-semibold tracking-normal text-foreground">课消流水</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          按学生、课程和班级检索扣课历史，核对每条扣课后的当前课时余额。
+          按学生、课程、班级和日期筛选扣课历史，核对每条扣课后的当前课时余额。
         </p>
       </div>
 
@@ -144,8 +172,10 @@ export default async function CourseConsumptionLedgerPage({
           <CardTitle>扣课记录</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto]">
+          <form className="grid gap-3 lg:grid-cols-[1fr_12rem_12rem_auto]">
             <Input name="q" defaultValue={query} placeholder="搜索学生、课程或班级" />
+            <Input name="dateFrom" defaultValue={dateFrom} type="date" aria-label="开始日期" />
+            <Input name="dateTo" defaultValue={dateTo} type="date" aria-label="结束日期" />
             <Button type="submit" variant="outline">
               搜索
             </Button>
@@ -172,6 +202,8 @@ export default async function CourseConsumptionLedgerPage({
                       <Link
                         href={getCourseConsumptionsHref({
                           query,
+                          dateFrom,
+                          dateTo,
                           page: Math.max(ledger.page - 1, 1),
                         })}
                       >
@@ -188,6 +220,8 @@ export default async function CourseConsumptionLedgerPage({
                       <Link
                         href={getCourseConsumptionsHref({
                           query,
+                          dateFrom,
+                          dateTo,
                           page: Math.min(ledger.page + 1, pageCount),
                         })}
                       >
@@ -201,7 +235,7 @@ export default async function CourseConsumptionLedgerPage({
           ) : (
             <EmptyState
               title="暂无课消流水"
-              description="确认考勤并完成扣课后，会在这里显示记录。"
+              description="确认考勤并完成扣课后，会在这里显示记录；错误扣课请走课消冲正。"
             />
           )}
         </CardContent>

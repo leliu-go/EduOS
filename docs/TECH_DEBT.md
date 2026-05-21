@@ -53,3 +53,11 @@
 - Several unrelated files were modified before this productization run and were
   intentionally left untouched. Review them separately before assuming a fully
   clean release branch.
+
+### Day 3 Product Experience
+
+- The workbench now exposes a placeholder for `未提交作业学生`; implement the exact assignment-vs-submission query before treating it as a real KPI.
+- Finance payment entry is manual-only. Real payment providers require a separate RFC, sandbox, webhook verification, and reconciliation review.
+- The refund backend exists, but Day 3 only adds an operation entry; a dedicated refund request UI still needs implementation.
+- The storage status page intentionally shows only redacted environment state. Add active OSS smoke status only after staging-side scripts are approved.
+- The settings security page is a safe first entry point. It still needs filterable audit logs, recent login signals, and abnormal-login detection.

@@ -20,8 +20,8 @@ const paymentStatusLabels = {
 const paymentMethodLabels = {
   CASH: "现金",
   BANK_TRANSFER: "银行转账",
-  WECHAT: "微信",
-  ALIPAY: "支付宝",
+  WECHAT: "微信线下收款",
+  ALIPAY: "支付宝线下收款",
   CARD: "银行卡",
   OTHER: "其他",
 } as const;
@@ -40,7 +40,12 @@ function formatPaymentAmount(payment: PaymentListItem) {
 
 export function PaymentList({ payments }: PaymentListProps) {
   if (payments.length === 0) {
-    return <EmptyState title="暂无支付记录" description="确认后的订单收款会在这里形成支付流水。" />;
+    return (
+      <EmptyState
+        title="暂无支付流水"
+        description="录入第一笔收款后，这里会形成现金流入记录，并用于后续对账。"
+      />
+    );
   }
 
   return (
@@ -53,11 +58,11 @@ export function PaymentList({ payments }: PaymentListProps) {
                 <div className="flex items-center gap-2">
                   <ReceiptText className="size-4 text-primary" aria-hidden="true" />
                   <CardTitle className="line-clamp-1 text-base">
-                    {payment.student.name} · {payment.order.orderNo}
+                    {payment.student.name} / {payment.order.orderNo}
                   </CardTitle>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {payment.student.grade} · {payment.guardian?.name ?? "未绑定家长"}
+                  {payment.student.grade} / {payment.guardian?.name ?? "未绑定家长"} / 现金流入
                 </p>
               </div>
               <Badge variant={payment.status === "CONFIRMED" ? "default" : "secondary"}>
@@ -65,13 +70,13 @@ export function PaymentList({ payments }: PaymentListProps) {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+          <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-4">
             <div>
-              <p className="text-xs">支付金额</p>
+              <p className="text-xs">收款金额</p>
               <p className="mt-1 font-semibold text-foreground">{formatPaymentAmount(payment)}</p>
             </div>
             <div>
-              <p className="text-xs">支付方式</p>
+              <p className="text-xs">收款方式</p>
               <p className="mt-1 flex items-center gap-1 font-semibold text-foreground">
                 <CreditCard className="size-4" aria-hidden="true" />
                 {paymentMethodLabels[payment.method]}
@@ -82,6 +87,10 @@ export function PaymentList({ payments }: PaymentListProps) {
               <p className="mt-1 font-semibold text-foreground">
                 {formatPaymentDate(payment.paidAt)}
               </p>
+            </div>
+            <div>
+              <p className="text-xs">订单状态</p>
+              <p className="mt-1 font-semibold text-foreground">{payment.order.status}</p>
             </div>
           </CardContent>
         </Card>

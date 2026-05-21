@@ -49,9 +49,9 @@ export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerP
   }
 
   return (
-    <div className="fixed left-4 right-4 top-4 z-50 flex items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm shadow-lg md:left-auto md:w-[380px]">
+    <div className="fixed top-4 right-4 left-4 z-50 flex items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm shadow-lg md:left-auto md:w-[380px]">
       <div>
-        <p className="font-medium text-foreground">EduOS 有新版本</p>
+        <p className="font-medium text-foreground">发现新版本，刷新后生效</p>
         <p className="mt-1 text-muted-foreground">
           当前 v{currentVersion}，可更新到 v{manifest.latestVersion}。保存当前操作后再刷新。
         </p>
@@ -66,7 +66,12 @@ export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerP
         >
           <X className="size-4" aria-hidden="true" />
         </Button>
-        <Button type="button" size="icon" aria-label="刷新到新版本" onClick={() => window.location.reload()}>
+        <Button
+          type="button"
+          size="icon"
+          aria-label="立即刷新"
+          onClick={() => window.location.reload()}
+        >
           <RefreshCw className="size-4" aria-hidden="true" />
         </Button>
       </div>

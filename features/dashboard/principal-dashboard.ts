@@ -30,6 +30,18 @@ export function getPrincipalDashboardDateRange(today = new Date()) {
   return { startAt, endAt };
 }
 
+export function getPrincipalDashboardDayRange(today = new Date()) {
+  const startAt = new Date(today);
+
+  startAt.setHours(0, 0, 0, 0);
+
+  const endAt = new Date(startAt);
+
+  endAt.setDate(endAt.getDate() + 1);
+
+  return { startAt, endAt };
+}
+
 export function calculateDashboardRate(part: number, total: number) {
   if (total <= 0) {
     return 0;
@@ -53,10 +65,17 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
   const lowBalanceThresholdHours =
     scope.lowBalanceThresholdHours ?? defaultLowBalanceThresholdHours;
   const range = getPrincipalDashboardDateRange(scope.today);
+  const todayRange = getPrincipalDashboardDayRange(scope.today);
   const periodWhere = {
     createdAt: {
       gte: range.startAt,
       lt: range.endAt,
+    },
+  };
+  const todayScheduleRange = {
+    startAt: {
+      gte: todayRange.startAt,
+      lt: todayRange.endAt,
     },
   };
   const studentCampusWhere: Prisma.StudentProfileWhereInput = campusId
@@ -145,6 +164,75 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
         },
       }
     : {};
+  const scheduleCampusWhere: Prisma.ScheduleWhereInput = campusId ? { campusId } : {};
+  const attendanceTodayWhere: Prisma.AttendanceWhereInput = {
+    schedule: {
+      ...todayScheduleRange,
+      ...(campusId ? { campusId } : {}),
+    },
+  };
+  const consumptionTodayWhere: Prisma.CourseConsumptionWhereInput = {
+    schedule: {
+      ...todayScheduleRange,
+      ...(campusId ? { campusId } : {}),
+    },
+  };
+  const paymentCampusWhere: Prisma.PaymentWhereInput = campusId
+    ? {
+        student: {
+          OR: [
+            {
+              classGroups: {
+                some: {
+                  classGroup: {
+                    campusId,
+                  },
+                },
+              },
+            },
+            {
+              enrollments: {
+                some: {
+                  classGroup: {
+                    is: {
+                      campusId,
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }
+    : {};
+  const refundCampusWhere: Prisma.RefundWhereInput = campusId
+    ? {
+        student: {
+          OR: [
+            {
+              classGroups: {
+                some: {
+                  classGroup: {
+                    campusId,
+                  },
+                },
+              },
+            },
+            {
+              enrollments: {
+                some: {
+                  classGroup: {
+                    is: {
+                      campusId,
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }
+    : {};
 
   const [
     activeStudents,
@@ -155,6 +243,12 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
     courseAccountLiability,
     activeCourseAccounts,
     pendingHomework,
+    todaySchedules,
+    todayAttendanceRecords,
+    todayCourseConsumption,
+    todayCourseConsumptionCount,
+    pendingPayments,
+    pendingRefunds,
   ] = await Promise.all([
     prisma.studentProfile.count({
       where: {
@@ -231,6 +325,53 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
         ...homeworkSubmissionCampusWhere,
       },
     }),
+    prisma.schedule.count({
+      where: {
+        tenantId,
+        status: {
+          not: "CANCELLED",
+        },
+        ...todayScheduleRange,
+        ...scheduleCampusWhere,
+      },
+    }),
+    prisma.attendance.count({
+      where: {
+        tenantId,
+        ...attendanceTodayWhere,
+      },
+    }),
+    prisma.courseConsumption.aggregate({
+      where: {
+        tenantId,
+        reversedAt: null,
+        ...consumptionTodayWhere,
+      },
+      _sum: {
+        consumedHours: true,
+      },
+    }),
+    prisma.courseConsumption.count({
+      where: {
+        tenantId,
+        reversedAt: null,
+        ...consumptionTodayWhere,
+      },
+    }),
+    prisma.payment.count({
+      where: {
+        tenantId,
+        status: "PENDING",
+        ...paymentCampusWhere,
+      },
+    }),
+    prisma.refund.count({
+      where: {
+        tenantId,
+        status: "PENDING_APPROVAL",
+        ...refundCampusWhere,
+      },
+    }),
   ]);
 
   const remainingLiabilityHours = calculateRemainingLiabilityHours({
@@ -242,6 +383,8 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
   const lowBalanceWarnings = activeCourseAccounts.filter(
     (account) => calculateRemainingLiabilityHours(account) <= lowBalanceThresholdHours,
   ).length;
+  const todayPendingAttendance = Math.max(todaySchedules - todayAttendanceRecords, 0);
+  const todayPendingCourseConsumption = Math.max(todaySchedules - todayCourseConsumptionCount, 0);
 
   return {
     scope: {
@@ -249,6 +392,7 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
       campusId,
     },
     period: range,
+    today: todayRange,
     activeStudents,
     newEnrollments,
     attendanceRate: calculateDashboardRate(attendanceAttended, attendanceTotal),
@@ -258,5 +402,13 @@ export async function getPrincipalDashboard(tenantId: string, scope: PrincipalDa
     remainingLiabilityHours,
     pendingHomework,
     lowBalanceWarnings,
+    todaySchedules,
+    todayAttendanceRecords,
+    todayPendingAttendance,
+    todayCourseConsumptionHours: todayCourseConsumption._sum.consumedHours ?? 0,
+    todayPendingCourseConsumption,
+    pendingPayments,
+    pendingRefunds,
+    renewalWarnings: lowBalanceWarnings,
   };
 }

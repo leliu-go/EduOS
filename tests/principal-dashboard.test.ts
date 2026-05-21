@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("principal dashboard", () => {
-  it("calculates dashboard rates and remaining liability safely", async () => {
+  it("calculates dashboard rates and date ranges safely", async () => {
     const modulePath = "../features/dashboard/principal-dashboard";
     const dashboardModule = (await import(/* @vite-ignore */ modulePath).catch(() => null)) as {
       calculateDashboardRate?: (part: number, total: number) => number;
@@ -14,15 +14,18 @@ describe("principal dashboard", () => {
         frozenHours: number | null;
       }) => number;
       getPrincipalDashboardDateRange?: (today: Date) => { startAt: Date; endAt: Date };
+      getPrincipalDashboardDayRange?: (today: Date) => { startAt: Date; endAt: Date };
     } | null;
 
     expect(dashboardModule?.calculateDashboardRate).toBeTypeOf("function");
     expect(dashboardModule?.calculateRemainingLiabilityHours).toBeTypeOf("function");
     expect(dashboardModule?.getPrincipalDashboardDateRange).toBeTypeOf("function");
+    expect(dashboardModule?.getPrincipalDashboardDayRange).toBeTypeOf("function");
     if (
       !dashboardModule?.calculateDashboardRate ||
       !dashboardModule.calculateRemainingLiabilityHours ||
-      !dashboardModule.getPrincipalDashboardDateRange
+      !dashboardModule.getPrincipalDashboardDateRange ||
+      !dashboardModule.getPrincipalDashboardDayRange
     ) {
       return;
     }
@@ -46,17 +49,25 @@ describe("principal dashboard", () => {
       }),
     ).toBe(0);
 
-    const range = dashboardModule.getPrincipalDashboardDateRange(
+    const monthRange = dashboardModule.getPrincipalDashboardDateRange(
       new Date("2026-05-20T10:30:00.000Z"),
     );
 
-    expect(range.startAt.getDate()).toBe(1);
-    expect(range.startAt.getHours()).toBe(0);
-    expect(range.startAt.getMinutes()).toBe(0);
-    expect(range.endAt.getTime()).toBeGreaterThan(range.startAt.getTime());
+    expect(monthRange.startAt.getDate()).toBe(1);
+    expect(monthRange.startAt.getHours()).toBe(0);
+    expect(monthRange.startAt.getMinutes()).toBe(0);
+    expect(monthRange.endAt.getTime()).toBeGreaterThan(monthRange.startAt.getTime());
+
+    const dayRange = dashboardModule.getPrincipalDashboardDayRange(
+      new Date("2026-05-20T10:30:00.000Z"),
+    );
+
+    expect(dayRange.startAt.getDate()).toBe(20);
+    expect(dayRange.startAt.getHours()).toBe(0);
+    expect(dayRange.endAt.getDate()).toBe(21);
   });
 
-  it("queries organization metrics with tenant and optional campus scope", () => {
+  it("queries organization workbench metrics with tenant and optional campus scope", () => {
     const queryPath = join(process.cwd(), "features/dashboard/principal-dashboard.ts");
 
     expect(existsSync(queryPath)).toBe(true);
@@ -76,12 +87,17 @@ describe("principal dashboard", () => {
     expect(source).toContain("courseAccount.aggregate");
     expect(source).toContain("courseAccount.findMany");
     expect(source).toContain("homeworkSubmission.count");
+    expect(source).toContain("schedule.count");
+    expect(source).toContain("payment.count");
+    expect(source).toContain("refund.count");
+    expect(source).toContain("todayPendingAttendance");
+    expect(source).toContain("todayPendingCourseConsumption");
     expect(source).toContain("lowBalanceWarnings");
     expect(source).toContain('status: "ACTIVE"');
     expect(source).toContain('status: "PENDING_CORRECTION"');
   });
 
-  it("renders the dashboard page with real metrics and route states", () => {
+  it("renders the dashboard page as an operations workbench", () => {
     const pagePath = join(process.cwd(), "app/(dashboard)/dashboard/page.tsx");
     const currentUserPath = join(process.cwd(), "lib/auth/current-user.ts");
 
@@ -100,14 +116,16 @@ describe("principal dashboard", () => {
     expect(currentUserSource).toContain("campusId");
 
     for (const copy of [
-      "机构看板",
-      "活跃学生",
-      "新增报名",
-      "到课率",
-      "课消",
-      "剩余负债",
+      "工作台",
+      "今天要处理",
+      "今日课程",
+      "今日待点名",
+      "今日待课消",
       "待批改作业",
       "低课时预警",
+      "待续费学生",
+      "快捷操作",
+      "录入收款",
     ]) {
       expect(pageSource).toContain(copy);
     }

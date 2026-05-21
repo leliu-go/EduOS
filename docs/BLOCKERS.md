@@ -116,6 +116,14 @@
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Failed to connect to github.com port 443 after 21084 ms: Could not connect to server`
 - Whether later tasks can continue: Yes. Continue local safe tasks and deploy via uploaded archive/bundle if GitHub remains unavailable.
 
+## 2026-05-21 Day 3 No New High-Risk Blocker
+
+- Stage or PZ task: Day 3 product experience and finance operations
+- Risk or failure type: Real payment provider, production migration, production deployment, and secret handling remain high-risk and were intentionally avoided.
+- What was intentionally not executed: No production migration, ECS deployment, real payment provider integration, secret read/print, database reset/drop/truncate, or OSS deletion was executed.
+- Safe fallback implemented: Manual payment provider abstraction, local UI flows, safe settings/status pages, docs, and tests.
+- Whether later tasks can continue: Yes. Continue with Day 4 guided order/refund/audit work after review.
+
 When a blocker appears, record:
 
 - Stage or PZ task

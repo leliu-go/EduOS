@@ -24,6 +24,10 @@ describe("app layouts", () => {
       "href",
       "/dashboard/notifications",
     );
+    expect(screen.getByRole("link", { name: /版本与更新/ })).toHaveAttribute(
+      "href",
+      "/dashboard/settings/version",
+    );
     expect(screen.getByRole("heading", { name: "机构工作台" })).toBeInTheDocument();
   });
 
