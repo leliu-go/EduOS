@@ -16,7 +16,7 @@
 - Risk or failure type: Network failure while pushing to GitHub
 - What was intentionally not executed: No destructive or risky operation was attempted
 - Safe fallback implemented: Local commit `af454cf feat: add version and update metadata` exists on `main`
-- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Exact blocker: first retry returned `Recv failure: Connection was reset`; second retry returned `Empty reply from server`.
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
 - Resolution: Resolved by a later successful `git push origin main` that pushed through `1b108fd`.
 
@@ -123,6 +123,15 @@
 - What was intentionally not executed: No production migration, ECS deployment, real payment provider integration, secret read/print, database reset/drop/truncate, or OSS deletion was executed.
 - Safe fallback implemented: Manual payment provider abstraction, local UI flows, safe settings/status pages, docs, and tests.
 - Whether later tasks can continue: Yes. Continue with Day 4 guided order/refund/audit work after review.
+
+## 2026-05-21 Day 3 Push Retry
+
+- Stage or PZ task: Day 3 product experience and finance operations
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive retry workaround or credential change was attempted.
+- Safe fallback implemented: Local commits are ahead of `origin/main`; regenerated `artifacts/day3-patches` and `artifacts/eduos-day3.bundle`.
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Whether later tasks can continue: Yes. Retry `git push origin main` later or transfer the patch/bundle artifacts manually.
 
 When a blocker appears, record:
 

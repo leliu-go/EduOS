@@ -36,6 +36,13 @@ Date: 2026-05-21
 - `pnpm test:e2e tests/e2e/auth.spec.ts tests/e2e/core-workflows.spec.ts`: passed, 60 tests.
 - Targeted workbench/navigation, finance operation, finance report, course-consumption, version, and settings tests passed before full verification.
 
+## Git
+
+- Local commit created: `2d94ae2 productization: improve day 3 workbench finance and update UX`.
+- Push attempted: `git push origin main`.
+- Push result: failed due GitHub HTTPS/network errors (`Recv failure: Connection was reset`, then `Empty reply from server`).
+- Recovery artifacts: `artifacts/day3-patches` and `artifacts/eduos-day3.bundle`.
+
 ## Follow-Up
 
 - Add order creation/renewal guided flow that fully connects Order, Enrollment, CourseAccount, and Payment.
