@@ -51,6 +51,9 @@ describe("Day 3 finance operations", () => {
     expect(actionSource).toContain("writeAuditLog");
     expect(actionSource).toContain("payment.manual.create");
     expect(actionSource).toContain("getManualPaymentFormValues");
+    expect(actionSource).toMatch(
+      /tx\.order\.updateMany\(\{[\s\S]*where:\s*\{[\s\S]*id:\s*order\.id,[\s\S]*tenantId:\s*currentUser\.tenantId/,
+    );
   });
 
   it("turns payment ledger into an operational finance page", () => {

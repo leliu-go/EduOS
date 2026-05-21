@@ -114,14 +114,19 @@ export async function createManualPaymentAction(formData: FormData) {
       const payableAmount = Number(order.payableAmount);
 
       if (confirmedAmount >= payableAmount) {
-        await tx.order.update({
+        const paidOrderUpdate = await tx.order.updateMany({
           where: {
             id: order.id,
+            tenantId: currentUser.tenantId,
           },
           data: {
             status: "PAID",
           },
         });
+
+        if (paidOrderUpdate.count !== 1) {
+          throw new Error("Unable to confirm tenant-scoped order payment status.");
+        }
       }
     }
 
