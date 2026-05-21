@@ -34,6 +34,7 @@ Final verification:
 - `pnpm typecheck`: passed.
 - `pnpm test`: passed, 92 files and 353 tests.
 - `pnpm test:e2e tests/e2e/mobile-resources.spec.ts tests/e2e/auth.spec.ts`: passed, 51 tests. Existing non-blocking `pg@9` deprecation warning appeared.
+- Git push: first attempt failed with `Recv failure: Connection was reset`; recorded in `docs/BLOCKERS.md`.
 
 Environment:
 

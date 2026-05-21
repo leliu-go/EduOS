@@ -80,6 +80,15 @@
 - Safe fallback implemented: Env-only Aliyun provider, `.env.production.example`, production env check script, storage provider check script, local provider, and mock transport tests.
 - Whether later tasks can continue: Yes. Local and mock-tested code can continue; real OSS smoke test waits for human-provided environment variables.
 
+## 2026-05-21 Day 2 Stage 4 Push Retry
+
+- Stage or PZ task: Day 2 Stage 4 / cloud resource management real provider preparation
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive or risky operation was attempted.
+- Safe fallback implemented: Local commit `85e4d6f productization: add aliyun oss resource storage groundwork` exists on `main`.
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+
 When a blocker appears, record:
 
 - Stage or PZ task
