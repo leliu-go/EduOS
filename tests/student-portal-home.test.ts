@@ -24,6 +24,7 @@ describe("student portal home", () => {
     expect(source).toContain("签到");
     expect(source).toContain("错题本");
     expect(source).toContain("学习资源");
+    expect(source).toContain("今日学习任务");
   });
 
   it("keeps student home loading and error states", () => {

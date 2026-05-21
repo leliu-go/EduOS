@@ -1,3 +1,5 @@
+"use client";
+
 import { NotebookPen, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 

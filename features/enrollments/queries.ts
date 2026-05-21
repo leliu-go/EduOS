@@ -97,9 +97,30 @@ export async function getEnrollmentFormOptions(tenantId: string) {
   ]);
 
   return {
-    students,
-    courseProducts,
-    classGroups,
+    students: students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      grade: student.grade,
+    })),
+    courseProducts: courseProducts.map((courseProduct) => ({
+      id: courseProduct.id,
+      name: courseProduct.name,
+      totalHours: courseProduct.totalHours,
+      subject: {
+        name: courseProduct.subject.name,
+      },
+      grade: {
+        name: courseProduct.grade.name,
+      },
+    })),
+    classGroups: classGroups.map((classGroup) => ({
+      id: classGroup.id,
+      name: classGroup.name,
+      courseProductId: classGroup.courseProductId,
+      courseProduct: {
+        name: classGroup.courseProduct.name,
+      },
+    })),
   };
 }
 

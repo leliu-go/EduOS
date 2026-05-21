@@ -5,6 +5,10 @@ import { calculateLearningCheckInStats } from "./stats";
 
 const learningTaskTake = 20;
 
+type LearningTaskScope = {
+  teacherUserId?: string;
+};
+
 function startOfDay(value: Date) {
   const date = new Date(value);
 
@@ -59,6 +63,37 @@ function getStudentLearningTaskWhere(
   };
 }
 
+function getTeacherLearningTaskWhere(
+  tenantId: string,
+  teacherUserId: string,
+): Prisma.LearningTaskWhereInput {
+  return {
+    tenantId,
+    OR: [
+      {
+        classGroup: {
+          primaryTeacher: {
+            userId: teacherUserId,
+          },
+        },
+      },
+      {
+        student: {
+          classGroups: {
+            some: {
+              classGroup: {
+                primaryTeacher: {
+                  userId: teacherUserId,
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
+}
+
 export async function getStudentLearningTasks(tenantId: string, userId: string, date = new Date()) {
   return prisma.learningTask.findMany({
     where: getStudentLearningTaskWhere(tenantId, userId, startOfDay(date), endOfDay(date)),
@@ -74,7 +109,7 @@ export async function getStudentLearningTasks(tenantId: string, userId: string, 
         take: 1,
       },
     },
-    orderBy: [{ targetDate: "asc" }, { createdAt: "asc" }],
+    orderBy: [{ taskType: "asc" }, { targetDate: "asc" }, { createdAt: "asc" }],
     take: learningTaskTake,
   });
 }
@@ -122,4 +157,104 @@ export async function getStudentLearningStats(tenantId: string, userId: string, 
   }
 
   return calculateLearningCheckInStats([...days.values()], dateKey(date));
+}
+
+export async function getStaffLearningTaskList(tenantId: string, scope: LearningTaskScope = {}) {
+  return prisma.learningTask.findMany({
+    where: scope.teacherUserId
+      ? getTeacherLearningTaskWhere(tenantId, scope.teacherUserId)
+      : {
+          tenantId,
+        },
+    include: {
+      classGroup: {
+        include: {
+          courseProduct: true,
+          students: {
+            select: {
+              studentId: true,
+            },
+          },
+        },
+      },
+      student: true,
+      assignedByUser: true,
+      _count: {
+        select: {
+          checkIns: true,
+        },
+      },
+    },
+    orderBy: [{ targetDate: "desc" }, { createdAt: "desc" }],
+    take: 80,
+  });
+}
+
+export async function getLearningTaskAssignmentOptions(
+  tenantId: string,
+  scope: LearningTaskScope = {},
+) {
+  const teacherClassScope = scope.teacherUserId
+    ? {
+        primaryTeacher: {
+          userId: scope.teacherUserId,
+        },
+      }
+    : {};
+  const teacherStudentScope = scope.teacherUserId
+    ? {
+        classGroups: {
+          some: {
+            classGroup: teacherClassScope,
+          },
+        },
+      }
+    : {};
+
+  const [classGroups, students] = await prisma.$transaction([
+    prisma.classGroup.findMany({
+      where: {
+        tenantId,
+        status: {
+          in: ["PLANNING", "ACTIVE", "PAUSED"],
+        },
+        ...teacherClassScope,
+      },
+      include: {
+        courseProduct: true,
+        _count: {
+          select: {
+            students: true,
+          },
+        },
+      },
+      orderBy: [{ startsAt: "desc" }, { name: "asc" }],
+      take: 100,
+    }),
+    prisma.studentProfile.findMany({
+      where: {
+        tenantId,
+        status: "ACTIVE",
+        ...teacherStudentScope,
+      },
+      orderBy: [{ name: "asc" }],
+      take: 100,
+    }),
+  ]);
+
+  return {
+    classGroups: classGroups.map((classGroup) => ({
+      id: classGroup.id,
+      name: classGroup.name,
+      courseProduct: {
+        name: classGroup.courseProduct.name,
+      },
+      studentCount: classGroup._count.students,
+    })),
+    students: students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      grade: student.grade,
+    })),
+  };
 }

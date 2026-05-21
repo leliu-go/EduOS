@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("daily learning check-in", () => {
-  it("adds tenant-scoped daily learning task and check-in models", () => {
+  it("keeps tenant-scoped daily learning task and check-in models", () => {
     const schema = readFileSync(join(process.cwd(), "prisma/schema.prisma"), "utf8");
 
     expect(schema).toContain("enum LearningTaskType");
@@ -16,6 +16,38 @@ describe("daily learning check-in", () => {
     expect(schema).toMatch(/LearningTask[\s\S]*tenantId\s+String/);
     expect(schema).toMatch(/LearningTaskCheckIn[\s\S]*tenantId\s+String/);
     expect(schema).toContain("@@unique([tenantId, taskId, studentId])");
+  });
+
+  it("uses learning task labels that match student-facing word, reading, and listening habits", () => {
+    const source = readFileSync(join(process.cwd(), "features/learning/learning-schema.ts"), "utf8");
+
+    expect(source).toContain("单词打卡");
+    expect(source).toContain("每日阅读");
+    expect(source).toContain("听力练习");
+    expect(source).toContain("针对练习");
+  });
+
+  it("parses date-only learning tasks without shifting the selected calendar day", async () => {
+    const modulePath = "../features/learning/learning-schema";
+    const { getLearningTaskCreateValues } = (await import(/* @vite-ignore */ modulePath)) as {
+      getLearningTaskCreateValues: (formData: FormData) => {
+        success: boolean;
+        data?: { targetDate: Date };
+      };
+    };
+    const formData = new FormData();
+
+    formData.set("title", "Unit 3 单词打卡");
+    formData.set("taskType", "MEMORIZATION");
+    formData.set("targetDate", "2026-05-20");
+    formData.set("classGroupId", "ckj4w0x4g0000qzrmn831i7rn");
+    formData.set("studentId", "");
+    formData.set("returnTo", "/dashboard/learning");
+
+    const result = getLearningTaskCreateValues(formData);
+
+    expect(result.success).toBe(true);
+    expect(result.data?.targetDate.toISOString().slice(0, 10)).toBe("2026-05-20");
   });
 
   it("calculates completion rate and current streak from task history", async () => {
@@ -68,6 +100,23 @@ describe("daily learning check-in", () => {
     expect(action).toContain("writeAuditLog");
   });
 
+  it("lets staff assign daily learning tasks to a class or one student", () => {
+    const action = readFileSync(join(process.cwd(), "features/learning/actions.ts"), "utf8");
+    const query = readFileSync(join(process.cwd(), "features/learning/queries.ts"), "utf8");
+    const dialogPath = join(process.cwd(), "features/learning/learning-task-create-dialog.tsx");
+    const dashboardPagePath = join(process.cwd(), "app/(dashboard)/dashboard/learning/page.tsx");
+
+    expect(existsSync(dialogPath)).toBe(true);
+    expect(existsSync(dashboardPagePath)).toBe(true);
+    expect(query).toContain("getLearningTaskAssignmentOptions");
+    expect(query).toContain("getStaffLearningTaskList");
+    expect(action).toContain("createLearningTaskAction");
+    expect(action).toContain('requirePermission("homework:manage"');
+    expect(action).toContain("tx.learningTask.create");
+    expect(action).toContain("learningTask.create");
+    expect(readFileSync(dashboardPagePath, "utf8")).toContain("LearningTaskCreateDialog");
+  });
+
   it("queries and renders today's learning tasks on the student portal", () => {
     const query = readFileSync(join(process.cwd(), "features/learning/queries.ts"), "utf8");
     const cardPath = join(process.cwd(), "features/learning/learning-task-card.tsx");
@@ -81,6 +130,9 @@ describe("daily learning check-in", () => {
     expect(studentPage).toContain("getStudentLearningTasks");
     expect(studentPage).toContain("getStudentLearningStats");
     expect(studentPage).toContain("LearningTaskCard");
-    expect(studentPage).toContain("今日学习打卡");
+    expect(studentPage).toContain("今日学习任务");
+    expect(studentPage).toContain("单词打卡");
+    expect(studentPage).toContain("每日阅读");
+    expect(studentPage).toContain("听力练习");
   });
 });

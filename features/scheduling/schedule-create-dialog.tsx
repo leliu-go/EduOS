@@ -1,3 +1,5 @@
+"use client";
+
 import { CalendarPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

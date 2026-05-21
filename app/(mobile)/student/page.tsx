@@ -2,11 +2,15 @@ import Link from "next/link";
 import {
   AlertTriangle,
   BookOpen,
+  BookOpenText,
   CalendarCheck,
   CalendarDays,
   ChevronRight,
+  Headphones,
   Library,
   NotebookPen,
+  PenLine,
+  Sparkles,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,16 +25,23 @@ import { getStudentCourseConsumptionLedger } from "@/features/course-consumption
 import { getStudentEnrolledCourses } from "@/features/enrollments/queries";
 import { getStudentHomeworkReminders } from "@/features/homework/queries";
 import { LearningTaskCard } from "@/features/learning/learning-task-card";
+import {
+  learningTaskTypeHints,
+  learningTaskTypeLabels,
+  type LearningTaskTypeValue,
+} from "@/features/learning/learning-schema";
 import { getStudentLearningStats, getStudentLearningTasks } from "@/features/learning/queries";
 import { getStudentErrorRecords } from "@/features/mistakes/queries";
 import { getStudentVisibleResources } from "@/features/resources/queries";
 import { getStudentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
 import { requirePermission } from "@/lib/rbac/require-permission";
+import { cn } from "@/lib/utils";
 
 type StudentSchedule = Awaited<ReturnType<typeof getStudentTimetable>>[number];
 type StudentCheckInSchedule = Awaited<ReturnType<typeof getStudentCheckInSchedules>>[number];
 type StudentEnrollment = Awaited<ReturnType<typeof getStudentEnrolledCourses>>[number];
+type StudentLearningTask = Awaited<ReturnType<typeof getStudentLearningTasks>>[number];
 
 type StudentHomeCardProps = {
   title: string;
@@ -38,7 +49,19 @@ type StudentHomeCardProps = {
   description: string;
   href?: string;
   icon: typeof CalendarDays;
+  className?: string;
 };
+
+const learningFocusItems: Array<{
+  type: LearningTaskTypeValue;
+  label: string;
+  icon: typeof PenLine;
+}> = [
+  { type: "MEMORIZATION", label: "单词打卡", icon: PenLine },
+  { type: "READING", label: "每日阅读", icon: BookOpenText },
+  { type: "PRACTICE", label: "听力练习", icon: Headphones },
+  { type: "SPECIAL_TRAINING", label: "针对练习", icon: Sparkles },
+];
 
 function isSameDay(left: Date, right: Date) {
   return left.toISOString().slice(0, 10) === right.toISOString().slice(0, 10);
@@ -70,12 +93,31 @@ function getCheckInDescription(schedule: StudentCheckInSchedule | undefined) {
   return pendingCount > 0 ? `${formatTime(schedule.startAt)} 前后完成签到` : "今日课程已签到";
 }
 
-function StudentHomeCard({ title, value, description, href, icon: Icon }: StudentHomeCardProps) {
+function getLearningTypeStats(tasks: StudentLearningTask[], type: LearningTaskTypeValue) {
+  const items = tasks.filter((task) => task.taskType === type);
+  const completed = items.filter((task) => task.checkIns.length > 0).length;
+
+  return {
+    total: items.length,
+    completed,
+  };
+}
+
+function StudentHomeCard({
+  title,
+  value,
+  description,
+  href,
+  icon: Icon,
+  className,
+}: StudentHomeCardProps) {
   const content = (
-    <Card className="h-full shadow-none">
+    <Card className="h-full">
       <CardHeader className="space-y-0 pb-2">
         <div className="flex items-center justify-between gap-2">
-          <Icon className="size-4 text-primary" aria-hidden="true" />
+          <span className="inline-flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Icon className="size-4" aria-hidden="true" />
+          </span>
           {href ? (
             <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
           ) : null}
@@ -84,17 +126,48 @@ function StudentHomeCard({ title, value, description, href, icon: Icon }: Studen
       <CardContent>
         <p className="text-xs font-medium text-muted-foreground">{title}</p>
         <p className="mt-1 text-2xl font-semibold tracking-normal text-foreground">{value}</p>
-        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{description}</p>
+        <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
   );
 
   return href ? (
-    <Link href={href} className="block h-full">
+    <Link href={href} className={cn("block h-full", className)}>
       {content}
     </Link>
   ) : (
-    content
+    <div className={className}>{content}</div>
+  );
+}
+
+function LearningFocusCard({
+  type,
+  label,
+  icon: Icon,
+  tasks,
+}: {
+  type: LearningTaskTypeValue;
+  label: string;
+  icon: typeof PenLine;
+  tasks: StudentLearningTask[];
+}) {
+  const stats = getLearningTypeStats(tasks, type);
+
+  return (
+    <div className="rounded-md border bg-card p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex size-8 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+          <Icon className="size-4" aria-hidden="true" />
+        </span>
+        <Badge variant={stats.total > 0 ? "secondary" : "outline"}>
+          {stats.completed}/{stats.total}
+        </Badge>
+      </div>
+      <p className="mt-3 text-sm font-semibold text-foreground">{label}</p>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+        {learningTaskTypeHints[type]}
+      </p>
+    </div>
   );
 }
 
@@ -160,6 +233,7 @@ export default async function StudentHomePage() {
   const nextLesson = todayLessons[0];
   const nextCheckIn = checkInSchedules[0];
   const visibleLessons = todayLessons.length > 0 ? todayLessons : timetable.slice(0, 3);
+  const completedLearningTasks = learningTasks.filter((task) => task.checkIns.length > 0).length;
   const hasNoStudentData =
     todayLessons.length === 0 &&
     homeworkReminders.length === 0 &&
@@ -171,7 +245,7 @@ export default async function StudentHomePage() {
     learningTasks.length === 0;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-5">
       <section className="grid grid-cols-2 gap-3">
         <StudentHomeCard
           title="今日课程"
@@ -205,7 +279,48 @@ export default async function StudentHomePage() {
           description="查看老师开放的课件、讲义和练习"
           href="/student/resources"
           icon={Library}
+          className="col-span-2"
         />
+      </section>
+
+      <section className="grid gap-3">
+        <Card className="overflow-hidden">
+          <CardContent className="grid gap-4 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <Badge variant="secondary">今日学习任务</Badge>
+                <h2 className="mt-3 text-lg font-semibold tracking-normal text-foreground">
+                  {completedLearningTasks}/{learningTasks.length} 已完成
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  连续 {learningStats.currentStreak} 天 · 近 30 天完成率 {learningStats.completionRate}%
+                </p>
+              </div>
+              <span className="inline-flex size-10 items-center justify-center rounded-md bg-accent text-accent-foreground">
+                <Sparkles className="size-5" aria-hidden="true" />
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {learningFocusItems.map((item) => (
+                <LearningFocusCard
+                  key={item.type}
+                  type={item.type}
+                  label={item.label}
+                  icon={item.icon}
+                  tasks={learningTasks}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        {learningTasks.length > 0 ? (
+          learningTasks.map((task) => <LearningTaskCard key={task.id} task={task} />)
+        ) : (
+          <EmptyState
+            title="暂无今日学习任务"
+            description={`${learningTaskTypeLabels.MEMORIZATION}、${learningTaskTypeLabels.READING}、${learningTaskTypeLabels.PRACTICE} 会在老师布置后显示。`}
+          />
+        )}
       </section>
 
       {hasNoStudentData ? (
@@ -220,31 +335,6 @@ export default async function StudentHomePage() {
           </div>
           {checkInSchedules.slice(0, 2).map((schedule) => (
             <StudentCheckInCard key={schedule.id} schedule={schedule} />
-          ))}
-        </section>
-      ) : null}
-
-      {learningTasks.length > 0 ? (
-        <section className="grid gap-3">
-          <h2 className="text-base font-semibold tracking-normal text-foreground">今日学习打卡</h2>
-          <Card>
-            <CardContent className="grid grid-cols-2 gap-3 p-4 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">连续完成</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">
-                  {learningStats.currentStreak} 天
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">近 30 天完成率</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">
-                  {learningStats.completionRate}%
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          {learningTasks.map((task) => (
-            <LearningTaskCard key={task.id} task={task} />
           ))}
         </section>
       ) : null}

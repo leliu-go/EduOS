@@ -5,7 +5,7 @@ import { DashboardShell } from "../components/layout/dashboard-shell";
 import { MobileShell } from "../components/layout/mobile-shell";
 
 describe("app layouts", () => {
-  it("renders desktop dashboard shell with sidebar and topbar controls", () => {
+  it("renders a polished desktop dashboard shell with sidebar and topbar controls", () => {
     render(
       <DashboardShell>
         <h1>机构工作台</h1>
@@ -13,6 +13,11 @@ describe("app layouts", () => {
     );
 
     expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
+    expect(screen.getByText("教培运营系统")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "学习任务" })).toHaveAttribute(
+      "href",
+      "/dashboard/learning",
+    );
     expect(screen.getByPlaceholderText("搜索学生、教师、班级、课程")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "当前校区：全部校区" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "通知" })).toHaveAttribute(

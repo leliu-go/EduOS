@@ -1,3 +1,5 @@
+"use client";
+
 import { Pencil, Plus, UserPlus } from "lucide-react";
 import type { ReactNode } from "react";
 

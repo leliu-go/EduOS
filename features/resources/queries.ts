@@ -413,10 +413,37 @@ export async function getResourceLibraryOptions(
   ]);
 
   return {
-    subjects,
-    grades,
-    courseProducts,
-    classGroups,
-    lessons,
+    subjects: subjects.map((subject) => ({
+      id: subject.id,
+      name: subject.name,
+    })),
+    grades: grades.map((grade) => ({
+      id: grade.id,
+      name: grade.name,
+    })),
+    courseProducts: courseProducts.map((courseProduct) => ({
+      id: courseProduct.id,
+      name: courseProduct.name,
+      subject: {
+        name: courseProduct.subject.name,
+      },
+      grade: {
+        name: courseProduct.grade.name,
+      },
+    })),
+    classGroups: classGroups.map((classGroup) => ({
+      id: classGroup.id,
+      name: classGroup.name,
+      courseProduct: {
+        name: classGroup.courseProduct.name,
+      },
+    })),
+    lessons: lessons.map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      classGroup: {
+        name: lesson.classGroup.name,
+      },
+    })),
   };
 }

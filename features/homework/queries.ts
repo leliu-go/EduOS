@@ -557,8 +557,23 @@ export async function getHomeworkAssignmentOptions(tenantId: string, scope: Home
   ]);
 
   return {
-    classGroups,
-    lessons,
-    students,
+    classGroups: classGroups.map((classGroup) => ({
+      id: classGroup.id,
+      name: classGroup.name,
+      courseProduct: {
+        name: classGroup.courseProduct.name,
+      },
+    })),
+    lessons: lessons.map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      classGroup: {
+        name: lesson.classGroup.name,
+      },
+    })),
+    students: students.map((student) => ({
+      id: student.id,
+      name: student.name,
+    })),
   };
 }

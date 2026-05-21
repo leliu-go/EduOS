@@ -1,12 +1,20 @@
 import { render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
+import { hydrateRoot } from "react-dom/client";
 import { useForm } from "react-hook-form";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { DataTable } from "../components/ui/data-table";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
 import { ErrorState } from "../components/ui/error-state";
 import { EmptyState } from "../components/ui/empty-state";
 import {
@@ -36,6 +44,18 @@ type StudentRow = {
   name: string;
   status: string;
 };
+
+function DialogTriggerFixture() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          新增作业
+        </Button>
+      </DialogTrigger>
+    </Dialog>
+  );
+}
 
 function DemoForm() {
   const form = useForm<{ name: string }>({
@@ -67,6 +87,10 @@ function DemoForm() {
 }
 
 describe("UI foundation", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders card, button, input, label, and badge primitives", () => {
     render(
       <Card>
@@ -128,6 +152,33 @@ describe("UI foundation", () => {
 
     expect(screen.getByRole("dialog", { name: "创建记录" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "关闭" })).toBeInTheDocument();
+  });
+
+  it("renders Button dialog triggers as a single stable trigger button", () => {
+    render(<DialogTriggerFixture />);
+
+    const trigger = screen.getByRole("button", { name: "新增作业" });
+
+    expect(trigger).toHaveAttribute("data-slot", "dialog-trigger");
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+    expect(trigger).toHaveClass("border");
+  });
+
+  it("hydrates Button dialog triggers without replacing server markup", async () => {
+    const html = renderToString(<DialogTriggerFixture />);
+    const root = document.createElement("div");
+    root.innerHTML = html;
+    document.body.appendChild(root);
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    hydrateRoot(root, <DialogTriggerFixture />);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      consoleError.mock.calls.some((call) =>
+        call.some((entry) => String(entry).includes("Hydration failed")),
+      ),
+    ).toBe(false);
   });
 
   it("renders table wrapper and reusable page states", () => {

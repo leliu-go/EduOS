@@ -57,9 +57,9 @@ function MobileBottomNav({ role }: MobileBottomNavProps) {
   return (
     <nav
       aria-label={`${mobileRoleLabel[role]}导航`}
-      className="fixed right-0 bottom-0 left-0 z-30 border-t bg-card/95 backdrop-blur"
+      className="fixed right-0 bottom-0 left-0 z-30 border-t bg-card/95 shadow-[0_-12px_28px_rgba(15,23,42,0.06)] backdrop-blur"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5 px-2 py-1">
+      <ul className="mx-auto grid max-w-md grid-cols-5 px-2 py-2">
         {mobileNavItems[role].map((item) => {
           const Icon = item.icon;
 
@@ -69,7 +69,7 @@ function MobileBottomNav({ role }: MobileBottomNavProps) {
                 href={item.href}
                 className={cn(
                   "flex min-h-12 flex-col items-center justify-center gap-1 rounded-md text-xs font-medium text-muted-foreground transition-colors",
-                  item.active && "text-primary",
+                  item.active && "bg-primary/10 text-primary",
                 )}
               >
                 <Icon className="size-5" aria-hidden="true" />
