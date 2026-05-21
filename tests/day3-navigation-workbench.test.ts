@@ -22,6 +22,8 @@ describe("Day 3 navigation and workbench UX", () => {
     expect(dashboardHrefCount).toBe(1);
     expect(source).toContain("/dashboard/settings/version");
     expect(source).toContain("getAppVersion");
+    expect(source).toContain("md:flex md:flex-col");
+    expect(source).not.toContain("lg:flex lg:flex-col");
   });
 
   it("documents the new navigation split between workbench and future analytics", () => {

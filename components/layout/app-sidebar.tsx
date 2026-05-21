@@ -90,7 +90,7 @@ function AppSidebar() {
   const version = getAppVersion();
 
   return (
-    <aside className="hidden min-h-screen w-[17.5rem] shrink-0 border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)] lg:flex lg:flex-col">
+    <aside className="hidden min-h-screen w-[16rem] shrink-0 border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)] md:flex md:flex-col xl:w-[17.5rem]">
       <div className="flex h-20 items-center border-b px-5">
         <div className="flex items-center gap-3">
           <div className="flex size-11 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
