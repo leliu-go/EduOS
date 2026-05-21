@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileClock, ReceiptText, RotateCcw, ScrollText } from "lucide-react";
+import { ReceiptText, RotateCcw, ScrollText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PaymentCreateDialog } from "@/features/payments/payment-create-dialog";
 import { PaymentList } from "@/features/payments/payment-list";
 import { getManualPaymentOptions, getStaffPaymentList } from "@/features/payments/queries";
+import { RefundApprovalPanel, RefundRequestDialog } from "@/features/refunds/refund-dialogs";
+import { getRefundWorkflowOptions } from "@/features/refunds/queries";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
@@ -16,11 +18,14 @@ export default async function DashboardPaymentsPage() {
     unauthorizedRedirectTo: "/unauthorized",
   });
   const canMutateFinance = hasPermission(currentUser.roleKey, "finance:mutate");
-  const [payments, paymentOptions] = await Promise.all([
+  const [payments, paymentOptions, refundOptions] = await Promise.all([
     getStaffPaymentList(currentUser.tenantId),
     canMutateFinance
       ? getManualPaymentOptions(currentUser.tenantId)
       : Promise.resolve({ orders: [] }),
+    canMutateFinance
+      ? getRefundWorkflowOptions(currentUser.tenantId)
+      : Promise.resolve({ courseAccounts: [], orders: [], payments: [], pendingRefunds: [] }),
   ]);
 
   return (
@@ -49,12 +54,7 @@ export default async function DashboardPaymentsPage() {
             续费
           </Link>
         </Button>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/payments?mode=refund">
-            <FileClock className="size-4" aria-hidden="true" />
-            退款申请
-          </Link>
-        </Button>
+        {canMutateFinance ? <RefundRequestDialog options={refundOptions} /> : null}
         <Button asChild variant="outline">
           <Link href="/dashboard/course-consumptions">
             <ScrollText className="size-4" aria-hidden="true" />
@@ -73,6 +73,8 @@ export default async function DashboardPaymentsPage() {
           <p>退款和财务调整必须保留原因与审计日志。</p>
         </CardContent>
       </Card>
+
+      {canMutateFinance ? <RefundApprovalPanel options={refundOptions} /> : null}
 
       <PaymentList payments={payments} />
     </div>

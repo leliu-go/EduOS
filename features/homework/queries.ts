@@ -490,7 +490,22 @@ export async function getHomeworkCorrectionOptions(tenantId: string) {
   });
 
   return {
-    knowledgePoints,
+    knowledgePoints: knowledgePoints.map((knowledgePoint) => ({
+      id: knowledgePoint.id,
+      name: knowledgePoint.name,
+      chapter: knowledgePoint.chapter,
+      subject: {
+        name: knowledgePoint.subject.name,
+      },
+      grade: {
+        name: knowledgePoint.grade.name,
+      },
+      parent: knowledgePoint.parent
+        ? {
+            name: knowledgePoint.parent.name,
+          }
+        : null,
+    })),
   };
 }
 

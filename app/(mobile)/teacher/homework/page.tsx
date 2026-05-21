@@ -102,7 +102,19 @@ function TeacherCorrectionCard({
               {submission.student.name} · {getSubmissionTargetLabel(submission)}
             </p>
           </div>
-          <HomeworkCorrectionDialog submission={submission} knowledgePoints={knowledgePoints} />
+          <HomeworkCorrectionDialog
+            submission={{
+              id: submission.id,
+              attemptNumber: submission.attemptNumber,
+              student: {
+                name: submission.student.name,
+              },
+              homework: {
+                title: submission.homework.title,
+              },
+            }}
+            knowledgePoints={knowledgePoints}
+          />
         </div>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-muted-foreground">

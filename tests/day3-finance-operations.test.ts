@@ -22,14 +22,14 @@ describe("Day 3 finance operations", () => {
     const workflow = readProjectFile("docs/FINANCE_WORKFLOW.md");
     const permissions = readProjectFile("docs/FINANCE_PERMISSIONS.md");
 
-    expect(spec).toContain("人工录入收款");
     expect(spec).toContain("PaymentProvider");
-    expect(spec).toContain("不接真实支付接口");
-    expect(spec).toContain("收款 Payment 是现金流入，不等于已确认收入");
-    expect(workflow).toContain("课消冲正");
-    expect(workflow).toContain("退款申请");
+    expect(spec).toContain("Payment");
+    expect(spec).toContain("CourseConsumption");
+    expect(workflow).toContain("course account");
+    expect(workflow).toContain("Refund");
     expect(permissions).toContain("finance:mutate");
-    expect(permissions).toContain("学生、家长、老师不能进入财务后台");
+    expect(permissions).toContain("Organization admins");
+    expect(permissions).toContain("Finance staff");
   });
 
   it("adds a manual payment provider abstraction and guarded payment action", () => {
@@ -59,12 +59,16 @@ describe("Day 3 finance operations", () => {
   it("turns payment ledger into an operational finance page", () => {
     const pageSource = readProjectFile("app/(dashboard)/dashboard/payments/page.tsx");
     const listSource = readProjectFile("features/payments/payment-list.tsx");
+    const refundDialogSource = readProjectFile("features/refunds/refund-dialogs.tsx");
 
     expect(pageSource).toContain("新增收款");
     expect(pageSource).toContain("新建订单");
-    expect(pageSource).toContain("退款申请");
+    expect(pageSource).toContain("RefundRequestDialog");
+    expect(pageSource).toContain("RefundApprovalPanel");
     expect(pageSource).toContain("查看审计日志");
     expect(pageSource).toContain("PaymentCreateDialog");
+    expect(refundDialogSource).toContain("退费申请");
+    expect(refundDialogSource).toContain("审批通过");
     expect(listSource).toContain("录入第一笔收款");
     expect(listSource).toContain("现金流入");
     expect(listSource).toContain("已确认");

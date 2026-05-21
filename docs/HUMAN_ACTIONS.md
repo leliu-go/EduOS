@@ -94,3 +94,11 @@ When a high-risk item is downgraded, record:
 - Approve the scope for a dedicated student activity page and teacher activity progress page.
 - Approve the next iteration of teacher lesson execution page: attendance, resources, homework, classroom performance, and feedback in one flow.
 - Approve deeper Playwright coverage using a stable seeded demo database for mobile-role deep links and cross-tenant denial.
+
+## 2026-05-21 Day 5 Golden Path Follow-Ups
+
+- Review the Day 5 QA reports and decide which remaining flow gaps should become Day 6 implementation scope.
+- Approve whether the QA golden-path seed data can be used as the stable local/staging demo tenant.
+- Approve the refund approval policy: finance-only, principal final approval, or amount-based approval tiers.
+- Approve whether to add a guarded QA data cleanup script limited to `qa-*` users and `QA_` records.
+- Review the pg deprecation warning before any `pg@9` upgrade.

@@ -24,8 +24,8 @@ import {
 type ScheduleChangeSchedule = {
   id: string;
   roomId: string;
-  startAt: Date;
-  endAt: Date;
+  startAt: string;
+  endAt: string;
   status: string;
 };
 
@@ -37,8 +37,8 @@ type ScheduleChangeRoom = {
   };
 };
 
-function formatDateTimeInput(value: Date) {
-  return value.toISOString().slice(0, 16);
+function formatDateTimeInput(value: string) {
+  return new Date(value).toISOString().slice(0, 16);
 }
 
 function RoomSelect({

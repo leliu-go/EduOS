@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
-import {
-  getResourceReleaseLabel,
-  ResourceReleaseDialog,
-} from "@/features/resources/resource-release-dialog";
+import { ResourceReleaseDialog } from "@/features/resources/resource-release-dialog";
+import { getResourceReleaseLabel } from "@/features/resources/resource-release-label";
 import { getResourceLibraryOptions, getTeacherResourceLibrary } from "@/features/resources/queries";
 import {
   resourceTypeLabels,
@@ -68,7 +66,14 @@ function TeacherResourceCard({ item }: { item: TeacherResourceItem }) {
       <CardContent className="grid gap-3 text-sm text-muted-foreground">
         <p>{getBindingLabel(item)}</p>
         <p>开放时间：{getResourceReleaseLabel(item.releaseAt)}</p>
-        <ResourceReleaseDialog resource={item} returnTo="/teacher/resources" />
+        <ResourceReleaseDialog
+          resource={{
+            id: item.id,
+            title: item.title,
+            releaseAt: item.releaseAt?.toISOString() ?? null,
+          }}
+          returnTo="/teacher/resources"
+        />
       </CardContent>
     </Card>
   );

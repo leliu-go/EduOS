@@ -7,10 +7,8 @@ import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
-import {
-  getResourceReleaseLabel,
-  ResourceReleaseDialog,
-} from "@/features/resources/resource-release-dialog";
+import { ResourceReleaseDialog } from "@/features/resources/resource-release-dialog";
+import { getResourceReleaseLabel } from "@/features/resources/resource-release-label";
 import { getResourceLibrary, getResourceLibraryOptions } from "@/features/resources/queries";
 import {
   resourceStatusLabels,
@@ -138,7 +136,16 @@ function getResourceColumns(): Array<DataTableColumn<ResourceLibraryItem>> {
     {
       key: "actions",
       header: "操作",
-      cell: (item) => <ResourceReleaseDialog resource={item} returnTo="/dashboard/resources" />,
+      cell: (item) => (
+        <ResourceReleaseDialog
+          resource={{
+            id: item.id,
+            title: item.title,
+            releaseAt: item.releaseAt?.toISOString() ?? null,
+          }}
+          returnTo="/dashboard/resources"
+        />
+      ),
       className: "text-right",
     },
   ];

@@ -35,3 +35,11 @@ Date: 2026-05-21
 - Merge teacher lesson attendance, lesson resources, homework, classroom performance, and lesson feedback into a single teaching execution page.
 - Add student course detail pages that connect lesson content, teacher feedback, resources, homework, and reminders.
 - Expand e2e coverage for student/teacher deep links, cross-tenant denial, resource download authorization, homework submission, and homework grading.
+
+## Day 5 Golden Path Follow-Ups
+
+- Turn the golden-path E2E from page-health checks into full UI form submission for student creation, teacher creation, course product creation, class creation, enrollment, scheduling, homework submission, grading, and refund approval.
+- Add a guided order/renewal wizard that connects Order, Payment, Enrollment, and CourseAccount without sending staff through separate pages.
+- Add dedicated resource upload UI on top of the storage provider, including file size/type validation and cloud upload progress.
+- Add student activity detail/history and teacher activity progress pages for the existing word-checkin engine.
+- Add a single teacher lesson execution page that combines attendance, resources, homework, feedback, and lesson status.

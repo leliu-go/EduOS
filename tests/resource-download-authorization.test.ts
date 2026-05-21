@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 import {
   createAuthorizedResourceDownloadUrl,
@@ -111,5 +112,20 @@ describe("resource download authorization", () => {
     ).resolves.toEqual({ allowed: false, reason: "missing_object" });
 
     expect(provider.createSignedDownloadUrl).not.toHaveBeenCalled();
+  });
+
+  it("routes student downloads through server-side authorization instead of exposing fileUrl", () => {
+    const page = readFileSync("app/(mobile)/student/resources/[resourceId]/page.tsx", "utf8");
+    const route = readFileSync(
+      "app/(mobile)/student/resources/[resourceId]/download/route.ts",
+      "utf8",
+    );
+
+    expect(page).not.toContain("href={resource.fileUrl}");
+    expect(page).toContain("/student/resources/${resource.id}/download");
+    expect(route).toContain('requirePermission("resources:download"');
+    expect(route).toContain("getStudentResourceDetail(currentUser.tenantId, currentUser.id, resourceId)");
+    expect(route).toContain("createAuthorizedResourceDownloadUrl");
+    expect(route).toContain("NextResponse.redirect(signed.url)");
   });
 });

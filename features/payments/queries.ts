@@ -47,9 +47,22 @@ const manualPaymentOrderInclude = {
   },
 } satisfies Prisma.OrderInclude;
 
-export type ManualPaymentOrderOption = Prisma.OrderGetPayload<{
-  include: typeof manualPaymentOrderInclude;
-}>;
+export type ManualPaymentOrderOption = {
+  id: string;
+  orderNo: string;
+  payableAmount: string;
+  currency: string;
+  student: {
+    name: string;
+    grade: string;
+  };
+  guardian: {
+    name: string;
+  } | null;
+  courseProduct: {
+    name: string;
+  } | null;
+};
 
 export async function getStaffPaymentList(tenantId: string) {
   return prisma.payment.findMany({
@@ -73,7 +86,17 @@ export async function getManualPaymentOptions(tenantId: string) {
     take: 100,
   });
 
-  return { orders };
+  return {
+    orders: orders.map((order) => ({
+      id: order.id,
+      orderNo: order.orderNo,
+      payableAmount: order.payableAmount.toString(),
+      currency: order.currency,
+      student: order.student,
+      guardian: order.guardian,
+      courseProduct: order.courseProduct,
+    })),
+  };
 }
 
 export async function getStudentPaymentList(tenantId: string, userId: string) {

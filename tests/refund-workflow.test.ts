@@ -59,4 +59,20 @@ describe("refund workflow", () => {
     expect(actionSource).toContain("refund.approve");
     expect(actionSource).toContain("courseAccount.refund");
   });
+
+  it("exposes a minimal finance UI for refund request and approval", () => {
+    const page = readFileSync("app/(dashboard)/dashboard/payments/page.tsx", "utf8");
+    const dialogs = readFileSync("features/refunds/refund-dialogs.tsx", "utf8");
+    const queries = readFileSync("features/refunds/queries.ts", "utf8");
+
+    expect(page).toContain("RefundRequestDialog");
+    expect(page).toContain("RefundApprovalPanel");
+    expect(page).not.toContain("/dashboard/payments?mode=refund");
+    expect(dialogs).toContain("createRefundRequestAction");
+    expect(dialogs).toContain("approveRefundAction");
+    expect(dialogs).toContain('name="reason"');
+    expect(dialogs).toContain('name="approvalNote"');
+    expect(queries).toContain("tenantId");
+    expect(queries).toContain('status: "PENDING_APPROVAL"');
+  });
 });

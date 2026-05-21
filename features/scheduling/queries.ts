@@ -108,10 +108,28 @@ export async function getScheduleCalendarData(tenantId: string, search: Schedule
   return {
     schedules,
     options: {
-      campuses,
-      teachers,
-      rooms,
-      classGroups,
+      campuses: campuses.map((campus) => ({
+        id: campus.id,
+        name: campus.name,
+      })),
+      teachers: teachers.map((teacher) => ({
+        id: teacher.id,
+        name: teacher.name,
+      })),
+      rooms: rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        campus: {
+          name: room.campus.name,
+        },
+      })),
+      classGroups: classGroups.map((classGroup) => ({
+        id: classGroup.id,
+        name: classGroup.name,
+        courseProduct: {
+          name: classGroup.courseProduct.name,
+        },
+      })),
     },
     window: getScheduleCalendarWindow(search),
   };

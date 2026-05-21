@@ -120,9 +120,24 @@ export async function getClassGroupFormOptions(tenantId: string) {
   ]);
 
   return {
-    courseProducts,
-    teachers,
-    campuses,
+    courseProducts: courseProducts.map((courseProduct) => ({
+      id: courseProduct.id,
+      name: courseProduct.name,
+      subject: {
+        name: courseProduct.subject.name,
+      },
+      grade: {
+        name: courseProduct.grade.name,
+      },
+    })),
+    teachers: teachers.map((teacher) => ({
+      id: teacher.id,
+      name: teacher.name,
+    })),
+    campuses: campuses.map((campus) => ({
+      id: campus.id,
+      name: campus.name,
+    })),
   };
 }
 

@@ -104,7 +104,13 @@ export async function getCourseProductFormOptions(tenantId: string) {
   ]);
 
   return {
-    subjects,
-    grades,
+    subjects: subjects.map((subject) => ({
+      id: subject.id,
+      name: subject.name,
+    })),
+    grades: grades.map((grade) => ({
+      id: grade.id,
+      name: grade.name,
+    })),
   };
 }

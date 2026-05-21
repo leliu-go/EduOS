@@ -7,10 +7,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LessonFeedbackForm } from "@/features/lesson-feedback/lesson-feedback-form";
 import { getTeacherLessonFeedbackContext } from "@/features/lesson-feedback/queries";
 import { ResourceCreateDialog } from "@/features/resources/resource-create-dialog";
-import {
-  getResourceReleaseLabel,
-  ResourceReleaseDialog,
-} from "@/features/resources/resource-release-dialog";
+import { ResourceReleaseDialog } from "@/features/resources/resource-release-dialog";
+import { getResourceReleaseLabel } from "@/features/resources/resource-release-label";
 import { getResourceLibraryOptions, getTeacherLessonResources } from "@/features/resources/queries";
 import { resourceTypeLabels } from "@/features/resources/resource-schema";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -54,7 +52,14 @@ function TeacherLessonResourceCard({
             </a>
           </Button>
         ) : null}
-        <ResourceReleaseDialog resource={resource} returnTo={`/teacher/lessons/${lessonId}`} />
+        <ResourceReleaseDialog
+          resource={{
+            id: resource.id,
+            title: resource.title,
+            releaseAt: resource.releaseAt?.toISOString() ?? null,
+          }}
+          returnTo={`/teacher/lessons/${lessonId}`}
+        />
       </CardContent>
     </Card>
   );

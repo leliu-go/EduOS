@@ -73,6 +73,16 @@ function formatScheduleTime(schedule: ScheduleCalendarItem) {
   return `${formatDate(schedule.startAt)} ${formatTime(schedule.startAt)}-${formatTime(schedule.endAt)}`;
 }
 
+function getScheduleChangePayload(schedule: ScheduleCalendarItem) {
+  return {
+    id: schedule.id,
+    roomId: schedule.roomId,
+    startAt: schedule.startAt.toISOString(),
+    endAt: schedule.endAt.toISOString(),
+    status: schedule.status,
+  };
+}
+
 function getConflictMessages(value: string | string[] | undefined) {
   const rawValue = typeof value === "string" ? value : "";
 
@@ -147,7 +157,7 @@ function ScheduleEvent({
           {schedule.teacher.name} · {schedule.campus.name}/{schedule.room.name}
         </span>
       </div>
-      <ScheduleChangeActions schedule={schedule} rooms={rooms} />
+      <ScheduleChangeActions schedule={getScheduleChangePayload(schedule)} rooms={rooms} />
     </div>
   );
 }
@@ -239,7 +249,7 @@ function ListCalendar({
                 {schedule.campus.name}/{schedule.room.name}
               </span>
               <Badge variant="secondary">{scheduleStatusLabels[schedule.status]}</Badge>
-              <ScheduleChangeActions schedule={schedule} rooms={rooms} />
+              <ScheduleChangeActions schedule={getScheduleChangePayload(schedule)} rooms={rooms} />
             </div>
           ))}
         </div>

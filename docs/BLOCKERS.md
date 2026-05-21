@@ -156,3 +156,11 @@ When a blocker appears, record:
 - What was intentionally not executed: No credential change, force push, destructive git operation, or remote rewrite was attempted.
 - Safe fallback implemented: Local commits remain on `main`; generated `artifacts/day4-patches` and `artifacts/eduos-day4.bundle`.
 - Whether later tasks can continue: Yes. Retry `git push origin main` later or transfer the patch/bundle artifacts manually.
+
+## 2026-05-21 Day 5 High-Risk Operations Avoided
+
+- Stage or PZ task: Day 5 full-link business QA
+- Risk or failure type: Production migration, production deployment, real payment/SMS/WeChat integration, real OSS/RDS mutation, and destructive cleanup remain high-risk.
+- What was intentionally not executed: No production migration, ECS deployment, database reset/drop/truncate, OSS deletion, real payment provider, SMS provider, WeChat provider, or secret read/print was executed.
+- Safe fallback implemented: Local idempotent QA seed, golden-path E2E, documentation, and low-risk fixes only.
+- Whether later tasks can continue: Yes.

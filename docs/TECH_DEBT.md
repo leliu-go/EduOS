@@ -69,3 +69,10 @@
 - Teacher lesson detail should be consolidated into a single teaching execution page instead of spreading attendance, resources, homework, and feedback across multiple surfaces.
 - Student course detail should become a first-class page with lesson content, resources, homework, feedback, and check-in state.
 - Add more Playwright e2e for mobile portal deep links, unauthorized redirects, and role switching.
+
+### Day 5 Golden Path QA
+
+- Golden-path E2E now covers role login, route health, basic permissions, finance/refund entry points, and student resource download authorization. It still needs full form-submission coverage for each business mutation.
+- Several client components previously accepted full Prisma payloads. Day 5 fixed the observed Decimal serialization paths; keep future query results as minimal DTOs before passing them into `"use client"` components.
+- The local E2E run still logs a pg deprecation warning about concurrent `client.query()` usage. Investigate before upgrading to `pg@9`.
+- The seed script is intentionally additive/idempotent and does not clean data. If QA data cleanup is needed, add a guarded, prefix-only cleanup script instead of using database reset.

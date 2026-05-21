@@ -65,13 +65,17 @@ export default async function StudentResourceDetailPage({
             {resource.fileName ?? resource.fileUrl ?? "老师暂未填写文件信息"}
           </p>
         </div>
-        {resource.fileUrl ? (
+        {resource.objectKey ? (
           <Button asChild>
-            <a href={resource.fileUrl} target="_blank" rel="noreferrer">
+            <a href={`/student/resources/${resource.id}/download`}>
               <ExternalLink className="size-4" aria-hidden="true" />
-              打开资源
+              验权后打开资源
             </a>
           </Button>
+        ) : resource.fileUrl ? (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-amber-800">
+            该资源仍是旧版文件地址，已停止在学生端直接暴露。请联系老师重新上传到资源存储。
+          </div>
         ) : null}
       </CardContent>
     </Card>
