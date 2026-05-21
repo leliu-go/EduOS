@@ -148,3 +148,11 @@ When a blocker appears, record:
 - What was intentionally not executed: No production migration, ECS deployment, secret read/print, database reset/drop/truncate, OSS delete, or real provider operation was executed.
 - Safe fallback implemented: Activity pages, richer lesson execution page, and deeper e2e coverage were documented for later instead of forcing a large rewrite.
 - Whether later tasks can continue: Yes.
+
+## 2026-05-21 Day 4 GitHub Push Unavailable
+
+- Stage or PZ task: Day 4 final git push
+- Risk or failure type: GitHub push hung without output for more than 90 seconds and was interrupted locally.
+- What was intentionally not executed: No credential change, force push, destructive git operation, or remote rewrite was attempted.
+- Safe fallback implemented: Local commits remain on `main`; generated `artifacts/day4-patches` and `artifacts/eduos-day4.bundle`.
+- Whether later tasks can continue: Yes. Retry `git push origin main` later or transfer the patch/bundle artifacts manually.

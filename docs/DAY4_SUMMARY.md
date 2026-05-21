@@ -79,3 +79,6 @@
 
 - `next-env.d.ts` 在 Next.js/TypeScript 检查时会被本地生成流程改写，本轮已恢复为仓库原状态，不建议提交。
 - `EduOS_Codex_Overnight_Run_Pack_v2/` 仍为开发提示包，不应提交。
+- 本地已提交 `dc33f6c day4: improve student and teacher mobile portals`。
+- `git push origin main` 在本机网络下长时间无输出并被中断；当前 `main` 比 `origin/main` ahead 2。
+- 已生成 fallback：`artifacts/day4-patches` 和 `artifacts/eduos-day4.bundle`。
