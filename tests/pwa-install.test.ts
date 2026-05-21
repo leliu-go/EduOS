@@ -43,6 +43,8 @@ describe("PWA install capability", () => {
 
     expect(serviceWorker).toContain("networkOnly");
     expect(serviceWorker).toContain("STATIC_CACHE");
+    expect(serviceWorker).toContain("CACHEABLE_STATIC_PREFIXES");
+    expect(serviceWorker).not.toContain('STATIC_ASSETS = ["/"');
     expect(layout).toContain("InstallPwaPrompt");
   });
 

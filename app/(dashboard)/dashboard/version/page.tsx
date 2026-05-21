@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VersionBadge } from "@/components/version/version-badge";
-import { getAppVersion, getUpdateManifest } from "@/lib/version/app-version";
 import { requirePermission } from "@/lib/rbac/require-permission";
+import { getAppVersion, getUpdateManifest } from "@/lib/version/app-version";
 
 export default async function DashboardVersionPage() {
   await requirePermission("route:admin", {
@@ -33,6 +33,8 @@ export default async function DashboardVersionPage() {
             <p>应用：{appVersion.name}</p>
             <p>版本：v{appVersion.version}</p>
             <p>构建：{appVersion.buildId}</p>
+            <p>提交：{appVersion.shortCommitHash}</p>
+            <p>构建时间：{appVersion.buildTime ?? "本地开发版本"}</p>
             <p>发布时间：{appVersion.releasedAt ?? "本地开发版本"}</p>
           </CardContent>
         </Card>

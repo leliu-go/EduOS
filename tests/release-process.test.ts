@@ -16,8 +16,15 @@ describe("release process documentation and scripts", () => {
     expect(combined).toContain("No production database migration");
     expect(combined).toContain("/api/update-manifest");
     expect(combined).toContain("minimumSupportedVersion");
+    expect(combined).toContain("RUN_PRODUCTION_MIGRATIONS");
+    expect(combined).toContain(".env.production.local");
+    expect(combined).toContain("CACHEABLE_STATIC_PREFIXES");
     expect(combined).toContain("Rollback");
+    expect(rollbackPlan).toContain("PM2");
+    expect(rollbackPlan).toContain("OSS files are not automatically deleted");
     expect(checkRelease).toContain("RunQualityGates");
+    expect(checkRelease).toContain("Assert-NoDestructiveMigrationSql");
+    expect(checkRelease).toContain("Assert-GitFileNotTracked");
   });
 
   it("runs the local static release check without deploying", () => {

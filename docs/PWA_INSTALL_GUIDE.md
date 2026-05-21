@@ -13,7 +13,12 @@ EduOS uses one EduOS PWA for administrators, finance staff, academic staff, teac
 
 Do not cache login pages, auth/session data, `/api/` responses, admin pages, teacher pages, student pages, parent pages, finance data, private student data, or full resource libraries.
 
-The service worker only caches static shell assets such as the app icon and safe static files. Business pages and protected data stay network-first and permission-checked on the server.
+The service worker only caches public static shell assets such as the app icon,
+manifest, and Next.js static chunks. It does not precache `/`, login pages,
+role dashboards, `/api/` responses, admin-only routes, student privacy data,
+finance data, signed resource URLs, or resource authorization responses.
+Business pages and protected data stay network-only and permission-checked on
+the server.
 
 ## Resource Policy
 

@@ -30,14 +30,24 @@
 - What the user should do later: choose and provision production encryption/KMS, generate backup-code pepper, approve a non-destructive MFA credential migration, define recovery identity checks, and test enrollment/challenge/recovery flows in staging.
 - Whether later tasks can continue: Yes.
 
+## Day 2 MFA/TOTP Production Enforcement
+
+- Stage or PZ task: Day 2 Stage G / MFA/TOTP first production-ready layer
+- Risk type: Production KMS, real TOTP secret provisioning, recovery policy, and staging migration execution
+- Risky action intentionally not executed: No production KMS key, real TOTP secret, QR provisioning URI, production challenge enforcement, or production migration was executed.
+- Safe fallback implemented: Additive `UserMfaCredential` schema and migration, local development encryption provider, backup-code hashing, MFA audit wrapper, login decision helper, and tests.
+- Files created or updated: `prisma/schema.prisma`, `prisma/migrations/20260521001000_add_user_mfa_credentials/migration.sql`, `lib/mfa/*`, `lib/auth/mfa-login.ts`, `tests/unit/mfa.test.ts`, `docs/SECURITY_MFA_PLAN.md`, `docs/MFA_IMPLEMENTATION_STATUS.md`
+- What the user should do later: provision KMS or managed key storage, generate and store `MFA_BACKUP_CODE_PEPPER`, approve staging migration, then test enrollment/challenge/recovery flows with high-privilege accounts.
+- Whether later tasks can continue: Yes.
+
 ## Activity Engine Persistence Approval
 
 - Stage or PZ task: Stage 7 / PZ10 Activity Engine first stage
 - Risk type: New tenant-scoped activity persistence models, indexes, audit events, and migration rollout
-- Risky action intentionally not executed: No Activity Engine Prisma migration, production aggregation job, or reporting data backfill was executed.
-- Safe fallback implemented: Activity validation schemas, role-aware activity policy helpers, word check-in progress logic, tests, and RFC.
-- Files created or updated: `features/activities/*`, `tests/activity-engine.test.ts`, `docs/rfcs/RFC-ActivityEngine.md`
-- What the user should do later: approve activity persistence models, audit event names, reporting indexes, and staged migration rollout.
+- Risky action intentionally not executed: No staging/production Activity Engine migration, production aggregation job, external push integration, or reporting data backfill was executed.
+- Safe fallback implemented: Additive Activity Engine schema/migration, validation schemas, role-aware policy helpers, word check-in progress logic, server action skeletons, tests, and RFC.
+- Files created or updated: `features/activities/*`, `tests/activity-engine.test.ts`, `tests/unit/activity.test.ts`, `prisma/migrations/20260521002000_add_activity_engine/migration.sql`, `docs/ACTIVITY_ENGINE_PLAN.md`, `docs/rfcs/RFC-ActivityEngine.md`
+- What the user should do later: approve staging migration rollout, audit event names, reporting indexes, teacher/student UI fixtures, and future progress aggregation.
 - Whether later tasks can continue: Yes.
 
 ## Windows Installer Publishing

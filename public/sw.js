@@ -1,5 +1,6 @@
 const STATIC_CACHE = "eduos-static-v1";
-const STATIC_ASSETS = ["/", "/icon.svg"];
+const STATIC_ASSETS = ["/icon.svg"];
+const CACHEABLE_STATIC_PREFIXES = ["/_next/static/", "/icon.svg", "/manifest.webmanifest"];
 const SENSITIVE_PATH_PREFIXES = [
   "/api/",
   "/login",
@@ -22,6 +23,16 @@ function isSensitiveRequest(request) {
   }
 
   return SENSITIVE_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
+}
+
+function isCacheableStaticRequest(request) {
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin) {
+    return false;
+  }
+
+  return CACHEABLE_STATIC_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
 }
 
 self.addEventListener("install", (event) => {
@@ -50,6 +61,11 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
 
   if (isSensitiveRequest(request)) {
+    event.respondWith(networkOnly(request));
+    return;
+  }
+
+  if (!isCacheableStaticRequest(request)) {
     event.respondWith(networkOnly(request));
     return;
   }

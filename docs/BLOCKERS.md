@@ -28,12 +28,20 @@
 - Safe fallback implemented: MFA policy helpers, TOTP placeholder provider, tenant-scoped model draft, `.env.example` placeholders, tests, and RFC.
 - Whether later tasks can continue: Yes. Activity Engine and release tasks do not require production MFA secrets.
 
+## 2026-05-21 Day 2 Stage G MFA Production Enforcement
+
+- Stage or PZ task: Day 2 Stage G / MFA/TOTP first production-ready layer
+- Risk or failure type: Real KMS, real TOTP enrollment, production challenge enforcement, and staging migration execution require human approval
+- What was intentionally not executed: No production KMS key was created, no real user TOTP secret was provisioned, no QR code was generated, and no staging/production migration was run.
+- Safe fallback implemented: Additive MFA schema/migration, local dev encryption provider, backup-code hashing, audit wrapper, login decision helper, and tests.
+- Whether later tasks can continue: Yes. The next stages can use the interfaces without production secrets.
+
 ## 2026-05-21 Stage 7 Activity Persistence Migration
 
 - Stage or PZ task: Stage 7 / PZ10 Activity Engine first stage
 - Risk or failure type: New production persistence models, indexes, audit events, and reporting aggregation require human migration review
-- What was intentionally not executed: No Activity Engine Prisma migration, production data backfill, reporting aggregation job, or destructive model change was executed.
-- Safe fallback implemented: Activity schemas, role-aware policy helpers, word check-in progress logic, tests, and RFC.
+- What was intentionally not executed: No staging/production Activity Engine migration, production data backfill, reporting aggregation job, external push integration, or destructive model change was executed.
+- Safe fallback implemented: Additive Activity Engine schema/migration, activity schemas, role-aware policy helpers, word check-in progress logic, server action skeletons, tests, and RFC.
 - Whether later tasks can continue: Yes. Release documentation can proceed without persisted activity data.
 
 ## 2026-05-21 Stage 7 Push Retry
@@ -88,6 +96,15 @@
 - Safe fallback implemented: Local commit `85e4d6f productization: add aliyun oss resource storage groundwork` exists on `main`.
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
+
+## 2026-05-21 Stage A GitHub Push Unavailable
+
+- Stage or PZ task: Day 2 Stage A / Git push recovery
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive or risky operation was attempted.
+- Safe fallback implemented: Generated `artifacts/patches`, `artifacts/eduos-stage4.bundle`, `artifacts/eduos-stage4-source.tar.gz`, and `docs/GITHUB_PUSH_RECOVERY.md`.
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Failed to connect to github.com port 443 after 21084 ms: Could not connect to server`
+- Whether later tasks can continue: Yes. Continue local safe tasks and deploy via uploaded archive/bundle if GitHub remains unavailable.
 
 When a blocker appears, record:
 

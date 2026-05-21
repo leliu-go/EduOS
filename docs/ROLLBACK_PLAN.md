@@ -21,13 +21,15 @@ migration**.
 4. Confirm whether the release included database migrations.
 5. If a migration was involved, stop and use the human-approved database rollback
    procedure for that specific migration.
-6. Republish the last known-good application artifact through the approved
+6. Roll back the PM2 process to the last known-good working directory, bundle,
+   or release artifact.
+7. Republish the last known-good application artifact through the approved
    production deployment channel.
-7. Update `/api/update-manifest` metadata to point clients to the last known-good
+8. Update `/api/update-manifest` metadata to point clients to the last known-good
    version.
-8. Verify login, role routing, dashboard, mobile teacher/student/parent routes,
+9. Verify login, role routing, dashboard, mobile teacher/student/parent routes,
    resources, schedules, and homework flows.
-9. Record the incident, root cause, and follow-up tasks.
+10. Record the incident, root cause, and follow-up tasks.
 
 ## Update Manifest Rollback
 
@@ -49,6 +51,9 @@ When rolling back metadata, review:
   review.
 - Course resources remain external/cloud-managed and must not be packaged into a
   rollback artifact.
+- OSS files are not automatically deleted during rollback. If a resource object
+  must be removed, handle it with a separate human-approved data retention
+  decision.
 
 ## Verification
 

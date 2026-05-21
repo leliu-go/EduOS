@@ -30,6 +30,44 @@ function Assert-TextContains {
   }
 }
 
+function Assert-GitFileNotTracked {
+  param([string]$Path)
+
+  Push-Location $repoRoot
+  try {
+    $tracked = & git ls-files -- $Path
+    if ($tracked) {
+      throw "$Path must not be tracked in git"
+    }
+  } finally {
+    Pop-Location
+  }
+}
+
+function Assert-NoDestructiveMigrationSql {
+  $migrationsPath = Join-Path $repoRoot "prisma/migrations"
+  if (-not (Test-Path -LiteralPath $migrationsPath)) {
+    return
+  }
+
+  $patterns = @(
+    "DROP\s+TABLE",
+    "DROP\s+COLUMN",
+    "TRUNCATE",
+    "DELETE\s+FROM\s+[^\r\n;]+(;|$)",
+    "migrate\s+reset"
+  )
+
+  Get-ChildItem -LiteralPath $migrationsPath -Recurse -Filter "*.sql" | ForEach-Object {
+    $content = Get-Content -Raw -LiteralPath $_.FullName
+    foreach ($pattern in $patterns) {
+      if ($content -match $pattern) {
+        throw "Potential destructive migration SQL found in $($_.FullName): $pattern"
+      }
+    }
+  }
+}
+
 $requiredFiles = @(
   "package.json",
   "CHANGELOG.md",
@@ -57,6 +95,11 @@ Assert-TextContains -Path "docs/UPDATE_MANIFEST_SPEC.md" -Expected "minimumSuppo
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No deploy"
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No code signing"
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No production database migration"
+Assert-TextContains -Path "public/sw.js" -Expected "CACHEABLE_STATIC_PREFIXES"
+Assert-TextContains -Path "public/sw.js" -Expected "/api/"
+Assert-TextContains -Path "public/sw.js" -Expected "networkOnly"
+Assert-GitFileNotTracked -Path ".env.production.local"
+Assert-NoDestructiveMigrationSql
 
 if ($RunQualityGates) {
   Push-Location $repoRoot

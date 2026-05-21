@@ -26,6 +26,12 @@ No production database migration is executed by the local release scripts.
 5. Review `docs/BLOCKERS.md` and `docs/HUMAN_ACTIONS.md`.
 6. Confirm rollback instructions in `docs/ROLLBACK_PLAN.md`.
 7. Confirm update manifest behavior in `docs/UPDATE_MANIFEST_SPEC.md`.
+8. Confirm `.env.production.local` is not tracked or staged.
+9. Confirm service worker cache rules exclude `/api/`, role dashboards,
+   finance data, student privacy data, admin-only pages, and resource
+   authorization responses.
+10. Review all Prisma migration SQL for destructive statements before enabling
+    `RUN_PRODUCTION_MIGRATIONS=true` on staging.
 
 ## Quality Gates
 
@@ -42,6 +48,7 @@ pnpm test:e2e
 
 - Production deployment.
 - Production database migration.
+- `RUN_PRODUCTION_MIGRATIONS=true` on staging or production.
 - Production secret rotation.
 - CDN invalidation.
 - Code signing.
@@ -63,3 +70,5 @@ Each release candidate should record:
 - Known blockers.
 - Human-approved operations.
 - Rollback target.
+- Migration safety review result.
+- Service worker cache review result.

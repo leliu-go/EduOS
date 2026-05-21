@@ -2,21 +2,29 @@
 
 Date: 2026-05-21
 
-## Current State
+## Architecture
 
-EduOS stores resource metadata in PostgreSQL and stores file bytes through a `StorageProvider`.
+EduOS resource metadata stays in RDS. Resource payloads stay in OSS. The local client only receives authorized, time-limited access after ECS verifies RBAC and `tenantId`.
 
-Implemented providers:
+The current storage implementation supports:
 
-- `LocalStorageProvider` for local development.
-- `AliyunOssStorageProvider` for private Aliyun OSS buckets.
-- `cloud-placeholder` remains available for explicit disabled-cloud states.
+- `LocalStorageProvider` for development.
+- `AliyunOssStorageProvider` for private OSS buckets.
+- Compatibility wrappers under `lib/resources`.
 
-The app must not store course resources, videos, question banks, word books, or uploaded payloads in git, deployments, or installers.
+## Aliyun OSS Staging
 
-## Storage Metadata
+- Bucket: `eduos-prod-resources-studygo`
+- Region: `oss-cn-beijing`
+- Endpoint: `https://oss-cn-beijing.aliyuncs.com`
+- Optional internal endpoint: `ALIYUN_OSS_INTERNAL_ENDPOINT`
+- Optional public signed URL endpoint: `ALIYUN_OSS_PUBLIC_ENDPOINT`
+- Bucket ACL: private
+- Public access block: enabled
 
-`Resource` now has additive storage metadata fields:
+## Resource Metadata
+
+`Resource` includes:
 
 - `provider`
 - `bucket`
@@ -30,69 +38,35 @@ The app must not store course resources, videos, question banks, word books, or 
 - `createdById`
 - `status`
 
-Existing legacy fields `fileName`, `fileUrl`, and `fileSize` remain for backward compatibility while private storage is adopted.
+Legacy `fileName`, `fileUrl`, and `fileSize` remain during migration and compatibility work.
 
-## Provider Flow
+## Download Flow
 
-1. Server validates metadata and user permissions.
-2. Server writes bytes with `StorageProvider.putObject`.
-3. Server saves metadata, including provider, bucket, object key, size, checksum, visibility, and tenant.
-4. Download requests call server-side authorization first.
-5. Only authorized requests call `createSignedDownloadUrl`.
-6. The frontend receives a time-limited URL, not raw credentials.
+1. Client requests a resource through ECS.
+2. ECS loads metadata by `tenantId`.
+3. ECS verifies role and ownership:
+   - students: own assigned/enrolled resources only
+   - parents: bound children only
+   - teachers: own classes/lessons/authorized students only
+   - admin/principal: same tenant only
+4. ECS calls the provider to create a signed URL or safe download URL.
+5. Client downloads only the authorized object.
 
-## Authorization Rules
+The frontend must not build private OSS URLs directly.
 
-- Admin and principal roles manage resources inside their own tenant.
-- Teachers can access resources for their own course, class, or lesson scope.
-- Students can access only released resources assigned to their own student account or enrolled class/course.
-- Parents must be explicitly bound guardians before parent resource access is allowed.
-- Cross-tenant access fails before URL signing.
+## Cache Rules
 
-## Environment Variables
+- Service worker must not cache protected resource APIs.
+- Local cache can hold only authorized downloads.
+- Local cache is not the system of record.
+- Cached resource access should be revocable by future token expiry/versioning rules.
 
-Required for Aliyun OSS:
+## Smoke Test Rule
 
-```text
-RESOURCE_STORAGE_PROVIDER=aliyun-oss
-ALIYUN_OSS_ACCESS_KEY_ID=
-ALIYUN_OSS_ACCESS_KEY_SECRET=
-ALIYUN_OSS_BUCKET=
-ALIYUN_OSS_ENDPOINT=
-ALIYUN_OSS_REGION=
-ALIYUN_OSS_SIGNED_URL_TTL_SECONDS=300
-```
-
-Development local provider:
+OSS smoke tests may use only the `test/` prefix:
 
 ```text
-RESOURCE_STORAGE_PROVIDER=local
-RESOURCE_STORAGE_LOCAL_ROOT=.local/resource-storage
-RESOURCE_STORAGE_LOCAL_BUCKET=local-resource-storage
+test/eduos-smoke.txt
 ```
 
-Real values belong only in `.env.production.local` or the deployment platform secret manager. Do not commit them.
-
-## Verification
-
-Local safe checks:
-
-```powershell
-pnpm vitest run tests/storage-provider.test.ts tests/resource-download-authorization.test.ts tests/resource-storage-metadata.test.ts
-.\scripts\check-production-env.ps1
-.\scripts\check-storage-provider.ps1
-```
-
-OSS endpoint smoke check after the bucket and environment variables are ready:
-
-```powershell
-$env:RESOURCE_STORAGE_PROVIDER="aliyun-oss"
-.\scripts\check-production-env.ps1
-.\scripts\check-storage-provider.ps1 -CheckEndpoint
-```
-
-The scripts print only variable presence and connection status. They do not print secret values.
-
-## Migration Note
-
-The local development database was synchronized with `pnpm prisma db push` after additive schema changes. No `prisma migrate reset`, drop, destructive migration, production migration, or irreversible operation was executed.
+If delete permission is tested, only delete objects under `test/`.

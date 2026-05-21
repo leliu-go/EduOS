@@ -130,6 +130,8 @@ describe("storage providers", () => {
       ALIYUN_OSS_ACCESS_KEY_SECRET: "test-access-key-secret",
       ALIYUN_OSS_BUCKET: "eduos-private",
       ALIYUN_OSS_ENDPOINT: "oss-cn-hangzhou.aliyuncs.com",
+      ALIYUN_OSS_INTERNAL_ENDPOINT: "oss-cn-hangzhou-internal.aliyuncs.com",
+      ALIYUN_OSS_PUBLIC_ENDPOINT: "oss-cn-hangzhou.aliyuncs.com",
       ALIYUN_OSS_REGION: "cn-hangzhou",
       ALIYUN_OSS_SIGNED_URL_TTL_SECONDS: "600",
     };
@@ -139,11 +141,48 @@ describe("storage providers", () => {
     const report = validateProductionEnv(env);
 
     expect(config.bucket).toBe("eduos-private");
+    expect(config.internalEndpoint).toBe("oss-cn-hangzhou-internal.aliyuncs.com");
+    expect(config.publicEndpoint).toBe("oss-cn-hangzhou.aliyuncs.com");
     expect(config.signedUrlTtlSeconds).toBe(600);
     expect(provider.kind).toBe("aliyun-oss");
     expect(report.ok).toBe(true);
     expect(JSON.stringify(report)).not.toContain("test-access-key-secret");
     expect(report.redacted.ALIYUN_OSS_ACCESS_KEY_SECRET).toBe("set");
+  });
+
+  it("uses internal endpoint for upload and public endpoint for browser signed URLs", async () => {
+    const calls: string[] = [];
+    const fetchImpl: FetchLike = async (input) => {
+      calls.push(String(input));
+
+      return new Response("", {
+        status: 200,
+      });
+    };
+    const provider = new AliyunOssStorageProvider({
+      accessKeyId: "test-access-key-id",
+      accessKeySecret: "test-access-key-secret",
+      bucket: "eduos-private",
+      endpoint: "oss-cn-hangzhou.aliyuncs.com",
+      internalEndpoint: "oss-cn-hangzhou-internal.aliyuncs.com",
+      publicEndpoint: "oss-cn-hangzhou.aliyuncs.com",
+      fetchImpl,
+    });
+
+    await provider.putObject({
+      tenantId: "tenant-1",
+      resourceId: "resource-1",
+      fileName: "handout.pdf",
+      contentType: "application/pdf",
+      body: Buffer.from("body", "utf8"),
+    });
+    const signed = await provider.createSignedDownloadUrl({
+      objectKey: "tenant-1/resource-1/handout.pdf",
+      expiresInSeconds: 60,
+    });
+
+    expect(calls[0]).toContain("eduos-private.oss-cn-hangzhou-internal.aliyuncs.com");
+    expect(signed.url).toContain("eduos-private.oss-cn-hangzhou.aliyuncs.com");
   });
 
   it("reports missing production OSS variables by name only", () => {

@@ -6,10 +6,14 @@
 
 ## Safe Endpoints
 
-- `/api/version`: current version, build id, and release timestamp.
+- `/api/version`: current version, build id, build time, short commit hash, and release timestamp.
 - `/api/update-manifest`: latest version, minimum supported version, changelog URL, and force-update flag.
 
 Both endpoints return public release metadata only. They must not expose database URLs, auth secrets, storage credentials, or tenant data.
+
+The short commit hash is read from build-time public metadata such as
+`NEXT_PUBLIC_COMMIT_SHA`, `GIT_COMMIT_SHA`, or provider-specific commit
+variables. Secrets and connection strings are never included.
 
 ## Update UX
 

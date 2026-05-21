@@ -65,6 +65,8 @@ export function loadAliyunOssConfigFromEnv(
     accessKeySecret: env.ALIYUN_OSS_ACCESS_KEY_SECRET?.trim() ?? "",
     bucket: env.ALIYUN_OSS_BUCKET?.trim() ?? "",
     endpoint: env.ALIYUN_OSS_ENDPOINT?.trim() ?? "",
+    internalEndpoint: env.ALIYUN_OSS_INTERNAL_ENDPOINT?.trim() || undefined,
+    publicEndpoint: env.ALIYUN_OSS_PUBLIC_ENDPOINT?.trim() || undefined,
     region: env.ALIYUN_OSS_REGION?.trim() || undefined,
     signedUrlTtlSeconds: getOptionalNumber(env.ALIYUN_OSS_SIGNED_URL_TTL_SECONDS, 300),
   };

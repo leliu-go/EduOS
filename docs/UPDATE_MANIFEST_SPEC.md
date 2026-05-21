@@ -17,6 +17,8 @@ keys.
 | `minimumSupportedVersion` | string | Oldest version allowed to continue without a forced update. |
 | `currentVersion` | string | Running application version. |
 | `releasedAt` | string or null | Optional ISO release timestamp from `NEXT_PUBLIC_RELEASED_AT`. |
+| `buildTime` | string or null | Optional public build timestamp from build-time metadata. |
+| `shortCommitHash` | string | Short public commit hash for diagnostics; never a secret. |
 | `changelogUrl` | string | Public changelog path. |
 | `updateUrl` | string | Public URL users can refresh or open. |
 | `forceUpdate` | boolean | Whether clients should block usage until refresh. |

@@ -35,6 +35,15 @@ Final verification:
 - `pnpm test`: passed, 92 files and 353 tests.
 - `pnpm test:e2e tests/e2e/mobile-resources.spec.ts tests/e2e/auth.spec.ts`: passed, 51 tests. Existing non-blocking `pg@9` deprecation warning appeared.
 - Git push: first attempt failed with `Recv failure: Connection was reset`; recorded in `docs/BLOCKERS.md`.
+- Stage A retry push: failed with GitHub port 443 connection timeout. Fallback artifacts generated under `artifacts/` and documented in `docs/GITHUB_PUSH_RECOVERY.md`.
+- Stage D migration: generated `prisma/migrations/20260521000000_baseline/migration.sql` from empty schema for staging empty-database review; local scan found no obvious destructive SQL patterns. No RDS migration was executed.
+- Stage E OSS smoke prep: added ECS-side scripts and docs for `test/eduos-smoke.txt`; no SSH or real OSS command was run by Codex.
+- Stage F permission matrix: added `tests/unit/rbac.test.ts`, `tests/e2e/permissions.spec.ts`, and expanded `docs/PERMISSION_MATRIX.md` with server authorization, tenant isolation, and signed URL boundaries. Targeted RBAC/resource tests passed, 3 files and 19 tests.
+- Stage G MFA/TOTP: added additive `UserMfaCredential` schema and migration, local dev encryption provider, backup-code hashing, MFA audit wrapper, login decision helper, and MFA status docs. No real KMS key, TOTP secret, QR provisioning URI, or staging/production MFA migration was executed.
+- Stage H Activity Engine: added additive Activity Engine schema/migration, campus/class/student assignment support, word check-in engine helpers, server action skeletons with RBAC/audit hooks, activity plan docs, and unit/E2E coverage. No production migration or external push/scoring integration was executed.
+- Stage I version/update/PWA: extended `/api/version` metadata with build time and short commit hash, tightened service worker caching to public static shell assets only, updated version UI copy, PWA docs, lightweight packaging docs, and changelog.
+- Stage J Windows installer RFC: added `docs/rfcs/RFC-Windows安装包方案.md`; no desktop shell, installer, code signing, or native auto-update implementation was created.
+- Stage K release/rollback/update: strengthened release docs and `scripts/check-release.ps1` to check migration safety, `.env.production.local`, and service worker cache boundaries without deploying or signing.
 
 Environment:
 

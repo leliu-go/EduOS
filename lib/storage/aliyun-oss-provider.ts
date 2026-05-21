@@ -18,6 +18,8 @@ export type AliyunOssStorageProviderConfig = {
   accessKeySecret: string;
   bucket: string;
   endpoint: string;
+  internalEndpoint?: string;
+  publicEndpoint?: string;
   region?: string;
   signedUrlTtlSeconds?: number;
   fetchImpl?: FetchLike;
@@ -59,14 +61,16 @@ export class AliyunOssStorageProvider implements StorageProvider {
   readonly bucket: string;
   private readonly accessKeyId: string;
   private readonly accessKeySecret: string;
-  private readonly endpoint: string;
+  private readonly internalEndpoint: string;
+  private readonly publicEndpoint: string;
   private readonly fetchImpl: FetchLike;
 
   constructor(config: AliyunOssStorageProviderConfig) {
     this.accessKeyId = config.accessKeyId;
     this.accessKeySecret = config.accessKeySecret;
     this.bucket = config.bucket;
-    this.endpoint = normalizeEndpoint(config.endpoint);
+    this.internalEndpoint = normalizeEndpoint(config.internalEndpoint ?? config.endpoint);
+    this.publicEndpoint = normalizeEndpoint(config.publicEndpoint ?? config.endpoint);
     this.fetchImpl = config.fetchImpl ?? fetch;
   }
 
@@ -77,7 +81,7 @@ export class AliyunOssStorageProvider implements StorageProvider {
     const resource = `/${this.bucket}/${objectKey}`;
     const stringToSign = ["PUT", "", input.contentType, date, resource].join("\n");
     const signature = getOssSignature(this.accessKeySecret, stringToSign);
-    const url = `https://${this.bucket}.${this.endpoint}/${encodeObjectKey(objectKey)}`;
+    const url = `https://${this.bucket}.${this.internalEndpoint}/${encodeObjectKey(objectKey)}`;
     const response = await this.fetchImpl(url, {
       method: "PUT",
       headers: {
@@ -114,7 +118,9 @@ export class AliyunOssStorageProvider implements StorageProvider {
     const resource = `/${bucket}/${input.objectKey}`;
     const stringToSign = ["GET", "", "", String(expires), resource].join("\n");
     const signature = getOssSignature(this.accessKeySecret, stringToSign);
-    const url = new URL(`https://${bucket}.${this.endpoint}/${encodeObjectKey(input.objectKey)}`);
+    const url = new URL(
+      `https://${bucket}.${this.publicEndpoint}/${encodeObjectKey(input.objectKey)}`,
+    );
 
     url.searchParams.set("Expires", String(expires));
     url.searchParams.set("OSSAccessKeyId", this.accessKeyId);

@@ -17,6 +17,8 @@ describe("versioning and update detection", () => {
 
     expect(appVersion.version).toBe(packageJson.version);
     expect(appVersion.name).toBe("eduos");
+    expect(appVersion).toHaveProperty("buildTime");
+    expect(appVersion).toHaveProperty("shortCommitHash");
   });
 
   it("exposes safe version and update manifest endpoints", () => {
@@ -30,6 +32,8 @@ describe("versioning and update detection", () => {
     expect(updateRoute).toContain("getUpdateManifest");
     expect(versionRoute).not.toContain("DATABASE_URL");
     expect(updateRoute).not.toContain("AUTH_SECRET");
+    expect(versionRoute).not.toContain("ALIYUN_OSS_ACCESS_KEY_SECRET");
+    expect(updateRoute).not.toContain("MFA_TOTP_SECRET_ENCRYPTION_KEY");
   });
 
   it("adds a non-disruptive update banner and admin version page", () => {

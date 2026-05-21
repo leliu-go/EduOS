@@ -5,10 +5,13 @@ Run date: 2026-05-21
 ## Summary
 
 The overnight productization run completed Stage 0 through Stage 9 and prepared
-Stage 10 review artifacts. EduOS remains one multi-role Next.js app. High-risk
-operations were not executed; they were downgraded to RFCs, provider
-abstractions, placeholders, `.env.example` entries, local scripts, and human
-action records.
+Stage 10 review artifacts. Day 2 confirms the final product architecture as
+Option C: a local client/PWA/optional desktop shell backed by cloud backend/API
+on Aliyun ECS, PostgreSQL on Aliyun RDS, and private object storage on Aliyun
+OSS. EduOS remains one multi-role system with one login entry. High-risk
+operations were not executed unless explicitly safe; they were downgraded to
+RFCs, provider abstractions, placeholders, `.env.example` entries, local
+scripts, and human action records.
 
 ## Completed Stages
 
@@ -30,7 +33,8 @@ action records.
 - PWA manifest, service worker, and install prompt for one multi-role app.
 - Version and update metadata endpoints with no-store caching and public fields
   only.
-- Resource storage provider abstraction with local provider and cloud placeholder.
+- Resource storage provider abstraction with local provider, Aliyun OSS provider,
+  and cloud placeholder compatibility.
 - Resource file authorization helper for tenant, role, teacher, student, and
   parent access checks.
 - Productization permissions for resources, activities, MFA/security policy,
@@ -48,8 +52,9 @@ action records.
 The following items are intentionally deferred and recorded in
 `docs/HUMAN_ACTIONS.md` and `docs/BLOCKERS.md`:
 
-- Cloud storage account, bucket, credentials, production provider, and provider
-  metadata migration.
+- Cloud console operations, real OSS/RDS secrets, and production migration
+  execution. The Aliyun OSS code path exists, but live credentials remain outside
+  git and smoke tests must run from ECS without printing secrets.
 - MFA encryption/KMS, backup-code pepper, recovery policy, real TOTP provider,
   and MFA credential migration.
 - Activity Engine persistence models, indexes, audit events, aggregation jobs,

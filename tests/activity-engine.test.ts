@@ -14,6 +14,7 @@ import {
 import { calculateWordCheckinProgress } from "../features/activities/word-checkin";
 
 const classGroupId = "clxclassgroup0000000000001";
+const campusId = "clxcampus000000000000001";
 const resourceId = "clxresource00000000000001";
 const studentId = "clxstudent000000000000001";
 
@@ -116,6 +117,21 @@ describe("Activity Engine schemas", () => {
         wordListResourceId: resourceId,
       },
     };
+
+    expect(
+      activityCreateSchema.parse({
+        ...baseActivity,
+        assignment: {
+          targetType: "CAMPUS",
+          campusId,
+        },
+      }),
+    ).toMatchObject({
+      assignment: {
+        targetType: "CAMPUS",
+        campusId,
+      },
+    });
 
     expect(
       activityCreateSchema.parse({

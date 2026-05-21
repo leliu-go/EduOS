@@ -51,6 +51,13 @@ const classGroupAssignmentSchema = z
   })
   .strict();
 
+const campusAssignmentSchema = z
+  .object({
+    targetType: z.literal("CAMPUS"),
+    campusId: z.string().cuid(),
+  })
+  .strict();
+
 const studentAssignmentSchema = z
   .object({
     targetType: z.literal("STUDENT"),
@@ -59,6 +66,7 @@ const studentAssignmentSchema = z
   .strict();
 
 export const activityAssignmentSchema = z.discriminatedUnion("targetType", [
+  campusAssignmentSchema,
   classGroupAssignmentSchema,
   studentAssignmentSchema,
 ]);
