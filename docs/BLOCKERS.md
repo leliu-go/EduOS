@@ -72,6 +72,14 @@
 - Safe fallback implemented: Release process docs, update manifest spec, rollback plan, and local no-deploy release scripts.
 - Whether later tasks can continue: Yes. Final review can proceed using local verification evidence.
 
+## 2026-05-21 Day 2 Stage 4 Aliyun OSS Production Env
+
+- Stage or PZ task: Day 2 Stage 4 / cloud resource management real provider preparation
+- Risk or failure type: Real OSS bucket, real RAM access keys, and production environment variables are not present in this local process.
+- What was intentionally not executed: No Aliyun console operation, real credential creation, production env write, production deployment, destructive migration, database reset, or drop was executed.
+- Safe fallback implemented: Env-only Aliyun provider, `.env.production.example`, production env check script, storage provider check script, local provider, and mock transport tests.
+- Whether later tasks can continue: Yes. Local and mock-tested code can continue; real OSS smoke test waits for human-provided environment variables.
+
 When a blocker appears, record:
 
 - Stage or PZ task

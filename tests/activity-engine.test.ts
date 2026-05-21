@@ -76,6 +76,7 @@ const resource = {
   tenantId: "tenant_1",
   ownerTeacherUserId: "teacher_1",
   studentUserIds: ["student_user_1"],
+  guardianUserIds: ["parent_user_1"],
   guardianStudentUserIds: ["student_user_1"],
 } as const;
 

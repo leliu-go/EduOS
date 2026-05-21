@@ -181,6 +181,11 @@ enum ResourcePermissionTarget {
   ROLE
 }
 
+enum ResourceVisibility {
+  PRIVATE
+  TENANT_PUBLIC
+}
+
 enum HomeworkStatus {
   DRAFT
   ASSIGNED
@@ -442,6 +447,7 @@ model User {
   receivedNotifications Notification[] @relation("NotificationRecipient")
   requestedRefunds Refund[] @relation("RefundRequestedBy")
   approvedRefunds Refund[] @relation("RefundApprovedBy")
+  createdResources Resource[] @relation("ResourceCreatedBy")
   studentProfiles StudentProfile[]
   guardianProfiles GuardianProfile[]
   teacherProfiles TeacherProfile[]
@@ -1330,10 +1336,19 @@ model Resource {
   description     String?
   resourceType    ResourceType
   status          ResourceStatus       @default(ACTIVE)
+  provider        String?
+  bucket          String?
+  objectKey       String?
+  originalName    String?
   fileName        String?
   fileUrl         String?
   mimeType        String?
   fileSize        Int?
+  size            Int?
+  checksum        String?
+  visibility      ResourceVisibility   @default(PRIVATE)
+  createdById     String?
+  createdBy       User?                @relation("ResourceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   releaseAt       DateTime?
   courseProductId String?
   courseProduct   CourseProduct?       @relation(fields: [courseProductId], references: [id], onDelete: SetNull)
@@ -1347,6 +1362,10 @@ model Resource {
 
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, provider])
+  @@index([tenantId, objectKey])
+  @@index([tenantId, visibility])
+  @@index([tenantId, createdById])
   @@index([tenantId, resourceType])
   @@index([tenantId, courseProductId])
   @@index([tenantId, classGroupId])

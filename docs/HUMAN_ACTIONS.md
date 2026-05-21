@@ -10,6 +10,16 @@
 - What the user should do later: choose a storage vendor, create a bucket/container, create least-privilege credentials, define signed URL TTL, then approve a non-destructive migration for provider metadata.
 - Whether later tasks can continue: Yes.
 
+## Day 2 Stage 4 Aliyun OSS Production Setup
+
+- Stage or PZ task: Day 2 Stage 4 / cloud resource management real provider preparation
+- Risk type: Paid cloud resource, real OSS bucket, real RAM credentials, production RDS/OSS smoke testing
+- Risky action intentionally not executed: No Aliyun console purchase, bucket creation, RAM credential creation, production secret entry, production deployment, or production database migration was executed by Codex.
+- Safe fallback implemented: `AliyunOssStorageProvider`, env-only config loading, no-secret validation scripts, `.env.production.example`, private-bucket signed URL flow, local provider, and authorization tests.
+- Files created or updated: `lib/storage/*`, `lib/env/production-env.ts`, `lib/resources/download-authorization.ts`, `scripts/check-production-env.ps1`, `scripts/check-storage-provider.ps1`, `.env.production.example`, `docs/CLOUD_RESOURCE_MANAGEMENT.md`, `docs/ALIYUN_DEPLOYMENT_GUIDE.md`, `docs/PRODUCTION_ENVIRONMENT.md`
+- What the user should do later: create a private OSS bucket, create least-privilege RAM credentials, set real env vars in `.env.production.local` or a secret manager, run `scripts/check-storage-provider.ps1 -CheckEndpoint`, and approve the production migration/release plan.
+- Whether later tasks can continue: Yes.
+
 ## MFA/TOTP Production Crypto
 
 - Stage or PZ task: Stage 6 / PZ09 MFA/TOTP safe first stage

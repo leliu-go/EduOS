@@ -32,6 +32,15 @@ function resourceSnapshot(input: {
   fileName: string | null;
   fileUrl: string | null;
   releaseAt: Date | null;
+  provider?: string | null;
+  bucket?: string | null;
+  objectKey?: string | null;
+  originalName?: string | null;
+  mimeType?: string | null;
+  size?: number | null;
+  checksum?: string | null;
+  visibility?: string;
+  createdById?: string | null;
   courseProductId: string | null;
   classGroupId: string | null;
   lessonId: string | null;
@@ -43,6 +52,15 @@ function resourceSnapshot(input: {
     resourceType: input.resourceType,
     fileName: input.fileName,
     fileUrl: input.fileUrl,
+    provider: input.provider ?? null,
+    bucket: input.bucket ?? null,
+    objectKey: input.objectKey ?? null,
+    originalName: input.originalName ?? null,
+    mimeType: input.mimeType ?? null,
+    size: input.size ?? null,
+    checksum: input.checksum ?? null,
+    visibility: input.visibility ?? "PRIVATE",
+    createdById: input.createdById ?? null,
     releaseAt: input.releaseAt,
     courseProductId: input.courseProductId,
     classGroupId: input.classGroupId,
@@ -204,6 +222,7 @@ export async function createResourceMetadataAction(formData: FormData) {
         description: parsed.data.description ?? null,
         fileName: parsed.data.fileName ?? null,
         fileUrl: parsed.data.fileUrl ?? null,
+        createdById: currentUser.id,
         releaseAt: parsed.data.releaseAt ?? null,
         courseProductId: parsed.data.courseProductId ?? null,
         classGroupId: parsed.data.classGroupId ?? null,
@@ -256,6 +275,15 @@ export async function updateResourceReleaseAction(formData: FormData) {
         resourceType: true,
         fileName: true,
         fileUrl: true,
+        provider: true,
+        bucket: true,
+        objectKey: true,
+        originalName: true,
+        mimeType: true,
+        size: true,
+        checksum: true,
+        visibility: true,
+        createdById: true,
         releaseAt: true,
         courseProductId: true,
         classGroupId: true,
@@ -281,6 +309,15 @@ export async function updateResourceReleaseAction(formData: FormData) {
         resourceType: true,
         fileName: true,
         fileUrl: true,
+        provider: true,
+        bucket: true,
+        objectKey: true,
+        originalName: true,
+        mimeType: true,
+        size: true,
+        checksum: true,
+        visibility: true,
+        createdById: true,
         releaseAt: true,
         courseProductId: true,
         classGroupId: true,

@@ -38,6 +38,10 @@ describe("cloud resource provider abstraction", () => {
     expect(stored.storageKey).toContain("tenant-1/resource-1");
     expect(stored.byteSize).toBe(11);
     expect(stored.contentType).toBe("text/csv");
+    expect(stored.localPath).toBeDefined();
+    if (!stored.localPath) {
+      throw new Error("Local provider did not return a localPath.");
+    }
     expect(readFileSync(stored.localPath, "utf8")).toBe("hello,world");
 
     const download = await provider.createDownloadUrl({
@@ -63,6 +67,7 @@ describe("cloud resource provider abstraction", () => {
       tenantId: "tenant-1",
       ownerTeacherUserId: "teacher-1",
       studentUserIds: ["student-1"],
+      guardianUserIds: ["parent-1"],
       guardianStudentUserIds: ["student-1"],
     };
 

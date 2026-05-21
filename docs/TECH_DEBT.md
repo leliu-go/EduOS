@@ -4,17 +4,15 @@
 
 ### Cloud Resource Provider
 
-- Choose a cloud storage vendor.
-- Provision bucket/container and least-privilege credentials.
-- Implement a production `ResourceStorageProvider`.
-- Add signed URL expiry tests and provider-specific failure tests.
+- Aliyun OSS provider code now exists, but live OSS smoke testing still requires a human-provisioned private bucket and RAM credentials.
+- Move from `prisma db push` local schema sync to a reviewed migration workflow before production rollout.
+- Add full upload UI/API flow after storage metadata is confirmed in the target database.
+- Add provider-specific retry, timeout, object overwrite, and large-file tests before high-volume production use.
 
 ### Parent Resource Authorization
 
-- Tighten parent resource access around concrete guardian relations once
-  persisted resource assignments are modeled.
-- Avoid relying only on precomputed child-scope arrays when the database can
-  enforce guardian/student relations directly.
+- Parent file access now requires explicit guardian user scope in the resource policy helper.
+- Persisted resource assignment queries should still enforce concrete guardian/student joins in database-backed download endpoints.
 
 ### MFA/TOTP
 

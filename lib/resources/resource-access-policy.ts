@@ -10,6 +10,7 @@ export type ResourceFileScope = {
   tenantId: string;
   ownerTeacherUserId?: string | null;
   studentUserIds?: readonly string[];
+  guardianUserIds?: readonly string[];
   guardianStudentUserIds?: readonly string[];
 };
 
@@ -33,7 +34,11 @@ export function canAccessResourceFile(actor: ResourceFileActor, resource: Resour
   }
 
   if (actor.roleKey === "PARENT") {
-    return Boolean(resource.guardianStudentUserIds && resource.guardianStudentUserIds.length > 0);
+    return Boolean(
+      resource.guardianUserIds?.includes(actor.userId) &&
+        resource.guardianStudentUserIds &&
+        resource.guardianStudentUserIds.length > 0,
+    );
   }
 
   return false;

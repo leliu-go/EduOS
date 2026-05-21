@@ -9,7 +9,7 @@ EduOS must not bundle course resources, videos, handouts, word books, question b
 - Keep one EduOS app for all roles.
 - Store metadata in the database and files in storage providers.
 - Support a local provider for development.
-- Leave production cloud storage as an explicit provider placeholder.
+- Use Aliyun OSS as the first production provider while keeping provider abstraction.
 - Issue signed URL style download links only after tenant and role checks.
 - Keep resource files out of git, deployments, and installers.
 
@@ -32,7 +32,7 @@ Use `Resource` and `ResourcePermission` for metadata and authorization. Store fi
 
 ## Data Model Changes
 
-Existing resource metadata already includes file name, URL, MIME type, size, tenant, bindings, and permissions. A later non-destructive migration can add `storageProvider`, `storageKey`, `checksumSha256`, `downloadCount`, and `cachePolicyJson`.
+Existing resource metadata now includes provider, bucket, object key, original name, MIME type, size, checksum, visibility, tenant, creator, bindings, and permissions. Future migrations can add download counters and cache policy JSON after production query review.
 
 ## API / Server Action Design
 
@@ -93,6 +93,6 @@ Keep existing `fileUrl` metadata until production provider migration is verified
 
 - Add provider abstraction.
 - Add local provider.
-- Add cloud placeholder provider.
+- Add Aliyun OSS provider.
 - Add access policy tests.
 - Document production setup and rollback.
