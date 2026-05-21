@@ -20,6 +20,10 @@ finance data, signed resource URLs, or resource authorization responses.
 Business pages and protected data stay network-only and permission-checked on
 the server.
 
+In local development on `localhost`, `127.0.0.1`, or `::1`, EduOS unregisters
+the service worker and clears EduOS caches so old development CSS or JavaScript
+cannot hide the admin sidebar or mask UI changes.
+
 ## Resource Policy
 
 Course resources, videos, word books, question banks, and uploaded files are cloud-managed. Local devices may only cache authorized resources on demand after server-side permission checks.

@@ -90,23 +90,36 @@ function AppSidebar() {
   const version = getAppVersion();
 
   return (
-    <aside className="hidden min-h-screen w-[16rem] shrink-0 border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)] md:flex md:flex-col xl:w-[17.5rem]">
-      <div className="flex h-20 items-center border-b px-5">
+    <aside
+      data-eduos-sidebar
+      className="border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)]"
+    >
+      <div
+        data-eduos-sidebar-header
+        className="flex h-20 items-center justify-center border-b px-3"
+      >
         <div className="flex items-center gap-3">
           <div className="flex size-11 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
             <Sparkles className="size-5" aria-hidden="true" />
           </div>
-          <div>
+          <div data-eduos-sidebar-brand>
             <p className="text-base font-semibold tracking-normal text-foreground">EduOS</p>
             <p className="text-xs text-muted-foreground">教培运营系统</p>
           </div>
         </div>
       </div>
-      <nav aria-label="主导航" className="flex-1 overflow-y-auto px-3 py-4">
+      <nav
+        data-eduos-sidebar-nav
+        aria-label="主导航"
+        className="flex-1 overflow-y-auto px-2 py-4"
+      >
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
-              <p className="px-3 text-[11px] font-semibold tracking-[0.08em] text-muted-foreground">
+              <p
+                data-eduos-sidebar-group-label
+                className="px-3 text-[11px] font-semibold tracking-[0.08em] text-muted-foreground"
+              >
                 {group.label}
               </p>
               <ul className="space-y-1">
@@ -117,14 +130,16 @@ function AppSidebar() {
                     <li key={`${group.label}-${item.label}`}>
                       <a
                         href={item.href}
+                        aria-label={item.label}
+                        data-eduos-sidebar-link
                         className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+                          "flex items-center rounded-md py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
                           item.active &&
                             "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground",
                         )}
                       >
-                        <Icon className="size-4" aria-hidden="true" />
-                        <span>{item.label}</span>
+                        <Icon className="size-4 shrink-0" aria-hidden="true" />
+                        <span data-eduos-sidebar-text>{item.label}</span>
                       </a>
                     </li>
                   );
@@ -134,14 +149,20 @@ function AppSidebar() {
           ))}
         </div>
       </nav>
-      <div className="border-t px-5 py-4 text-xs text-muted-foreground">
+      <div data-eduos-sidebar-footer className="border-t px-2 py-4 text-xs text-muted-foreground">
         <a
           href="/dashboard/settings/version"
-          className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent hover:text-accent-foreground"
+          data-eduos-sidebar-version
+          className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label={`当前版本 v${version.version}`}
         >
-          <span>当前版本</span>
-          <span className="font-medium text-foreground">v{version.version}</span>
+          <span data-eduos-sidebar-version-short className="font-medium text-foreground">
+            v{version.version}
+          </span>
+          <span data-eduos-sidebar-version-label>当前版本</span>
+          <span data-eduos-sidebar-version-full className="font-medium text-foreground">
+            v{version.version}
+          </span>
         </a>
       </div>
     </aside>

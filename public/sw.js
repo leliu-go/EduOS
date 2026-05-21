@@ -1,4 +1,4 @@
-const STATIC_CACHE = "eduos-static-v1";
+const STATIC_CACHE = "eduos-static-v2";
 const STATIC_ASSETS = ["/icon.svg"];
 const CACHEABLE_STATIC_PREFIXES = ["/_next/static/", "/icon.svg", "/manifest.webmanifest"];
 const SENSITIVE_PATH_PREFIXES = [
@@ -13,6 +13,10 @@ const SENSITIVE_PATH_PREFIXES = [
 
 function networkOnly(request) {
   return fetch(request);
+}
+
+function isDevelopmentHost() {
+  return ["localhost", "127.0.0.1", "::1"].includes(self.location.hostname);
 }
 
 function isSensitiveRequest(request) {
@@ -36,6 +40,11 @@ function isCacheableStaticRequest(request) {
 }
 
 self.addEventListener("install", (event) => {
+  if (isDevelopmentHost()) {
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
+
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
@@ -45,6 +54,17 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  if (isDevelopmentHost()) {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((cacheNames) => Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName))))
+        .then(() => self.registration.unregister())
+        .then(() => self.clients.claim()),
+    );
+    return;
+  }
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -59,6 +79,11 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
+
+  if (isDevelopmentHost()) {
+    event.respondWith(networkOnly(request));
+    return;
+  }
 
   if (isSensitiveRequest(request)) {
     event.respondWith(networkOnly(request));

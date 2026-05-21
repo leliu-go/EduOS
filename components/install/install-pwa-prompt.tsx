@@ -12,6 +12,32 @@ type BeforeInstallPromptEvent = Event & {
 
 const dismissedStorageKey = "eduos-pwa-install-dismissed";
 
+function isLocalDevelopmentRuntime() {
+  if (process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
+
+function clearLocalServiceWorkerState() {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      void registration.unregister();
+    });
+  });
+
+  if ("caches" in window) {
+    window.caches.keys().then((cacheNames) => {
+      cacheNames
+        .filter((cacheName) => cacheName.startsWith("eduos-"))
+        .forEach((cacheName) => {
+          void window.caches.delete(cacheName);
+        });
+    });
+  }
+}
+
 export function InstallPwaPrompt() {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [isDismissed, setIsDismissed] = useState(
@@ -22,6 +48,11 @@ export function InstallPwaPrompt() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    if (isLocalDevelopmentRuntime()) {
+      clearLocalServiceWorkerState();
       return;
     }
 

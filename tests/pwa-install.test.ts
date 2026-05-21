@@ -27,6 +27,7 @@ describe("PWA install capability", () => {
     expect(existsSync(join(rootDir, "public/sw.js"))).toBe(true);
 
     const serviceWorker = readProjectFile("public/sw.js");
+    const installPrompt = readProjectFile("components/install/install-pwa-prompt.tsx");
     const layout = readProjectFile("app/layout.tsx");
 
     for (const sensitivePath of [
@@ -44,7 +45,12 @@ describe("PWA install capability", () => {
     expect(serviceWorker).toContain("networkOnly");
     expect(serviceWorker).toContain("STATIC_CACHE");
     expect(serviceWorker).toContain("CACHEABLE_STATIC_PREFIXES");
+    expect(serviceWorker).toContain("isDevelopmentHost");
+    expect(serviceWorker).toContain("self.registration.unregister");
     expect(serviceWorker).not.toContain('STATIC_ASSETS = ["/"');
+    expect(installPrompt).toContain("process.env.NODE_ENV");
+    expect(installPrompt).toContain("getRegistrations");
+    expect(installPrompt).toContain("unregister");
     expect(layout).toContain("InstallPwaPrompt");
   });
 

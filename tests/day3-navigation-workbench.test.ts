@@ -11,10 +11,13 @@ function readProjectFile(path: string) {
 describe("Day 3 navigation and workbench UX", () => {
   it("does not keep duplicate dashboard/data-dashboard entries in the sidebar", () => {
     const sidebarPath = "components/layout/app-sidebar.tsx";
+    const globalsPath = "app/globals.css";
 
     expect(existsSync(join(rootDir, sidebarPath))).toBe(true);
+    expect(existsSync(join(rootDir, globalsPath))).toBe(true);
 
     const source = readProjectFile(sidebarPath);
+    const globals = readProjectFile(globalsPath);
     const dashboardHrefCount = (source.match(/href: "\/dashboard"/g) ?? []).length;
 
     expect(source).toContain("工作台");
@@ -22,8 +25,15 @@ describe("Day 3 navigation and workbench UX", () => {
     expect(dashboardHrefCount).toBe(1);
     expect(source).toContain("/dashboard/settings/version");
     expect(source).toContain("getAppVersion");
-    expect(source).toContain("md:flex md:flex-col");
+    expect(source).toContain("data-eduos-sidebar");
+    expect(source).toContain("data-eduos-sidebar-link");
+    expect(source).not.toContain("hidden min-h-screen");
+    expect(source).not.toContain("md:flex md:flex-col");
     expect(source).not.toContain("lg:flex lg:flex-col");
+    expect(globals).toContain('@source "../components";');
+    expect(globals).toContain('@source "../features";');
+    expect(globals).toContain("[data-eduos-sidebar]");
+    expect(globals).toContain("width: 16rem");
   });
 
   it("documents the new navigation split between workbench and future analytics", () => {
