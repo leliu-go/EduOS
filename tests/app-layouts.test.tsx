@@ -1,8 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { DashboardShell } from "../components/layout/dashboard-shell";
 import { MobileShell } from "../components/layout/mobile-shell";
+
+const mockedPathname = vi.hoisted(() => ({ value: "/student/homework" }));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => mockedPathname.value,
+}));
 
 describe("app layouts", () => {
   it("renders a polished desktop dashboard shell with sidebar and topbar controls", () => {
@@ -32,6 +38,8 @@ describe("app layouts", () => {
   });
 
   it("renders student mobile shell with role-specific bottom navigation", () => {
+    mockedPathname.value = "/student/homework";
+
     render(
       <MobileShell role="student" title="学生端" summary="今日学习">
         <h1>学生首页</h1>
@@ -39,28 +47,51 @@ describe("app layouts", () => {
     );
 
     const navigation = screen.getByRole("navigation", { name: "学生端导航" });
-    expect(within(navigation).getByRole("link", { name: "首页" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: "首页" })).toHaveAttribute("href", "/student");
+    expect(within(navigation).getByRole("link", { name: "课表" })).toHaveAttribute(
       "href",
-      "/student",
+      "/student/schedule",
     );
-    expect(within(navigation).getByRole("link", { name: "课表" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "作业" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "错题" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "资源" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: "作业" })).toHaveAttribute(
       "href",
-      "/student/resources",
+      "/student/homework",
     );
+    expect(within(navigation).getByRole("link", { name: "作业" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(navigation).getByRole("link", { name: "错题" })).toHaveAttribute(
+      "href",
+      "/student/mistakes",
+    );
+    expect(within(navigation).getByRole("link", { name: "我的" })).toHaveAttribute(
+      "href",
+      "/student/me",
+    );
+    expect(within(navigation).queryByRole("link", { name: "资源" })).not.toBeInTheDocument();
   });
 
   it("renders teacher and parent mobile shells with separate nav labels", () => {
+    mockedPathname.value = "/teacher/classes";
+
     const { rerender } = render(
-      <MobileShell role="teacher" title="教师端" summary="今日授课">
-        <h1>教师首页</h1>
+      <MobileShell role="teacher" title="老师端" summary="今日授课">
+        <h1>老师首页</h1>
       </MobileShell>,
     );
 
-    expect(screen.getByRole("navigation", { name: "教师端导航" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "班级" })).toBeInTheDocument();
+    const teacherNavigation = screen.getByRole("navigation", { name: "老师端导航" });
+    expect(within(teacherNavigation).getByRole("link", { name: "班级" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(teacherNavigation).getByRole("link", { name: "我的" })).toHaveAttribute(
+      "href",
+      "/teacher/me",
+    );
+    expect(within(teacherNavigation).queryByRole("link", { name: "资源" })).not.toBeInTheDocument();
+
+    mockedPathname.value = "/parent/reports";
 
     rerender(
       <MobileShell role="parent" title="家长端" summary="孩子动态">
@@ -68,8 +99,11 @@ describe("app layouts", () => {
       </MobileShell>,
     );
 
-    expect(screen.getByRole("navigation", { name: "家长端导航" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "课消" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "报告" })).toBeInTheDocument();
+    const parentNavigation = screen.getByRole("navigation", { name: "家长端导航" });
+    expect(within(parentNavigation).getByRole("link", { name: "课消" })).toBeInTheDocument();
+    expect(within(parentNavigation).getByRole("link", { name: "报告" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 });

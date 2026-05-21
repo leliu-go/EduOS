@@ -87,3 +87,10 @@ When a high-risk item is downgraded, record:
 - Approve whether audit log UI should be exposed to finance staff or only admins.
 - Approve when to connect staging release manifest publishing; current UI only reads the safe local manifest endpoint.
 - Approve any real payment provider exploration separately. No real payment provider was connected in Day 3.
+
+## 2026-05-21 Day 4 Student/Teacher Experience Follow-Ups
+
+- Review whether resources should also appear as a secondary shortcut on student/teacher home cards after moving the fifth bottom-nav item to "我的".
+- Approve the scope for a dedicated student activity page and teacher activity progress page.
+- Approve the next iteration of teacher lesson execution page: attendance, resources, homework, classroom performance, and feedback in one flow.
+- Approve deeper Playwright coverage using a stable seeded demo database for mobile-role deep links and cross-tenant denial.

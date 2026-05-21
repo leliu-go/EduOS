@@ -82,3 +82,11 @@ Admins and principals can manage resources within the current tenant only.
   `requirePermission` behavior.
 - `tests/e2e/permissions.spec.ts` verifies seeded browser flows for common
   cross-role access attempts when a demo database is available.
+
+## Day 4 Student/Teacher Portal Notes
+
+- Student mobile routes remain guarded with `route:student`; students do not receive `route:teacher`, `route:dashboard`, `route:finance`, `finance:reports:view`, or `finance:mutate`.
+- Teacher mobile routes remain guarded with `route:teacher`; teachers do not receive `route:dashboard`, `route:finance`, `finance:reports:view`, or `finance:mutate`.
+- Student and teacher "Me" pages are account/help/version surfaces only. They do not expose admin settings, finance data, OSS keys, RDS information, or tenant-wide operations.
+- Resource pages still exist for authorized resources, but resource access remains a server-side `tenantId + RBAC + ownership/assignment` decision.
+- `tests/unit/student-teacher-permissions.test.ts` now explicitly covers these Day 4 mobile portal boundaries.

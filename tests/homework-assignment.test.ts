@@ -94,7 +94,7 @@ describe("homework assignment", () => {
   it("links homework routes from navigation and protects them in e2e", () => {
     const sidebar = readFileSync(join(process.cwd(), "components/layout/app-sidebar.tsx"), "utf8");
     const mobileNav = readFileSync(
-      join(process.cwd(), "components/layout/mobile-bottom-nav.tsx"),
+      join(process.cwd(), "components/mobile/BottomNav.tsx"),
       "utf8",
     );
     const e2eSource = readFileSync(join(process.cwd(), "tests/e2e/auth.spec.ts"), "utf8");

@@ -27,3 +27,11 @@ Date: 2026-05-21
 - Publish a real update manifest during staging release instead of using package version as all manifest fields.
 - Add release notes UI backed by a safe, public changelog endpoint.
 - Add smoke-test status cards for RDS, OSS, Nginx, HTTPS, and PM2 after staging automation is approved.
+
+## Student And Teacher Experience
+
+- Add a dedicated student activity page for word check-in history, streaks, and assigned activity detail.
+- Add a dedicated teacher activity progress page with class completion rate and incomplete student list.
+- Merge teacher lesson attendance, lesson resources, homework, classroom performance, and lesson feedback into a single teaching execution page.
+- Add student course detail pages that connect lesson content, teacher feedback, resources, homework, and reminders.
+- Expand e2e coverage for student/teacher deep links, cross-tenant denial, resource download authorization, homework submission, and homework grading.

@@ -7,13 +7,16 @@ test.describe("seeded mobile resource navigation", () => {
   test.skip(!hasDatabase, "Requires a seeded demo database.");
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("teacher can open resources from the mobile tab bar", async ({ page }) => {
+  test("teacher can open resources from the profile shortcut", async ({ page }) => {
     await page.goto("/login");
     await page.locator('input[name="email"]').fill("teacher@eduos.test");
     await page.locator('input[name="password"]').fill(demoPassword);
     await page.locator('button[type="submit"]').click();
 
     await expect(page).toHaveURL(/\/teacher$/);
+    await page.locator('a[href="/teacher/me"]').click();
+    await expect(page).toHaveURL(/\/teacher\/me$/);
+
     await page.locator('a[href="/teacher/resources"]').click();
 
     await expect(page).toHaveURL(/\/teacher\/resources$/);

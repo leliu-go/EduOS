@@ -140,3 +140,11 @@ When a blocker appears, record:
 - What was intentionally not executed
 - Safe fallback implemented
 - Whether later tasks can continue
+
+## 2026-05-21 Day 4 Student/Teacher UX
+
+- Stage or PZ task: Day 4 student and teacher portal UX/function alignment
+- Risk or failure type: No new P0 blocker found in the low-risk UI/navigation scope.
+- What was intentionally not executed: No production migration, ECS deployment, secret read/print, database reset/drop/truncate, OSS delete, or real provider operation was executed.
+- Safe fallback implemented: Activity pages, richer lesson execution page, and deeper e2e coverage were documented for later instead of forcing a large rewrite.
+- Whether later tasks can continue: Yes.

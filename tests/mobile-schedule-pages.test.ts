@@ -15,7 +15,7 @@ function getFunctionSource(source: string, functionName: string) {
 
 describe("mobile schedule pages", () => {
   it("provides pages for every mobile schedule navigation entry", () => {
-    const navSource = readProjectFile("components/layout/mobile-bottom-nav.tsx");
+    const navSource = readProjectFile("components/mobile/BottomNav.tsx");
 
     for (const route of ["/student/schedule", "/teacher/schedule", "/parent/schedule"]) {
       expect(navSource).toContain(`href: "${route}"`);

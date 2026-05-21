@@ -65,7 +65,7 @@ describe("parent portal home", () => {
 
   it("provides a protected parent profile page for the bottom navigation", () => {
     const navSource = readFileSync(
-      join(process.cwd(), "components/layout/mobile-bottom-nav.tsx"),
+      join(process.cwd(), "components/mobile/BottomNav.tsx"),
       "utf8",
     );
     const pagePath = join(process.cwd(), "app/(mobile)/parent/me/page.tsx");

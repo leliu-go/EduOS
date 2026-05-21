@@ -61,3 +61,11 @@
 - The refund backend exists, but Day 3 only adds an operation entry; a dedicated refund request UI still needs implementation.
 - The storage status page intentionally shows only redacted environment state. Add active OSS smoke status only after staging-side scripts are approved.
 - The settings security page is a safe first entry point. It still needs filterable audit logs, recent login signals, and abnormal-login detection.
+
+### Day 4 Student/Teacher Experience
+
+- Student and teacher "Me" pages are now present, but account security and cache clearing are informational until the PWA cache-management UI is wired.
+- Activity Engine needs dedicated student and teacher mobile pages; current activity visibility is split between dashboard tasks and backend policies.
+- Teacher lesson detail should be consolidated into a single teaching execution page instead of spreading attendance, resources, homework, and feedback across multiple surfaces.
+- Student course detail should become a first-class page with lesson content, resources, homework, feedback, and check-in state.
+- Add more Playwright e2e for mobile portal deep links, unauthorized redirects, and role switching.

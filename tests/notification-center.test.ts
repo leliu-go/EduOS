@@ -59,7 +59,7 @@ describe("notification center", () => {
     const parentPage = join(process.cwd(), "app/(mobile)/parent/notifications/page.tsx");
     const listPath = join(process.cwd(), "features/notifications/notification-list.tsx");
     const topbarPath = join(process.cwd(), "components/layout/app-topbar.tsx");
-    const mobileShellPath = join(process.cwd(), "components/layout/mobile-shell.tsx");
+    const mobilePageHeaderPath = join(process.cwd(), "components/mobile/MobilePageHeader.tsx");
     const e2ePath = join(process.cwd(), "tests/e2e/auth.spec.ts");
 
     for (const file of [dashboardPage, teacherPage, studentPage, parentPage, listPath]) {
@@ -82,7 +82,7 @@ describe("notification center", () => {
     const parentSource = readFileSync(parentPage, "utf8");
     const listSource = readFileSync(listPath, "utf8");
     const topbarSource = readFileSync(topbarPath, "utf8");
-    const mobileShellSource = readFileSync(mobileShellPath, "utf8");
+    const mobilePageHeaderSource = readFileSync(mobilePageHeaderPath, "utf8");
     const e2eSource = readFileSync(e2ePath, "utf8");
 
     expect(dashboardSource).toContain('requirePermission("route:dashboard"');
@@ -101,7 +101,7 @@ describe("notification center", () => {
     }
 
     expect(topbarSource).toContain("/dashboard/notifications");
-    expect(mobileShellSource).toContain("/notifications");
+    expect(mobilePageHeaderSource).toContain("/notifications");
     for (const route of [
       "/dashboard/notifications",
       "/teacher/notifications",
