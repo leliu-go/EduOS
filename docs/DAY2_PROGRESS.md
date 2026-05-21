@@ -44,6 +44,8 @@ Final verification:
 - Stage I version/update/PWA: extended `/api/version` metadata with build time and short commit hash, tightened service worker caching to public static shell assets only, updated version UI copy, PWA docs, lightweight packaging docs, and changelog.
 - Stage J Windows installer RFC: added `docs/rfcs/RFC-Windows安装包方案.md`; no desktop shell, installer, code signing, or native auto-update implementation was created.
 - Stage K release/rollback/update: strengthened release docs and `scripts/check-release.ps1` to check migration safety, `.env.production.local`, and service worker cache boundaries without deploying or signing.
+- Final commit: created local commit `f6b9eb0 productization: prepare aliyun staging and cloud client architecture`.
+- Final push retry: failed with GitHub HTTPS reset/timeout; recorded recovery docs and refreshed fallback artifacts under `artifacts/patches`, `artifacts/eduos-day2-stage.bundle`, and `artifacts/eduos-day2-source.tar.gz`.
 
 Environment:
 

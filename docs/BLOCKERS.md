@@ -6,7 +6,7 @@
 - Risk or failure type: Network failure while pushing to GitHub
 - What was intentionally not executed: No destructive or risky operation was attempted
 - Safe fallback implemented: Local commit `281c760 docs: add lightweight release artifact rules` exists on `main`
-- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Exact blocker: GitHub HTTPS push failed from this machine with either `Recv failure: Connection was reset` or `Failed to connect to github.com port 443`.
 - Whether later tasks can continue: Yes. Continue local safe tasks and retry push later.
 - Resolution: Resolved by a later successful `git push origin main` that pushed through `953ca85`.
 
@@ -35,6 +35,15 @@
 - What was intentionally not executed: No production KMS key was created, no real user TOTP secret was provisioned, no QR code was generated, and no staging/production migration was run.
 - Safe fallback implemented: Additive MFA schema/migration, local dev encryption provider, backup-code hashing, audit wrapper, login decision helper, and tests.
 - Whether later tasks can continue: Yes. The next stages can use the interfaces without production secrets.
+
+## 2026-05-21 Day 2 Final Push Retry
+
+- Stage or PZ task: Day 2 Option C productization and Aliyun staging preparation
+- Risk or failure type: Network failure while pushing to GitHub
+- What was intentionally not executed: No destructive retry workaround or credential change was attempted.
+- Safe fallback implemented: Local commits for Day 2 productization and push recovery docs exist on `main`; updated patch, bundle, and source archive artifacts were generated under `artifacts/`.
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Whether later tasks can continue: Yes. Retry `git push origin main` when network connectivity to GitHub is stable, or use `docs/GITHUB_PUSH_RECOVERY.md`.
 
 ## 2026-05-21 Stage 7 Activity Persistence Migration
 

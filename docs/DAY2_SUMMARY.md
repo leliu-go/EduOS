@@ -43,3 +43,10 @@ Date: 2026-05-21
 - Approve when to run `RUN_PRODUCTION_MIGRATIONS=true` on staging.
 - Configure HTTPS/TLS for `eduos.study-go.top` if not already complete.
 - Retry GitHub push or use `docs/GITHUB_PUSH_RECOVERY.md` fallback artifacts.
+
+## Git Status
+
+- Committed locally: `f6b9eb0 productization: prepare aliyun staging and cloud client architecture`.
+- Committed locally: `docs: record day 2 push recovery`.
+- Push result: failed with GitHub network reset/timeout from this machine.
+- Recovery artifacts refreshed: `artifacts/patches`, `artifacts/eduos-day2-stage.bundle`, and `artifacts/eduos-day2-source.tar.gz`.
