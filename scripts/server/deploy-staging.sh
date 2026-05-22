@@ -21,8 +21,19 @@ load_env() {
   fi
 }
 
+assert_safe_app_dir() {
+  case "$APP_DIR" in
+    /opt/eduos/*) ;;
+    *)
+      echo "APP_DIR must stay under /opt/eduos for staging deploy safety: ${APP_DIR}" >&2
+      exit 1
+      ;;
+  esac
+}
+
 sync_source() {
   mkdir -p "$APP_DIR"
+  assert_safe_app_dir
 
   if [[ "$DEPLOY_SOURCE" == "archive" ]]; then
     if [[ ! -f "$STAGING_ARCHIVE" ]]; then
@@ -72,4 +83,5 @@ else
 fi
 
 bash scripts/server/start-pm2.sh
+BASE_URL="${HEALTH_URL:-http://eduos.study-go.top}" bash scripts/server/health-check.sh
 echo "Staging deploy complete. Secret values were not printed."

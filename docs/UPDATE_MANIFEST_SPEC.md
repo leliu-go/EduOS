@@ -15,8 +15,11 @@ keys.
 | `app`                     | string         | Product name, currently `EduOS`.                               |
 | `latestVersion`           | string         | Latest known application version from `package.json`.          |
 | `minimumSupportedVersion` | string         | Oldest version allowed to continue without a forced update.    |
+| `minSupportedVersion`     | string         | Compatibility alias for client/update tooling.                 |
 | `currentVersion`          | string         | Running application version.                                   |
 | `releasedAt`              | string or null | Optional ISO release timestamp from `NEXT_PUBLIC_RELEASED_AT`. |
+| `publishedAt`             | string or null | Public release timestamp alias.                                |
+| `releaseNotes`            | string[]       | Short public release notes for update UI.                      |
 | `buildTime`               | string or null | Optional public build timestamp from build-time metadata.      |
 | `shortCommitHash`         | string         | Short public commit hash for diagnostics; never a secret.      |
 | `changelogUrl`            | string         | Public changelog path.                                         |
@@ -49,3 +52,10 @@ The first-stage manifest is conservative:
 - No code signing action is performed by the manifest endpoint.
 - No production database migration is performed by the manifest endpoint.
 - Clients must not use update metadata as authorization data.
+
+## Production Metadata Overrides
+
+Production deployment may override latest release metadata through safe public
+environment variables such as `EDUOS_LATEST_VERSION`,
+`EDUOS_MIN_SUPPORTED_VERSION`, and `EDUOS_RELEASE_NOTES`. These values are not
+secrets and must never contain credentials, tenant data, or `.env` contents.

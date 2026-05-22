@@ -31,3 +31,24 @@ Course resources, videos, word books, question banks, and uploaded files are clo
 ## Recommended Distribution
 
 Use PWA first. A future Windows installer should only be a lightweight shell for the same cloud app and must not bundle the database, backend, `node_modules`, or resources.
+
+## Production URL
+
+The formal installation target is `https://eduos.study-go.top`. The current HTTP endpoint can be used for smoke checks, but HTTPS is required for a reliable production PWA install experience.
+
+## Role-Specific Install Notes
+
+- Admin/principal: install the same PWA, then log in and enter `/dashboard`.
+- Teacher: install the same PWA, then log in and enter `/teacher`.
+- Student: install the same PWA, then log in and enter `/student`.
+- Parent: install the same PWA, then log in and enter `/parent`.
+
+The installed client is unified. It does not contain role-specific data. Server-side RBAC and `tenantId` checks decide what each account can load.
+
+## Version, Update, And Cache
+
+- Version is visible in the admin sidebar and student/teacher "Me" pages.
+- Admin settings provide "版本与更新" with a manual check update button.
+- A global banner appears when `/api/update-manifest` reports a newer version or when a service worker update is waiting.
+- Users can choose "稍后" or "立即刷新"; EduOS does not force-refresh active forms.
+- Student and teacher "Me" pages include a cache cleanup entry for installed clients.

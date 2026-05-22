@@ -181,3 +181,21 @@ When a blocker appears, record:
 - Safe fallback implemented: Local commits remain on `main`; generated patch and bundle artifacts under `artifacts/`.
 - Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
 - Whether later tasks can continue: Yes. Retry `git push origin main` later or transfer the patch/bundle artifacts manually.
+
+## 2026-05-22 Production Deployment Safety Gate
+
+- Stage or PZ task: Formal deployment and client installation/update system.
+- Risk or failure type: Production migration, HTTPS certificate issuance, real ECS deployment, PM2 startup registration, and secret verification require human operation.
+- What was intentionally not executed: No production migration, no certbot run, no ECS deploy, no secret read/print, no database reset/drop/truncate, and no OSS deletion.
+- Safe fallback implemented: PWA/update code hardening, deployment scripts, runbooks, rollback helper, and human action list.
+- Exact blocker: Production migration must remain disabled unless the operator explicitly sets `RUN_PRODUCTION_MIGRATIONS=true` after backup and SQL review.
+- Whether later tasks can continue: Yes.
+
+## 2026-05-22 Local Role E2E Database Unavailable
+
+- Stage or PZ task: Formal deployment/update role-access E2E verification.
+- Risk or failure type: Local Playwright role-access tests require a seeded database, but login requests hit Prisma `ETIMEDOUT` / `ECONNREFUSED` and stay on `/login`.
+- What was intentionally not executed: No database reset, no production database connection, no destructive cleanup, and no secret inspection.
+- Safe fallback implemented: Unit/static RBAC, PWA, update, and deployment tests pass; E2E specs remain available for a seeded environment.
+- Exact blocker: Local `DATABASE_URL` target is not reachable for seeded login flows.
+- Whether later tasks can continue: Yes. Re-run `pnpm test:e2e -- ui-responsive.spec.ts permissions.spec.ts` after local/staging database is reachable and seeded.

@@ -84,3 +84,16 @@ Before staging or production release:
 - Migration safety review.
 - `.env.production.local` absent from git.
 - `node_modules`, generated caches, resources, uploads, videos, question banks, word books, and local databases absent from release artifacts.
+# 2026-05-22 Client/Cloud Deployment Decision
+
+EduOS is deployed as one cloud-backed application:
+
+- local client/PWA/optional future Tauri shell,
+- Aliyun ECS backend/API,
+- Aliyun RDS PostgreSQL,
+- Aliyun OSS private resource storage,
+- local lightweight cache and future offline drafts only.
+
+Students, teachers, and Admin users install the same PWA from
+`https://eduos.study-go.top`. Role differences are enforced by server-side RBAC,
+`tenantId`, and ownership checks, not by separate installers.

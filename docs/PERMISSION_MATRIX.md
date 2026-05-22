@@ -90,3 +90,13 @@ Admins and principals can manage resources within the current tenant only.
 - Student and teacher "Me" pages are account/help/version surfaces only. They do not expose admin settings, finance data, OSS keys, RDS information, or tenant-wide operations.
 - Resource pages still exist for authorized resources, but resource access remains a server-side `tenantId + RBAC + ownership/assignment` decision.
 - `tests/unit/student-teacher-permissions.test.ts` now explicitly covers these Day 4 mobile portal boundaries.
+
+## Client Installation Boundary
+
+EduOS uses one PWA/client entry for all roles. This does not broaden access:
+
+- Admin, teacher, student, parent, academic, and finance users install the same client.
+- Login creates a server session with one role and one `tenantId`.
+- Protected pages still call `requirePermission(...)`.
+- Business queries still receive `currentUser.tenantId`.
+- The client never becomes the security boundary and never receives private data that the server has not authorized.

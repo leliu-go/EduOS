@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EduOS">
+  <rect width="512" height="512" fill="#1d4ed8"/>
+  <circle cx="256" cy="256" r="212" fill="#2563eb"/>
+  <path d="M132 168h248v48H188v56h164v46H188v66h199v48H132V168Z" fill="#fff"/>
+  <path d="M132 118h248v32H132v-32Z" fill="#bfdbfe"/>
+</svg>

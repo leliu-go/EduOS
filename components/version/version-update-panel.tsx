@@ -1,16 +1,12 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
+import {
+  CheckUpdateButton,
+  type UpdateManifestResponse,
+} from "@/components/version/check-update-button";
 import { Button } from "@/components/ui/button";
-
-type UpdateManifestResponse = {
-  latestVersion: string;
-  currentVersion: string;
-  forceUpdate: boolean;
-  changelogUrl: string;
-};
 
 type VersionUpdatePanelProps = {
   currentVersion: string;
@@ -19,24 +15,6 @@ type VersionUpdatePanelProps = {
 export function VersionUpdatePanel({ currentVersion }: VersionUpdatePanelProps) {
   const [manifest, setManifest] = useState<UpdateManifestResponse | null>(null);
   const [status, setStatus] = useState<"idle" | "checking" | "checked" | "failed">("idle");
-
-  async function checkForUpdates() {
-    setStatus("checking");
-
-    try {
-      const response = await fetch("/api/update-manifest", { cache: "no-store" });
-
-      if (!response.ok) {
-        setStatus("failed");
-        return;
-      }
-
-      setManifest((await response.json()) as UpdateManifestResponse);
-      setStatus("checked");
-    } catch {
-      setStatus("failed");
-    }
-  }
 
   const latestVersion = manifest?.latestVersion ?? currentVersion;
   const hasUpdate = latestVersion !== currentVersion;
@@ -50,15 +28,7 @@ export function VersionUpdatePanel({ currentVersion }: VersionUpdatePanelProps) 
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={checkForUpdates}
-          disabled={status === "checking"}
-        >
-          <RefreshCw className="size-4" aria-hidden="true" />
-          {status === "checking" ? "检查中" : "检查更新"}
-        </Button>
+        <CheckUpdateButton onResult={setManifest} onStatusChange={setStatus} />
         {hasUpdate ? (
           <Button type="button" onClick={() => window.location.reload()}>
             刷新到新版
@@ -66,11 +36,20 @@ export function VersionUpdatePanel({ currentVersion }: VersionUpdatePanelProps) 
         ) : null}
       </div>
       {status === "checked" ? (
-        <p className="text-sm text-muted-foreground">
-          {hasUpdate
-            ? `发现新版本 v${latestVersion}，刷新到新版后生效。`
-            : `当前 v${currentVersion} 已是最新版本。`}
-        </p>
+        <div className="grid gap-1 text-sm text-muted-foreground">
+          <p>
+            {hasUpdate
+              ? `发现新版本 v${latestVersion}，刷新到新版本后生效。`
+              : `当前 v${currentVersion} 已是最新版本。`}
+          </p>
+          {manifest?.releaseNotes?.length ? (
+            <ul className="list-disc pl-5">
+              {manifest.releaseNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
       {status === "failed" ? (
         <p className="text-sm text-red-600">更新检查失败，请稍后重试。</p>

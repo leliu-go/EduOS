@@ -66,3 +66,13 @@ After rollback, run smoke checks for:
 - Parent schedule/consumption/profile.
 - `/api/version`.
 - `/api/update-manifest`.
+
+## Scripted Rollback Helper
+
+`scripts/server/rollback.sh` can move the PM2 application back to a known-good git ref:
+
+```bash
+ROLLBACK_REF=<known-good-tag-or-commit> bash scripts/server/rollback.sh
+```
+
+The helper does not run database rollback and does not delete OSS files. Migration rollback remains a separate human-approved data operation.

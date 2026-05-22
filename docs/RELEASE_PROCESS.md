@@ -21,16 +21,17 @@ No production database migration is executed by the local release scripts.
 
 1. Update `package.json` version.
 2. Update `CHANGELOG.md`.
-3. Run `scripts/check-release.ps1`.
-4. Run `scripts/check-release.ps1 -RunQualityGates` before tagging.
-5. Review `docs/BLOCKERS.md` and `docs/HUMAN_ACTIONS.md`.
-6. Confirm rollback instructions in `docs/ROLLBACK_PLAN.md`.
-7. Confirm update manifest behavior in `docs/UPDATE_MANIFEST_SPEC.md`.
-8. Confirm `.env.production.local` is not tracked or staged.
-9. Confirm service worker cache rules exclude `/api/`, role dashboards,
+3. Update safe update manifest metadata on the deployment environment.
+4. Run `scripts/check-release.ps1`.
+5. Run `scripts/check-release.ps1 -RunQualityGates` before tagging.
+6. Review `docs/BLOCKERS.md` and `docs/HUMAN_ACTIONS.md`.
+7. Confirm rollback instructions in `docs/ROLLBACK_PLAN.md`.
+8. Confirm update manifest behavior in `docs/UPDATE_MANIFEST_SPEC.md`.
+9. Confirm `.env.production.local` is not tracked or staged.
+10. Confirm service worker cache rules exclude `/api/`, role dashboards,
    finance data, student privacy data, admin-only pages, and resource
    authorization responses.
-10. Review all Prisma migration SQL for destructive statements before enabling
+11. Review all Prisma migration SQL for destructive statements before enabling
     `RUN_PRODUCTION_MIGRATIONS=true` on staging.
 
 ## Quality Gates
@@ -58,6 +59,15 @@ pnpm test:e2e
 
 These actions require explicit human approval and should be recorded in
 `docs/HUMAN_ACTIONS.md` when deferred.
+
+## ECS Release Steps
+
+After local checks and push, deploy on ECS with `scripts/server/deploy-production.sh`.
+The script skips production migration unless `RUN_PRODUCTION_MIGRATIONS=true` is
+set intentionally after backup and migration SQL review.
+
+If GitHub is unavailable, use the archive/bundle fallback described in
+`docs/DEPLOYMENT_RUNBOOK.md`.
 
 ## Release Evidence
 

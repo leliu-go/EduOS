@@ -108,3 +108,12 @@ When a high-risk item is downgraded, record:
 - Review the updated student and teacher mobile portals on a real phone-width browser.
 - Decide whether Admin dense pages such as scheduling and resources need a tablet-specific split-view redesign.
 - Approve the next UX scope for full UI-created Golden Path flows instead of route-health checks.
+
+## 2026-05-22 Production Deployment And Client Install Follow-Ups
+
+- Configure HTTPS for `eduos.study-go.top` on ECS with certbot; PWA production installation should use HTTPS.
+- Review `/opt/eduos/.env.production.local` on ECS without printing or committing secret values.
+- Confirm PM2 startup persistence with `pm2 save` and the operator-specific `pm2 startup` command.
+- Approve any production migration separately before setting `RUN_PRODUCTION_MIGRATIONS=true`.
+- Verify the Aliyun OSS RAM policy allows only the intended private bucket/object operations.
+- Decide whether and when to begin the optional Tauri desktop client RFC implementation and code-signing procurement.

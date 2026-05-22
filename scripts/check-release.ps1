@@ -74,11 +74,17 @@ $requiredFiles = @(
   "docs/RELEASE_PROCESS.md",
   "docs/UPDATE_MANIFEST_SPEC.md",
   "docs/ROLLBACK_PLAN.md",
+  "docs/CLIENT_INSTALLATION_STRATEGY.md",
+  "docs/FINAL_DEPLOY_TO_ECS_STEPS.md",
+  "docs/DEPLOYMENT_RUNBOOK.md",
   "docs/RELEASE_ARTIFACT_RULES.md",
   "docs/BLOCKERS.md",
   "docs/HUMAN_ACTIONS.md",
   "app/api/update-manifest/route.ts",
   "app/api/version/route.ts",
+  "scripts/server/deploy-production.sh",
+  "scripts/server/rollback.sh",
+  "scripts/server/health-check.sh",
   ".gitignore",
   ".dockerignore"
 )
@@ -95,6 +101,9 @@ Assert-TextContains -Path "docs/UPDATE_MANIFEST_SPEC.md" -Expected "minimumSuppo
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No deploy"
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No code signing"
 Assert-TextContains -Path "docs/RELEASE_PROCESS.md" -Expected "No production database migration"
+Assert-TextContains -Path "docs/CLIENT_INSTALLATION_STRATEGY.md" -Expected "one EduOS"
+Assert-TextContains -Path "docs/FINAL_DEPLOY_TO_ECS_STEPS.md" -Expected "https://eduos.study-go.top"
+Assert-TextContains -Path "scripts/server/deploy-production.sh" -Expected "RUN_PRODUCTION_MIGRATIONS"
 Assert-TextContains -Path "public/sw.js" -Expected "CACHEABLE_STATIC_PREFIXES"
 Assert-TextContains -Path "public/sw.js" -Expected "/api/"
 Assert-TextContains -Path "public/sw.js" -Expected "networkOnly"

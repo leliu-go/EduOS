@@ -9,3 +9,5 @@
 - Day 3 product experience pass: workbench-oriented dashboard, duplicate navigation removal,
   manual finance payment flow, clearer finance reports, version/update settings UI, and safe
   storage/security status pages.
+- Deployment/update readiness: unified PWA install strategy, public icons, cache cleanup control,
+  service worker update activation, production deploy/rollback scripts, and ECS runbooks.

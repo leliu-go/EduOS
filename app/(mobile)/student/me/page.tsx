@@ -11,6 +11,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import { ClearEduosCacheButton } from "@/components/install/clear-cache-button";
 import { TaskCard } from "@/components/mobile/TaskCard";
 import { VersionBadge } from "@/components/version/version-badge";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,9 @@ export default async function StudentMePage() {
           </div>
           <div className="rounded-md border bg-muted/30 p-4">
             <Trash2 className="size-5 text-primary" aria-hidden="true" />
+            <div className="mt-3">
+              <ClearEduosCacheButton />
+            </div>
             <p className="mt-3 text-sm font-medium">本地缓存</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               PWA 只缓存应用外壳和已授权资源。缓存清理按钮会在后续版本接入。

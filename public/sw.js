@@ -1,6 +1,11 @@
-const STATIC_CACHE = "eduos-static-v2";
-const STATIC_ASSETS = ["/icon.svg"];
-const CACHEABLE_STATIC_PREFIXES = ["/_next/static/", "/icon.svg", "/manifest.webmanifest"];
+const STATIC_CACHE = "eduos-static-v3";
+const STATIC_ASSETS = ["/icon.svg", "/icons/eduos-icon.svg", "/icons/eduos-maskable.svg"];
+const CACHEABLE_STATIC_PREFIXES = [
+  "/_next/static/",
+  "/icon.svg",
+  "/icons/",
+  "/manifest.webmanifest",
+];
 const SENSITIVE_PATH_PREFIXES = [
   "/api/",
   "/login",
@@ -75,6 +80,27 @@ self.addEventListener("activate", (event) => {
     }),
   );
   self.clients.claim();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+
+  if (event.data?.type === "CLEAR_EDUOS_CACHES") {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((cacheNames) =>
+          Promise.all(
+            cacheNames
+              .filter((cacheName) => cacheName.startsWith("eduos-"))
+              .map((cacheName) => caches.delete(cacheName)),
+          ),
+        ),
+    );
+  }
 });
 
 self.addEventListener("fetch", (event) => {

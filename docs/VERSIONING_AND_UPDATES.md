@@ -30,3 +30,18 @@ EduOS uses a non-disruptive update banner. Users decide when to refresh so activ
 ## Future Release Flow
 
 Production release publishing, CDN invalidation, and app-store style rollout are high-risk operational tasks. They should be executed by a human operator using the release checklist after validating staging.
+
+## Production Update Metadata
+
+`/api/update-manifest` can read safe release metadata from environment variables:
+
+- `EDUOS_LATEST_VERSION`
+- `EDUOS_MIN_SUPPORTED_VERSION`
+- `EDUOS_RELEASE_NOTES`
+- `EDUOS_UPDATE_URL`
+- `EDUOS_CHANGELOG_URL`
+- `EDUOS_FORCE_UPDATE`
+
+These values are public release metadata only. They must never contain credentials, tenant data, database URLs, OSS keys, or `.env` contents.
+
+The client checks this endpoint with `cache: "no-store"`. If `latestVersion` differs from the running package version, EduOS shows the update banner. If the service worker has a waiting worker, clicking "立即刷新" sends `SKIP_WAITING` and reloads after activation.

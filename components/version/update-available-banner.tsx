@@ -16,8 +16,26 @@ type UpdateAvailableBannerProps = {
   currentVersion: string;
 };
 
+function activateWaitingServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    window.location.reload();
+    return;
+  }
+
+  navigator.serviceWorker.getRegistration().then((registration) => {
+    if (!registration?.waiting) {
+      window.location.reload();
+      return;
+    }
+
+    registration.waiting.postMessage({ type: "SKIP_WAITING" });
+    window.setTimeout(() => window.location.reload(), 800);
+  });
+}
+
 export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerProps) {
   const [manifest, setManifest] = useState<UpdateManifestResponse | null>(null);
+  const [hasWaitingWorker, setHasWaitingWorker] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
@@ -41,8 +59,45 @@ export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerP
     };
   }, []);
 
-  const hasUpdate =
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    let isMounted = true;
+
+    navigator.serviceWorker.getRegistration().then((registration) => {
+      if (!registration || !isMounted) {
+        return;
+      }
+
+      if (registration.waiting) {
+        setHasWaitingWorker(true);
+      }
+
+      registration.addEventListener("updatefound", () => {
+        const installingWorker = registration.installing;
+
+        installingWorker?.addEventListener("statechange", () => {
+          if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+            setHasWaitingWorker(true);
+          }
+        });
+      });
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const hasManifestUpdate =
     manifest !== null && manifest.latestVersion !== currentVersion && manifest.latestVersion !== "";
+  const hasUpdate = hasManifestUpdate || hasWaitingWorker;
 
   if (!hasUpdate || isDismissed) {
     return null;
@@ -53,7 +108,8 @@ export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerP
       <div>
         <p className="font-medium text-foreground">发现新版本，刷新后生效</p>
         <p className="mt-1 text-muted-foreground">
-          当前 v{currentVersion}，可更新到 v{manifest.latestVersion}。保存当前操作后再刷新。
+          当前 v{currentVersion}
+          {manifest?.latestVersion ? `，可更新到 v${manifest.latestVersion}` : ""}。保存当前操作后再刷新。
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
@@ -66,12 +122,7 @@ export function UpdateAvailableBanner({ currentVersion }: UpdateAvailableBannerP
         >
           <X className="size-4" aria-hidden="true" />
         </Button>
-        <Button
-          type="button"
-          size="icon"
-          aria-label="立即刷新"
-          onClick={() => window.location.reload()}
-        >
+        <Button type="button" size="icon" aria-label="立即刷新" onClick={activateWaitingServiceWorker}>
           <RefreshCw className="size-4" aria-hidden="true" />
         </Button>
       </div>

@@ -10,6 +10,7 @@ import {
   UserCircle,
 } from "lucide-react";
 
+import { ClearEduosCacheButton } from "@/components/install/clear-cache-button";
 import { TaskCard } from "@/components/mobile/TaskCard";
 import { StatusBadge } from "@/components/mobile/StatusBadge";
 import { VersionBadge } from "@/components/version/version-badge";
@@ -110,6 +111,9 @@ export default async function TeacherMePage() {
         </CardHeader>
         <CardContent className="rounded-md border bg-muted/30 p-4">
           <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
+          <div className="mt-3">
+            <ClearEduosCacheButton />
+          </div>
           <p className="mt-3 text-sm font-medium">权限说明</p>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             老师端不能进入财务后台、系统设置、全机构经营分析，也不能查看非本人班级和非授权学生。

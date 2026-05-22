@@ -18,10 +18,13 @@ export type UpdateManifest = {
   app: string;
   latestVersion: string;
   minimumSupportedVersion: string;
+  minSupportedVersion: string;
   currentVersion: string;
   buildTime: string | null;
   shortCommitHash: string;
   releasedAt: string | null;
+  publishedAt: string | null;
+  releaseNotes: string[];
   changelogUrl: string;
   updateUrl: string;
   forceUpdate: boolean;
@@ -53,17 +56,27 @@ export function getAppVersion(): AppVersion {
 
 export function getUpdateManifest(): UpdateManifest {
   const appVersion = getAppVersion();
+  const minimumSupportedVersion =
+    process.env.EDUOS_MIN_SUPPORTED_VERSION ?? process.env.EDUOS_MINIMUM_SUPPORTED_VERSION ?? appVersion.version;
+  const releasedAt = process.env.NEXT_PUBLIC_RELEASED_AT ?? null;
+  const releaseNotes = (process.env.EDUOS_RELEASE_NOTES ?? "")
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
   return {
     app: "EduOS",
-    latestVersion: appVersion.version,
-    minimumSupportedVersion: appVersion.version,
+    latestVersion: process.env.EDUOS_LATEST_VERSION ?? appVersion.version,
+    minimumSupportedVersion,
+    minSupportedVersion: minimumSupportedVersion,
     currentVersion: appVersion.version,
     buildTime: appVersion.buildTime,
     shortCommitHash: appVersion.shortCommitHash,
-    releasedAt: appVersion.releasedAt,
-    changelogUrl: "/CHANGELOG.md",
-    updateUrl: "/",
-    forceUpdate: false,
+    releasedAt,
+    publishedAt: releasedAt,
+    releaseNotes: releaseNotes.length > 0 ? releaseNotes : ["See CHANGELOG.md for release details."],
+    changelogUrl: process.env.EDUOS_CHANGELOG_URL ?? "/CHANGELOG.md",
+    updateUrl: process.env.EDUOS_UPDATE_URL ?? "/",
+    forceUpdate: process.env.EDUOS_FORCE_UPDATE === "true",
   };
 }
