@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getScheduleCalendarHref,
   getScheduleCalendarSearch,
@@ -315,13 +315,21 @@ function MonthCalendar({
             const hiddenCount = Math.max(dailySchedules.length - visibleSchedules.length, 0);
             const inCurrentMonth = isSameUtcMonth(date, startAt);
 
+            if (!inCurrentMonth) {
+              return (
+                <div
+                  key={dateInput}
+                  aria-hidden="true"
+                  className="min-h-36 border-r border-b bg-muted/20 p-2 last:border-r-0"
+                />
+              );
+            }
+
             return (
               <div
                 key={dateInput}
-                className={cn(
-                  "min-h-36 border-r border-b p-2 last:border-r-0",
-                  !inCurrentMonth && "bg-muted/25 text-muted-foreground",
-                )}
+                data-testid={`scheduling-month-cell-${dateInput}`}
+                className="min-h-36 border-r border-b p-2 last:border-r-0"
               >
                 <div className="flex items-center justify-between gap-2">
                   <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
@@ -440,6 +448,50 @@ function ListCalendar({
         </div>
       </div>
     </div>
+  );
+}
+
+function renderCalendarView({
+  calendarData,
+  search,
+}: {
+  calendarData: ScheduleCalendarData;
+  search: ScheduleCalendarSearch;
+}) {
+  if (search.view === "day") {
+    return calendarData.schedules.length > 0 ? (
+      <DayCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
+    ) : (
+      <EmptyState title="暂无排课" description="当前日期还没有课程安排。" />
+    );
+  }
+
+  if (search.view === "week") {
+    return calendarData.schedules.length > 0 ? (
+      <WeekCalendar
+        schedules={calendarData.schedules}
+        rooms={calendarData.options.rooms}
+        startAt={calendarData.window.startAt}
+      />
+    ) : (
+      <EmptyState title="暂无排课" description="当前周和筛选条件下还没有课程安排。" />
+    );
+  }
+
+  if (search.view === "month") {
+    return (
+      <MonthCalendar
+        schedules={calendarData.schedules}
+        search={search}
+        startAt={calendarData.window.startAt}
+      />
+    );
+  }
+
+  return calendarData.schedules.length > 0 ? (
+    <ListCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
+  ) : (
+    <EmptyState title="暂无排课" description="当前时间范围和筛选条件下还没有课程安排。" />
   );
 }
 
@@ -638,35 +690,7 @@ export default async function SchedulingCalendarPage({
           </div>
         </div>
 
-        {calendarData.schedules.length > 0 ? (
-          <Tabs defaultValue={search.view}>
-            <TabsContent value="day">
-              <DayCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
-            </TabsContent>
-            <TabsContent value="week">
-              <WeekCalendar
-                schedules={calendarData.schedules}
-                rooms={calendarData.options.rooms}
-                startAt={calendarData.window.startAt}
-              />
-            </TabsContent>
-            <TabsContent value="month">
-              <MonthCalendar
-                schedules={calendarData.schedules}
-                search={search}
-                startAt={calendarData.window.startAt}
-              />
-            </TabsContent>
-            <TabsContent value="list">
-              <ListCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <EmptyState
-            title={search.view === "month" ? "本月暂无排课" : "暂无排课"}
-            description="当前时间范围和筛选条件下还没有课程安排。"
-          />
-        )}
+        {renderCalendarView({ calendarData, search })}
       </section>
     </div>
   );

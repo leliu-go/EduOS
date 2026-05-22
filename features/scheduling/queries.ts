@@ -57,53 +57,51 @@ function buildScheduleCalendarWhere(tenantId: string, search: ScheduleCalendarSe
 
 export async function getScheduleCalendarData(tenantId: string, search: ScheduleCalendarSearch) {
   const where = buildScheduleCalendarWhere(tenantId, search);
-  const [schedules, campuses, teachers, rooms, classGroups] = await prisma.$transaction([
-    prisma.schedule.findMany({
-      where,
-      include: scheduleCalendarInclude,
-      orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
-    }),
-    prisma.campus.findMany({
-      where: {
-        tenantId,
-        status: "ACTIVE",
+  const schedules = await prisma.schedule.findMany({
+    where,
+    include: scheduleCalendarInclude,
+    orderBy: [{ startAt: "asc" }, { endAt: "asc" }],
+  });
+  const campuses = await prisma.campus.findMany({
+    where: {
+      tenantId,
+      status: "ACTIVE",
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+  const teachers = await prisma.teacherProfile.findMany({
+    where: {
+      tenantId,
+      status: "ACTIVE",
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+  const rooms = await prisma.room.findMany({
+    where: {
+      tenantId,
+      status: "ACTIVE",
+    },
+    include: {
+      campus: true,
+    },
+    orderBy: [{ campusId: "asc" }, { name: "asc" }],
+  });
+  const classGroups = await prisma.classGroup.findMany({
+    where: {
+      tenantId,
+      status: {
+        in: ["PLANNING", "ACTIVE", "PAUSED"],
       },
-      orderBy: {
-        name: "asc",
-      },
-    }),
-    prisma.teacherProfile.findMany({
-      where: {
-        tenantId,
-        status: "ACTIVE",
-      },
-      orderBy: {
-        name: "asc",
-      },
-    }),
-    prisma.room.findMany({
-      where: {
-        tenantId,
-        status: "ACTIVE",
-      },
-      include: {
-        campus: true,
-      },
-      orderBy: [{ campusId: "asc" }, { name: "asc" }],
-    }),
-    prisma.classGroup.findMany({
-      where: {
-        tenantId,
-        status: {
-          in: ["PLANNING", "ACTIVE", "PAUSED"],
-        },
-      },
-      include: {
-        courseProduct: true,
-      },
-      orderBy: [{ startsAt: "desc" }, { name: "asc" }],
-    }),
-  ]);
+    },
+    include: {
+      courseProduct: true,
+    },
+    orderBy: [{ startsAt: "desc" }, { name: "asc" }],
+  });
 
   return {
     schedules,

@@ -130,6 +130,8 @@ describe("scheduling calendar UI", () => {
     expect(page).toContain('value="month"');
     expect(page).toContain('value="list"');
     expect(page).toContain("MonthCalendar");
+    expect(page).toContain("renderCalendarView");
+    expect(page).not.toContain('<TabsContent value="week">');
     expect(page).toContain("还有");
     expect(page).toContain("getHrefWithDayView");
     expect(page).toContain('name="campusId"');
@@ -139,6 +141,7 @@ describe("scheduling calendar UI", () => {
     expect(page).toContain("EmptyState");
     expect(queries).toContain("tenantId");
     expect(queries).toContain("prisma.schedule.findMany");
+    expect(queries).not.toContain("prisma.$transaction([");
     expect(queries).toContain("classGroupId");
     expect(queries).toContain("teacherId");
     expect(queries).toContain("campusId");
