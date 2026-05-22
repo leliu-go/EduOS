@@ -172,3 +172,12 @@ When a blocker appears, record:
 - What was intentionally not executed: No production migration, ECS deployment, secret read/print, database reset/drop/truncate, OSS delete, or real provider operation was executed.
 - Safe fallback implemented: UI improvements stayed on existing routes, server actions, RBAC queries, and local design primitives.
 - Whether later tasks can continue: Yes.
+
+## 2026-05-22 Frontend Design Push Retry
+
+- Stage or PZ task: Frontend design pass final push
+- Risk or failure type: Network failure while pushing to GitHub.
+- What was intentionally not executed: No credential change, force push, destructive git operation, or remote rewrite was attempted.
+- Safe fallback implemented: Local commits remain on `main`; generated patch and bundle artifacts under `artifacts/`.
+- Exact blocker: `fatal: unable to access 'https://github.com/leliu-go/EduOS.git/': Recv failure: Connection was reset`
+- Whether later tasks can continue: Yes. Retry `git push origin main` later or transfer the patch/bundle artifacts manually.

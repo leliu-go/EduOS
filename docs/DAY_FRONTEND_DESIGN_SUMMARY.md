@@ -24,3 +24,9 @@ This pass applies the `frontend-skill` workflow to EduOS UI: audit first, lightw
 - `pnpm test`: passed, 99 files and 385 tests.
 - `pnpm test:e2e -- ui-responsive.spec.ts golden-path.spec.ts --workers=1`: passed, 8 tests.
 - Local QA seed was run only against `localhost:55432/eduos_dev`.
+
+## Git Status
+
+- Local implementation commit: `12e632a ui: refine frontend portals and responsive checks`.
+- GitHub push was attempted, but failed with `Recv failure: Connection was reset`.
+- Fallback patch/bundle artifacts are generated under `artifacts/` and remain out of the repository by `.gitignore`.
