@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   getScheduleCalendarHref,
   getScheduleCalendarSearch,
+  getShiftedScheduleDate,
   getScheduleCalendarWindow,
 } from "../features/scheduling/calendar";
 import { hasPermission } from "../lib/rbac/permissions";
@@ -49,7 +50,7 @@ describe("scheduling calendar UI", () => {
     });
   });
 
-  it("builds day, week, and list windows", () => {
+  it("builds day, week, month, and list windows", () => {
     expect(getScheduleCalendarWindow({ view: "day", date: "2026-09-02", filters: {} })).toEqual({
       startAt: new Date("2026-09-02T00:00:00.000Z"),
       endAt: new Date("2026-09-03T00:00:00.000Z"),
@@ -64,6 +65,25 @@ describe("scheduling calendar UI", () => {
       startAt: new Date("2026-09-02T00:00:00.000Z"),
       endAt: new Date("2026-10-02T00:00:00.000Z"),
     });
+
+    expect(getScheduleCalendarWindow({ view: "month", date: "2026-09-15", filters: {} })).toEqual(
+      {
+        startAt: new Date("2026-09-01T00:00:00.000Z"),
+        endAt: new Date("2026-10-01T00:00:00.000Z"),
+      },
+    );
+  });
+
+  it("shifts month view by calendar month", () => {
+    expect(
+      getShiftedScheduleDate({ view: "month", date: "2026-09-15", filters: {} }, -1),
+    ).toBe("2026-08-15");
+    expect(
+      getShiftedScheduleDate({ view: "month", date: "2026-09-15", filters: {} }, 1),
+    ).toBe("2026-10-15");
+    expect(
+      getShiftedScheduleDate({ view: "month", date: "2026-01-31", filters: {} }, 1),
+    ).toBe("2026-02-28");
   });
 
   it("keeps internal scheduling calendar staff-only", () => {
@@ -96,7 +116,11 @@ describe("scheduling calendar UI", () => {
     expect(page).toContain("Tabs");
     expect(page).toContain('value="day"');
     expect(page).toContain('value="week"');
+    expect(page).toContain('value="month"');
     expect(page).toContain('value="list"');
+    expect(page).toContain("MonthCalendar");
+    expect(page).toContain("还有");
+    expect(page).toContain("getHrefWithDayView");
     expect(page).toContain('name="campusId"');
     expect(page).toContain('name="teacherId"');
     expect(page).toContain('name="roomId"');
@@ -124,5 +148,18 @@ describe("scheduling calendar UI", () => {
         },
       }),
     ).toBe("/dashboard/scheduling?view=list&date=2026-09-02&campusId=campus-1&teacherId=teacher-1");
+
+    expect(
+      getScheduleCalendarHref({
+        view: "month",
+        date: "2026-09-15",
+        filters: {
+          campusId: "campus-1",
+          classGroupId: "class-1",
+        },
+      }),
+    ).toBe(
+      "/dashboard/scheduling?view=month&date=2026-09-15&campusId=campus-1&classGroupId=class-1",
+    );
   });
 });

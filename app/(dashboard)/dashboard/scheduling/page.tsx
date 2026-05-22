@@ -45,6 +45,7 @@ type ScheduleCalendarRoom = ScheduleCalendarData["options"]["rooms"][number];
 const viewLabels = {
   day: "日",
   week: "周",
+  month: "月",
   list: "列表",
 } as const;
 
@@ -64,6 +65,33 @@ const conflictMessages = {
 
 function formatDate(value: Date) {
   return value.toISOString().slice(0, 10);
+}
+
+function addUtcDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+
+  return nextDate;
+}
+
+function getMonthGridDates(monthStart: Date) {
+  const firstDay = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), 1));
+  const weekday = firstDay.getUTCDay();
+  const daysFromMonday = weekday === 0 ? 6 : weekday - 1;
+  const gridStart = addUtcDays(firstDay, -daysFromMonday);
+
+  return Array.from({ length: 42 }, (_, index) => addUtcDays(gridStart, index));
+}
+
+function isSameUtcMonth(date: Date, monthStart: Date) {
+  return (
+    date.getUTCFullYear() === monthStart.getUTCFullYear() &&
+    date.getUTCMonth() === monthStart.getUTCMonth()
+  );
+}
+
+function formatWindowEnd(value: Date) {
+  return formatDate(addUtcDays(value, -1));
 }
 
 function formatTime(value: Date) {
@@ -108,12 +136,33 @@ function getHrefWithDate(search: ScheduleCalendarSearch, date: string) {
   });
 }
 
+function getHrefWithDayView(search: ScheduleCalendarSearch, date: string) {
+  return getScheduleCalendarHref({
+    ...search,
+    view: "day",
+    date,
+  });
+}
+
+function getNavigationLabel(search: ScheduleCalendarSearch, direction: -1 | 1) {
+  if (search.view === "day") {
+    return direction === -1 ? "前一天" : "后一天";
+  }
+
+  if (search.view === "week") {
+    return direction === -1 ? "上一周" : "下一周";
+  }
+
+  if (search.view === "month") {
+    return direction === -1 ? "上个月" : "下个月";
+  }
+
+  return direction === -1 ? "上一段" : "下一段";
+}
+
 function getWeekDays(startAt: Date) {
   return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(startAt);
-    date.setUTCDate(date.getUTCDate() + index);
-
-    return formatDate(date);
+    return formatDate(addUtcDays(startAt, index));
   });
 }
 
@@ -219,6 +268,150 @@ function WeekCalendar({
   );
 }
 
+function MonthScheduleSummary({ schedule }: { schedule: ScheduleCalendarItem }) {
+  return (
+    <div className="rounded-md border bg-background/70 px-2 py-1.5 text-xs">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium text-foreground">
+          {formatTime(schedule.startAt)} {schedule.lesson?.title ?? schedule.classGroup.name}
+        </span>
+        <Badge variant="secondary" className="shrink-0 text-[10px]">
+          {scheduleStatusLabels[schedule.status]}
+        </Badge>
+      </div>
+      <p className="mt-1 truncate text-muted-foreground">
+        {schedule.classGroup.name} · {schedule.teacher.name}
+      </p>
+    </div>
+  );
+}
+
+function MonthCalendar({
+  schedules,
+  search,
+  startAt,
+}: {
+  schedules: ScheduleCalendarItem[];
+  search: ScheduleCalendarSearch;
+  startAt: Date;
+}) {
+  const schedulesByDate = getSchedulesByDate(schedules);
+  const monthDates = getMonthGridDates(startAt);
+  const currentMonthDates = monthDates.filter((date) => isSameUtcMonth(date, startAt));
+  const activeDates = currentMonthDates.filter(
+    (date) => (schedulesByDate.get(formatDate(date)) ?? []).length > 0,
+  );
+  const mobileDates = activeDates.length > 0 ? activeDates : currentMonthDates;
+
+  return (
+    <div className="grid gap-4">
+      <div
+        data-testid="scheduling-month-calendar-desktop"
+        className="hidden overflow-hidden rounded-lg border bg-card md:block"
+      >
+        <div className="grid grid-cols-7 border-b bg-muted/40 text-center text-xs font-medium text-muted-foreground">
+          {["一", "二", "三", "四", "五", "六", "日"].map((label) => (
+            <div key={label} className="px-3 py-2">
+              {label}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
+          {monthDates.map((date) => {
+            const dateInput = formatDate(date);
+            const dailySchedules = schedulesByDate.get(dateInput) ?? [];
+            const visibleSchedules = dailySchedules.slice(0, 3);
+            const hiddenCount = Math.max(dailySchedules.length - visibleSchedules.length, 0);
+            const inCurrentMonth = isSameUtcMonth(date, startAt);
+
+            return (
+              <div
+                key={dateInput}
+                className={cn(
+                  "min-h-36 border-r border-b p-2 last:border-r-0",
+                  !inCurrentMonth && "bg-muted/25 text-muted-foreground",
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                    <Link
+                      href={getHrefWithDayView(search, dateInput)}
+                      data-testid={`scheduling-month-day-${dateInput}`}
+                    >
+                      {date.getUTCDate()}
+                    </Link>
+                  </Button>
+                  {dailySchedules.length > 0 ? (
+                    <span className="text-xs text-muted-foreground">
+                      {dailySchedules.length} 节
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-2 grid gap-1.5">
+                  {visibleSchedules.map((schedule) => (
+                    <MonthScheduleSummary key={schedule.id} schedule={schedule} />
+                  ))}
+                  {hiddenCount > 0 ? (
+                    <Button asChild variant="link" size="sm" className="h-auto justify-start px-0">
+                      <Link href={getHrefWithDayView(search, dateInput)}>
+                        还有 {hiddenCount} 节
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div data-testid="scheduling-month-calendar-mobile" className="grid gap-3 md:hidden">
+        {mobileDates.map((date) => {
+          const dateInput = formatDate(date);
+          const dailySchedules = schedulesByDate.get(dateInput) ?? [];
+          const visibleSchedules = dailySchedules.slice(0, 3);
+          const hiddenCount = Math.max(dailySchedules.length - visibleSchedules.length, 0);
+
+          return (
+            <div key={dateInput} className="rounded-lg border bg-card p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium text-foreground">{dateInput}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {dailySchedules.length > 0 ? `${dailySchedules.length} 节课` : "暂无排课"}
+                  </p>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    href={getHrefWithDayView(search, dateInput)}
+                    data-testid={`scheduling-month-day-${dateInput}`}
+                  >
+                    查看当天
+                  </Link>
+                </Button>
+              </div>
+              {visibleSchedules.length > 0 ? (
+                <div className="mt-3 grid gap-2">
+                  {visibleSchedules.map((schedule) => (
+                    <MonthScheduleSummary key={schedule.id} schedule={schedule} />
+                  ))}
+                  {hiddenCount > 0 ? (
+                    <Button asChild variant="link" size="sm" className="h-auto justify-start px-0">
+                      <Link href={getHrefWithDayView(search, dateInput)}>
+                        还有 {hiddenCount} 节
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ListCalendar({
   schedules,
   rooms,
@@ -281,16 +474,19 @@ export default async function SchedulingCalendarPage({
     <div className="grid gap-6">
       <PageHeader
         title="排课日历"
-        description="按日、周或列表查看班级、老师、校区和教室的内部排课安排；学生端只会看到自己的课程。"
+        description="按日、周、月或列表查看班级、老师、校区和教室的内部排课安排；学生端只会看到自己的课程。"
         badge={`${calendarData.schedules.length} 节课`}
         actions={
           <>
             <ScheduleCreateDialog options={calendarData.options} />
             <ScheduleBatchDialog options={calendarData.options} />
             <Button asChild variant="outline" size="sm">
-              <Link href={getHrefWithDate(search, previousDate)} aria-label="上一段时间">
+              <Link
+                href={getHrefWithDate(search, previousDate)}
+                aria-label={getNavigationLabel(search, -1)}
+              >
                 <ChevronLeft className="size-4" aria-hidden="true" />
-                上一段
+                {getNavigationLabel(search, -1)}
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -299,8 +495,11 @@ export default async function SchedulingCalendarPage({
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
-              <Link href={getHrefWithDate(search, nextDate)} aria-label="下一段时间">
-                下一段
+              <Link
+                href={getHrefWithDate(search, nextDate)}
+                aria-label={getNavigationLabel(search, 1)}
+              >
+                {getNavigationLabel(search, 1)}
                 <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
             </Button>
@@ -335,6 +534,11 @@ export default async function SchedulingCalendarPage({
               <TabsTrigger asChild value="week">
                 <Link href={getHrefWithView(search, "week")}>{viewLabels.week}</Link>
               </TabsTrigger>
+              <TabsTrigger asChild value="month">
+                <Link href={getHrefWithView(search, "month")} data-testid="scheduling-view-month">
+                  {viewLabels.month}
+                </Link>
+              </TabsTrigger>
               <TabsTrigger asChild value="list">
                 <Link href={getHrefWithView(search, "list")}>{viewLabels.list}</Link>
               </TabsTrigger>
@@ -343,7 +547,7 @@ export default async function SchedulingCalendarPage({
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarDays className="size-4" aria-hidden="true" />
-            {formatDate(calendarData.window.startAt)} 至 {formatDate(calendarData.window.endAt)}
+            {formatDate(calendarData.window.startAt)} 至 {formatWindowEnd(calendarData.window.endAt)}
           </div>
         </div>
 
@@ -455,12 +659,22 @@ export default async function SchedulingCalendarPage({
                 startAt={calendarData.window.startAt}
               />
             </TabsContent>
+            <TabsContent value="month">
+              <MonthCalendar
+                schedules={calendarData.schedules}
+                search={search}
+                startAt={calendarData.window.startAt}
+              />
+            </TabsContent>
             <TabsContent value="list">
               <ListCalendar schedules={calendarData.schedules} rooms={calendarData.options.rooms} />
             </TabsContent>
           </Tabs>
         ) : (
-          <EmptyState title="暂无排课" description="当前时间范围和筛选条件下还没有课程安排。" />
+          <EmptyState
+            title={search.view === "month" ? "本月暂无排课" : "暂无排课"}
+            description="当前时间范围和筛选条件下还没有课程安排。"
+          />
         )}
       </section>
     </div>

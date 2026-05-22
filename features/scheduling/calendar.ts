@@ -1,4 +1,4 @@
-export const scheduleCalendarViews = ["day", "week", "list"] as const;
+export const scheduleCalendarViews = ["day", "week", "month", "list"] as const;
 
 export type ScheduleCalendarView = (typeof scheduleCalendarViews)[number];
 
@@ -55,6 +55,27 @@ function getWeekStart(date: Date) {
   return addUtcDays(date, -daysFromMonday);
 }
 
+function getMonthStart(date: Date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+}
+
+function getDaysInUtcMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
+function addUtcMonths(date: Date, months: number) {
+  const targetMonthStart = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1),
+  );
+  const day = Math.min(
+    date.getUTCDate(),
+    getDaysInUtcMonth(targetMonthStart.getUTCFullYear(), targetMonthStart.getUTCMonth()),
+  );
+  targetMonthStart.setUTCDate(day);
+
+  return targetMonthStart;
+}
+
 export function getScheduleCalendarSearch(
   params: Record<string, string | string[] | undefined>,
   fallbackDate = new Date(),
@@ -95,6 +116,15 @@ export function getScheduleCalendarWindow(search: ScheduleCalendarSearch) {
     };
   }
 
+  if (search.view === "month") {
+    const monthStart = getMonthStart(startDate);
+
+    return {
+      startAt: monthStart,
+      endAt: addUtcMonths(monthStart, 1),
+    };
+  }
+
   const weekStart = getWeekStart(startDate);
 
   return {
@@ -104,6 +134,10 @@ export function getScheduleCalendarWindow(search: ScheduleCalendarSearch) {
 }
 
 export function getShiftedScheduleDate(search: ScheduleCalendarSearch, direction: -1 | 1) {
+  if (search.view === "month") {
+    return formatDateInput(addUtcMonths(parseDateInput(search.date), direction));
+  }
+
   const step = search.view === "day" ? 1 : search.view === "week" ? 7 : 30;
 
   return formatDateInput(addUtcDays(parseDateInput(search.date), step * direction));
