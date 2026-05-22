@@ -7,6 +7,7 @@ import {
   LogOut,
   NotebookPen,
   ShieldCheck,
+  Users,
   UserCircle,
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ import { StatusBadge } from "@/components/mobile/StatusBadge";
 import { VersionBadge } from "@/components/version/version-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordChangeForm } from "@/features/accounts/password-change-form";
 import { getTeacherProfileForUser } from "@/features/teachers/queries";
 import { logoutAction } from "@/lib/auth/actions";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -102,6 +104,12 @@ export default async function TeacherMePage() {
           title="消息提醒"
           description="查看课程、作业、资源和活动通知。"
         />
+        <TaskCard
+          href="/teacher/accounts"
+          icon={Users}
+          title="学生账号"
+          description="为自己班级内尚未开通账号的学生创建登录账号。"
+        />
       </section>
 
       <Card>
@@ -118,6 +126,16 @@ export default async function TeacherMePage() {
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             老师端不能进入财务后台、系统设置、全机构经营分析，也不能查看非本人班级和非授权学生。
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>修改密码</CardTitle>
+          <CardDescription>账号拥有者可以自行更新登录密码。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PasswordChangeForm redirectTo="/teacher/me" compact />
         </CardContent>
       </Card>
 

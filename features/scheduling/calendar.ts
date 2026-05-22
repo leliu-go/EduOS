@@ -76,6 +76,15 @@ function addUtcMonths(date: Date, months: number) {
   return targetMonthStart;
 }
 
+export function getScheduleMonthGridDateInputs(dateInput: string) {
+  const monthStart = getMonthStart(parseDateInput(dateInput));
+  const weekday = monthStart.getUTCDay();
+  const daysFromMonday = weekday === 0 ? 6 : weekday - 1;
+  const gridStart = addUtcDays(monthStart, -daysFromMonday);
+
+  return Array.from({ length: 42 }, (_, index) => formatDateInput(addUtcDays(gridStart, index)));
+}
+
 export function getScheduleCalendarSearch(
   params: Record<string, string | string[] | undefined>,
   fallbackDate = new Date(),

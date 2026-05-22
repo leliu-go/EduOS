@@ -2,11 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginAction } from "@/lib/auth/actions";
 
 const loginErrors = {
   invalid_input: "请输入有效账号和密码。",
   invalid_credentials: "账号或密码错误。",
+  account_locked: "账号已临时锁定，请稍后再试。",
+  account_permanently_locked: "账号已被安全封禁，请联系管理员解锁。",
   missing_context: "账号尚未绑定机构角色。",
 } as const;
 
@@ -30,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <CardDescription>使用机构账号进入系统。</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={loginAction} className="grid gap-4">
+          <form action="/api/auth/login" method="post" className="grid gap-4">
             {errorMessage ? (
               <p
                 role="alert"

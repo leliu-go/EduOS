@@ -16,6 +16,7 @@ import { TaskCard } from "@/components/mobile/TaskCard";
 import { VersionBadge } from "@/components/version/version-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordChangeForm } from "@/features/accounts/password-change-form";
 import { logoutAction } from "@/lib/auth/actions";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
@@ -104,6 +105,16 @@ export default async function StudentMePage() {
               PWA 只缓存应用外壳和已授权资源。缓存清理按钮会在后续版本接入。
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>修改密码</CardTitle>
+          <CardDescription>账号拥有者可以自行更新登录密码。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PasswordChangeForm redirectTo="/student/me" compact />
         </CardContent>
       </Card>
 

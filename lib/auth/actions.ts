@@ -3,9 +3,15 @@
 import { redirect } from "next/navigation";
 
 import { getRoleLandingPath } from "@/lib/auth/landing-path";
+import {
+  applyFailedLoginAttempt,
+  canAttemptLogin,
+  getSuccessfulLoginReset,
+} from "@/lib/auth/login-security";
 import { verifyPassword } from "@/lib/auth/password";
 import { setAuthSession, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-cookie";
 import { loginSchema } from "@/lib/auth/validation";
+import { getFormDataString } from "@/lib/forms/form-data";
 
 function redirectWithLoginError(error: string): never {
   redirect(`/login?error=${error}`);
@@ -13,8 +19,8 @@ function redirectWithLoginError(error: string): never {
 
 export async function loginAction(formData: FormData) {
   const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
+    email: getFormDataString(formData, "email"),
+    password: getFormDataString(formData, "password"),
   });
 
   if (!parsed.success) {
@@ -55,9 +61,26 @@ export async function loginAction(formData: FormData) {
     redirectWithLoginError("invalid_credentials");
   }
 
+  const loginDecision = canAttemptLogin(user);
+
+  if (!loginDecision.allowed) {
+    redirectWithLoginError(
+      loginDecision.reason === "permanent" ? "account_permanently_locked" : "account_locked",
+    );
+  }
+
   const passwordMatches = await verifyPassword(credentials.password, user.passwordHash);
 
   if (!passwordMatches) {
+    const nextSecurityState = applyFailedLoginAttempt(user);
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: nextSecurityState,
+    });
+
     redirectWithLoginError("invalid_credentials");
   }
 
@@ -66,6 +89,13 @@ export async function loginAction(formData: FormData) {
   if (!membership) {
     redirectWithLoginError("missing_context");
   }
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: getSuccessfulLoginReset(),
+  });
 
   await setAuthSession({
     userId: user.id,

@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getScheduleCalendarHref,
   getScheduleCalendarSearch,
+  getScheduleMonthGridDateInputs,
   getShiftedScheduleDate,
   type ScheduleCalendarSearch,
 } from "@/features/scheduling/calendar";
@@ -72,15 +73,6 @@ function addUtcDays(date: Date, days: number) {
   nextDate.setUTCDate(nextDate.getUTCDate() + days);
 
   return nextDate;
-}
-
-function getMonthGridDates(monthStart: Date) {
-  const firstDay = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), 1));
-  const weekday = firstDay.getUTCDay();
-  const daysFromMonday = weekday === 0 ? 6 : weekday - 1;
-  const gridStart = addUtcDays(firstDay, -daysFromMonday);
-
-  return Array.from({ length: 42 }, (_, index) => addUtcDays(gridStart, index));
 }
 
 function isSameUtcMonth(date: Date, monthStart: Date) {
@@ -296,12 +288,11 @@ function MonthCalendar({
   startAt: Date;
 }) {
   const schedulesByDate = getSchedulesByDate(schedules);
-  const monthDates = getMonthGridDates(startAt);
-  const currentMonthDates = monthDates.filter((date) => isSameUtcMonth(date, startAt));
-  const activeDates = currentMonthDates.filter(
-    (date) => (schedulesByDate.get(formatDate(date)) ?? []).length > 0,
+  const monthDates = getScheduleMonthGridDateInputs(formatDate(startAt)).map(
+    (date) => new Date(`${date}T00:00:00.000Z`),
   );
-  const mobileDates = activeDates.length > 0 ? activeDates : currentMonthDates;
+  const currentMonthDates = monthDates.filter((date) => isSameUtcMonth(date, startAt));
+  const mobileDates = currentMonthDates;
 
   return (
     <div className="grid gap-4">

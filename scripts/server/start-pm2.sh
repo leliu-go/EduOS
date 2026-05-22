@@ -15,10 +15,13 @@ fi
 export NODE_ENV=production
 export PORT
 
+cd "$APP_DIR"
+APP_DIR="$APP_DIR" bash scripts/server/prepare-standalone-static.sh
+
 if pm2 describe eduos >/dev/null 2>&1; then
   pm2 restart eduos --update-env
 else
-  pm2 start "pnpm start" --name eduos --cwd "$APP_DIR"
+  pm2 start ".next/standalone/server.js" --name eduos --cwd "$APP_DIR" --update-env
 fi
 
 pm2 save

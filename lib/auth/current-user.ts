@@ -32,6 +32,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       name: true,
       email: true,
       status: true,
+      loginPermanentlyLockedAt: true,
       memberships: {
         where: {
           tenantId: session.tenantId,
@@ -65,6 +66,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (
     !user ||
     user.status !== "ACTIVE" ||
+    user.loginPermanentlyLockedAt ||
     !membership ||
     membership.tenant.status !== "ACTIVE" ||
     membership.role.status !== "ACTIVE" ||

@@ -7,6 +7,7 @@ import {
   getScheduleCalendarSearch,
   getShiftedScheduleDate,
   getScheduleCalendarWindow,
+  getScheduleMonthGridDateInputs,
 } from "../features/scheduling/calendar";
 import { hasPermission } from "../lib/rbac/permissions";
 
@@ -84,6 +85,16 @@ describe("scheduling calendar UI", () => {
     expect(
       getShiftedScheduleDate({ view: "month", date: "2026-01-31", filters: {} }, 1),
     ).toBe("2026-02-28");
+  });
+
+  it("builds a full month grid instead of showing only one active week", () => {
+    const septemberGrid = getScheduleMonthGridDateInputs("2026-09-15");
+
+    expect(septemberGrid).toHaveLength(42);
+    expect(septemberGrid[0]).toBe("2026-08-31");
+    expect(septemberGrid).toContain("2026-09-01");
+    expect(septemberGrid).toContain("2026-09-30");
+    expect(septemberGrid[41]).toBe("2026-10-11");
   });
 
   it("keeps internal scheduling calendar staff-only", () => {

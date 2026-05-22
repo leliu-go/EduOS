@@ -1,0 +1,140 @@
+import { NextResponse, type NextRequest } from "next/server";
+
+import { getRoleLandingPath } from "@/lib/auth/landing-path";
+import {
+  applyFailedLoginAttempt,
+  canAttemptLogin,
+  getSuccessfulLoginReset,
+} from "@/lib/auth/login-security";
+import { verifyPassword } from "@/lib/auth/password";
+import { createSessionToken } from "@/lib/auth/session";
+import { AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-cookie";
+import { loginSchema } from "@/lib/auth/validation";
+import { getFormDataString } from "@/lib/forms/form-data";
+import { prisma } from "@/lib/prisma";
+
+function getPublicBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+
+  if (forwardedHost && !forwardedHost.includes("localhost")) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  if (process.env.APP_URL) {
+    return process.env.APP_URL;
+  }
+
+  return request.url;
+}
+
+function getPublicUrl(request: NextRequest, path: string) {
+  return new URL(path, getPublicBaseUrl(request));
+}
+
+function loginRedirect(request: NextRequest, error: string) {
+  return NextResponse.redirect(getPublicUrl(request, `/login?error=${error}`), 303);
+}
+
+export async function POST(request: NextRequest) {
+  const formData = await request.formData();
+  const parsed = loginSchema.safeParse({
+    email: getFormDataString(formData, "email"),
+    password: getFormDataString(formData, "password"),
+  });
+
+  if (!parsed.success) {
+    return loginRedirect(request, "invalid_input");
+  }
+
+  const credentials = parsed.data;
+  const user = await prisma.user.findUnique({
+    where: {
+      email: credentials.email.toLowerCase(),
+    },
+    include: {
+      memberships: {
+        where: {
+          status: "ACTIVE",
+          tenant: {
+            status: "ACTIVE",
+          },
+          role: {
+            status: "ACTIVE",
+          },
+        },
+        include: {
+          tenant: true,
+          role: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: 1,
+      },
+    },
+  });
+
+  if (!user || user.status !== "ACTIVE") {
+    return loginRedirect(request, "invalid_credentials");
+  }
+
+  const loginDecision = canAttemptLogin(user);
+
+  if (!loginDecision.allowed) {
+    return loginRedirect(
+      request,
+      loginDecision.reason === "permanent" ? "account_permanently_locked" : "account_locked",
+    );
+  }
+
+  if (!(await verifyPassword(credentials.password, user.passwordHash))) {
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: applyFailedLoginAttempt(user),
+    });
+
+    return loginRedirect(request, "invalid_credentials");
+  }
+
+  const membership = user.memberships[0];
+
+  if (!membership) {
+    return loginRedirect(request, "missing_context");
+  }
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: getSuccessfulLoginReset(),
+  });
+
+  const expiresAt = Date.now() + SESSION_MAX_AGE_SECONDS * 1000;
+  const response = NextResponse.redirect(
+    getPublicUrl(request, getRoleLandingPath(membership.role.key)),
+    303,
+  );
+
+  response.cookies.set(
+    AUTH_SESSION_COOKIE,
+    createSessionToken({
+      userId: user.id,
+      tenantId: membership.tenantId,
+      roleKey: membership.role.key,
+      expiresAt,
+    }),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: SESSION_MAX_AGE_SECONDS,
+      expires: new Date(expiresAt),
+    },
+  );
+
+  return response;
+}

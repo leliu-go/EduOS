@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { accountInvitationSchema } from "../features/accounts/account-schema";
+import { canManageAccountRole } from "../features/accounts/account-policy";
 import { hasPermission } from "../lib/rbac/permissions";
 
 describe("account creation and invitation", () => {
@@ -28,11 +29,14 @@ describe("account creation and invitation", () => {
     ).toThrow();
   });
 
-  it("keeps account creation limited to authorized staff", () => {
+  it("keeps account creation limited to authorized roles and teacher student scope", () => {
     expect(hasPermission("ORG_ADMIN", "accounts:invite")).toBe(true);
     expect(hasPermission("CAMPUS_ADMIN", "accounts:invite")).toBe(true);
-    expect(hasPermission("TEACHER", "accounts:invite")).toBe(false);
+    expect(hasPermission("TEACHER", "accounts:invite")).toBe(true);
     expect(hasPermission("STUDENT", "accounts:invite")).toBe(false);
+    expect(canManageAccountRole("TEACHER", "STUDENT")).toBe(true);
+    expect(canManageAccountRole("TEACHER", "TEACHER")).toBe(false);
+    expect(canManageAccountRole("TEACHER", "ORG_ADMIN")).toBe(false);
   });
 
   it("creates users with hashed passwords, memberships, profile links, and audit logs", () => {

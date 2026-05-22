@@ -100,6 +100,7 @@ else
 fi
 
 pnpm build
+APP_DIR="$APP_DIR" bash scripts/server/prepare-standalone-static.sh
 
 if pm2 describe eduos >/dev/null 2>&1; then
   pm2 restart eduos --update-env

@@ -24,6 +24,7 @@ type AccountCreateDialogProps = {
   targetName: string;
   defaultEmail?: string | null;
   defaultPhone?: string | null;
+  redirectTo?: string;
 };
 
 export function AccountCreateDialog({
@@ -32,6 +33,7 @@ export function AccountCreateDialog({
   targetName,
   defaultEmail,
   defaultPhone,
+  redirectTo = "/dashboard/accounts",
 }: AccountCreateDialogProps) {
   return (
     <Dialog>
@@ -51,6 +53,7 @@ export function AccountCreateDialog({
         <form action={createAccountInvitationAction} className="grid gap-5">
           <input type="hidden" name="targetType" value={targetType} />
           <input type="hidden" name="targetId" value={targetId} />
+          <input type="hidden" name="redirectTo" value={redirectTo} />
           <div className="grid gap-2">
             <Label htmlFor={`account-email-${targetId}`}>邮箱</Label>
             <Input

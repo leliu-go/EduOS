@@ -5,9 +5,10 @@ import {
   verifySessionToken,
   type AuthSessionPayload,
 } from "@/lib/auth/session";
+import { getSessionMaxAgeSeconds } from "@/lib/auth/login-security";
 
 export const AUTH_SESSION_COOKIE = "eduos_session";
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
+export const SESSION_MAX_AGE_SECONDS = getSessionMaxAgeSeconds();
 
 export async function setAuthSession(payload: AuthSessionPayload) {
   const cookieStore = await cookies();

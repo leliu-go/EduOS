@@ -11,6 +11,7 @@ import {
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordChangeForm } from "@/features/accounts/password-change-form";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 const settingsItems = [
@@ -52,11 +53,24 @@ const settingsItems = [
   },
 ];
 
-export default async function DashboardSettingsPage() {
+type DashboardSettingsPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function DashboardSettingsPage({ searchParams }: DashboardSettingsPageProps) {
   await requirePermission("route:admin", {
     nextPath: "/dashboard/settings",
     unauthorizedRedirectTo: "/unauthorized",
   });
+  const params = (await searchParams) ?? {};
+  const passwordMessage =
+    params.password === "changed"
+      ? "密码已更新。"
+      : params.password === "invalid_current"
+        ? "当前密码不正确。"
+        : params.password === "invalid"
+          ? "请检查新密码长度和两次输入是否一致。"
+          : null;
 
   return (
     <div className="grid gap-6">
@@ -88,6 +102,21 @@ export default async function DashboardSettingsPage() {
           );
         })}
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>我的登录密码</CardTitle>
+          <CardDescription>账号拥有者可以自行修改密码；修改后请使用新密码重新登录。</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          {passwordMessage ? (
+            <p className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+              {passwordMessage}
+            </p>
+          ) : null}
+          <PasswordChangeForm redirectTo="/dashboard/settings" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

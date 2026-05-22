@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { getFormDataString } from "@/lib/forms/form-data";
 import type { RoleKey } from "@/lib/rbac/permissions";
 
 export const accountTargetTypes = ["TEACHER", "STUDENT", "GUARDIAN"] as const;
@@ -17,6 +18,11 @@ export const accountTargetRoleMap = {
 } as const satisfies Record<(typeof accountTargetTypes)[number], RoleKey>;
 
 export const accountRoleNameMap = {
+  SUPER_ADMIN: "超级管理员",
+  ORG_ADMIN: "机构管理员",
+  CAMPUS_ADMIN: "校区管理员",
+  ACADEMIC: "教务",
+  FINANCE: "财务",
   TEACHER: "教师",
   STUDENT: "学生",
   PARENT: "家长",
@@ -57,10 +63,10 @@ export type AccountTargetType = (typeof accountTargetTypes)[number];
 
 export function getAccountInvitationValues(formData: FormData) {
   return accountInvitationSchema.safeParse({
-    targetType: formData.get("targetType"),
-    targetId: formData.get("targetId"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
-    initialPassword: formData.get("initialPassword"),
+    targetType: getFormDataString(formData, "targetType"),
+    targetId: getFormDataString(formData, "targetId"),
+    email: getFormDataString(formData, "email"),
+    phone: getFormDataString(formData, "phone"),
+    initialPassword: getFormDataString(formData, "initialPassword"),
   });
 }
