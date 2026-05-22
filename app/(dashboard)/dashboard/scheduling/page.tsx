@@ -24,6 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getScheduleCalendarHref,
   getScheduleCalendarSearch,
+  getScheduleDateJumpOptions,
   getScheduleMonthGridDateInputs,
   getShiftedScheduleDate,
   type ScheduleCalendarSearch,
@@ -136,6 +137,67 @@ function getHrefWithDayView(search: ScheduleCalendarSearch, date: string) {
   });
 }
 
+function getDateJumpBarCopy(view: ScheduleCalendarSearch["view"]) {
+  if (view === "day") {
+    return {
+      title: "选择日期",
+      description: "直接跳到本月某一天，例如 5月1日、5月2日。",
+    };
+  }
+
+  if (view === "week") {
+    return {
+      title: "选择周次",
+      description: "直接切到本月某一周。",
+    };
+  }
+
+  return {
+    title: "选择月份",
+    description: "直接切到本年某个月，例如 1月、2月、3月。",
+  };
+}
+
+function DateJumpBar({ search }: { search: ScheduleCalendarSearch }) {
+  const options = getScheduleDateJumpOptions(search);
+
+  if (options.length === 0) {
+    return null;
+  }
+
+  const copy = getDateJumpBarCopy(search.view);
+
+  return (
+    <div
+      data-testid="scheduling-date-jump-bar"
+      className="grid gap-2 rounded-md border bg-background/60 p-3"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium text-foreground">{copy.title}</p>
+        <p className="text-xs text-muted-foreground">{copy.description}</p>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {options.map((option) => (
+          <Button
+            key={option.date}
+            asChild
+            variant={option.active ? "default" : "outline"}
+            size="sm"
+            className="h-8 shrink-0 px-3"
+          >
+            <Link
+              href={getHrefWithDate(search, option.date)}
+              aria-current={option.active ? "date" : undefined}
+            >
+              {option.label}
+            </Link>
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function getNavigationLabel(search: ScheduleCalendarSearch, direction: -1 | 1) {
   if (search.view === "day") {
     return direction === -1 ? "前一天" : "后一天";
@@ -181,10 +243,10 @@ function ScheduleEvent({
   compact?: boolean;
 }) {
   return (
-    <div className="rounded-md border bg-card px-3 py-2 shadow-xs">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className={cn("font-medium text-foreground", compact ? "text-xs" : "text-sm")}>
+    <div className="min-w-0 max-w-full overflow-hidden rounded-md border bg-card px-3 py-2 shadow-xs">
+      <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className={cn("truncate font-medium text-foreground", compact ? "text-xs" : "text-sm")}>
             {schedule.lesson?.title ?? schedule.classGroup.name}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -194,8 +256,8 @@ function ScheduleEvent({
         <Badge variant="secondary">{scheduleStatusLabels[schedule.status]}</Badge>
       </div>
       <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-        <span>{schedule.classGroup.name}</span>
-        <span>
+        <span className="truncate">{schedule.classGroup.name}</span>
+        <span className="truncate">
           {schedule.teacher.name} · {schedule.campus.name}/{schedule.room.name}
         </span>
       </div>
@@ -262,16 +324,16 @@ function WeekCalendar({
 
 function MonthScheduleSummary({ schedule }: { schedule: ScheduleCalendarItem }) {
   return (
-    <div className="rounded-md border bg-background/70 px-2 py-1.5 text-xs">
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-medium text-foreground">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-md border bg-background/70 px-2 py-1.5 text-xs">
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
           {formatTime(schedule.startAt)} {schedule.lesson?.title ?? schedule.classGroup.name}
         </span>
         <Badge variant="secondary" className="shrink-0 text-[10px]">
           {scheduleStatusLabels[schedule.status]}
         </Badge>
       </div>
-      <p className="mt-1 truncate text-muted-foreground">
+      <p className="mt-1 min-w-0 truncate text-muted-foreground">
         {schedule.classGroup.name} · {schedule.teacher.name}
       </p>
     </div>
@@ -320,7 +382,7 @@ function MonthCalendar({
                 <div
                   key={dateInput}
                   aria-hidden="true"
-                  className="min-h-36 border-r border-b bg-muted/20 p-2 last:border-r-0"
+                className="min-h-36 min-w-0 border-r border-b bg-muted/20 p-2 last:border-r-0"
                 />
               );
             }
@@ -329,7 +391,7 @@ function MonthCalendar({
               <div
                 key={dateInput}
                 data-testid={`scheduling-month-cell-${dateInput}`}
-                className="min-h-36 border-r border-b p-2 last:border-r-0"
+                className="min-h-36 min-w-0 overflow-hidden border-r border-b p-2 last:border-r-0"
               >
                 <div className="flex items-center justify-between gap-2">
                   <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
@@ -346,7 +408,7 @@ function MonthCalendar({
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-2 grid gap-1.5">
+                <div className="mt-2 grid min-w-0 gap-1.5">
                   {visibleSchedules.map((schedule) => (
                     <MonthScheduleSummary key={schedule.id} schedule={schedule} />
                   ))}
@@ -372,7 +434,7 @@ function MonthCalendar({
           const hiddenCount = Math.max(dailySchedules.length - visibleSchedules.length, 0);
 
           return (
-            <div key={dateInput} className="rounded-lg border bg-card p-3">
+            <div key={dateInput} className="min-w-0 overflow-hidden rounded-lg border bg-card p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium text-foreground">{dateInput}</p>
@@ -593,6 +655,8 @@ export default async function SchedulingCalendarPage({
             {formatDate(calendarData.window.startAt)} 至 {formatWindowEnd(calendarData.window.endAt)}
           </div>
         </div>
+
+        <DateJumpBar search={search} />
 
         <form className="grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_auto]">
           <input type="hidden" name="view" value={search.view} />

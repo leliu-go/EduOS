@@ -8,6 +8,7 @@ import {
   getShiftedScheduleDate,
   getScheduleCalendarWindow,
   getScheduleMonthGridDateInputs,
+  getScheduleDateJumpOptions,
 } from "../features/scheduling/calendar";
 import { hasPermission } from "../lib/rbac/permissions";
 
@@ -97,6 +98,43 @@ describe("scheduling calendar UI", () => {
     expect(septemberGrid[41]).toBe("2026-10-11");
   });
 
+  it("builds direct date jump options for day, week, and month views", () => {
+    const monthOptions = getScheduleDateJumpOptions({
+      view: "month",
+      date: "2026-05-15",
+      filters: {},
+    });
+
+    expect(monthOptions).toHaveLength(12);
+    expect(monthOptions[0]).toMatchObject({ label: "1月", date: "2026-01-01" });
+    expect(monthOptions[4]).toMatchObject({ label: "5月", date: "2026-05-01", active: true });
+
+    const dayOptions = getScheduleDateJumpOptions({
+      view: "day",
+      date: "2026-05-15",
+      filters: {},
+    });
+
+    expect(dayOptions).toHaveLength(31);
+    expect(dayOptions[0]).toMatchObject({ label: "5月1日", date: "2026-05-01" });
+    expect(dayOptions[14]).toMatchObject({ label: "5月15日", date: "2026-05-15", active: true });
+
+    const weekOptions = getScheduleDateJumpOptions({
+      view: "week",
+      date: "2026-05-15",
+      filters: {},
+    });
+
+    expect(weekOptions.map((option) => option.date)).toEqual([
+      "2026-04-27",
+      "2026-05-04",
+      "2026-05-11",
+      "2026-05-18",
+      "2026-05-25",
+    ]);
+    expect(weekOptions[2].active).toBe(true);
+  });
+
   it("keeps internal scheduling calendar staff-only", () => {
     expect(hasPermission("ORG_ADMIN", "route:scheduling")).toBe(true);
     expect(hasPermission("CAMPUS_ADMIN", "route:scheduling")).toBe(true);
@@ -130,8 +168,11 @@ describe("scheduling calendar UI", () => {
     expect(page).toContain('value="month"');
     expect(page).toContain('value="list"');
     expect(page).toContain("MonthCalendar");
+    expect(page).toContain("DateJumpBar");
     expect(page).toContain("renderCalendarView");
     expect(page).not.toContain('<TabsContent value="week">');
+    expect(page).toContain("getScheduleDateJumpOptions");
+    expect(page).toContain("min-w-0 max-w-full overflow-hidden");
     expect(page).toContain("还有");
     expect(page).toContain("getHrefWithDayView");
     expect(page).toContain('name="campusId"');

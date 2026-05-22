@@ -15,6 +15,12 @@ export type ScheduleCalendarSearch = {
   filters: ScheduleCalendarFilters;
 };
 
+export type ScheduleDateJumpOption = {
+  label: string;
+  date: string;
+  active: boolean;
+};
+
 const filterKeys = ["campusId", "teacherId", "roomId", "classGroupId"] as const;
 
 function getStringParam(value: string | string[] | undefined) {
@@ -76,6 +82,21 @@ function addUtcMonths(date: Date, months: number) {
   return targetMonthStart;
 }
 
+function formatShortDate(date: Date) {
+  return `${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+function isSameUtcDay(firstDate: Date, secondDate: Date) {
+  return formatDateInput(firstDate) === formatDateInput(secondDate);
+}
+
+function isSameUtcMonth(firstDate: Date, secondDate: Date) {
+  return (
+    firstDate.getUTCFullYear() === secondDate.getUTCFullYear() &&
+    firstDate.getUTCMonth() === secondDate.getUTCMonth()
+  );
+}
+
 export function getScheduleMonthGridDateInputs(dateInput: string) {
   const monthStart = getMonthStart(parseDateInput(dateInput));
   const weekday = monthStart.getUTCDay();
@@ -83,6 +104,63 @@ export function getScheduleMonthGridDateInputs(dateInput: string) {
   const gridStart = addUtcDays(monthStart, -daysFromMonday);
 
   return Array.from({ length: 42 }, (_, index) => formatDateInput(addUtcDays(gridStart, index)));
+}
+
+export function getScheduleDateJumpOptions(search: ScheduleCalendarSearch): ScheduleDateJumpOption[] {
+  const currentDate = parseDateInput(search.date);
+
+  if (search.view === "month") {
+    return Array.from({ length: 12 }, (_, index) => {
+      const monthDate = new Date(Date.UTC(currentDate.getUTCFullYear(), index, 1));
+
+      return {
+        label: `${index + 1}月`,
+        date: formatDateInput(monthDate),
+        active: isSameUtcMonth(monthDate, currentDate),
+      };
+    });
+  }
+
+  if (search.view === "day") {
+    const monthStart = getMonthStart(currentDate);
+    const daysInMonth = getDaysInUtcMonth(monthStart.getUTCFullYear(), monthStart.getUTCMonth());
+
+    return Array.from({ length: daysInMonth }, (_, index) => {
+      const dayDate = addUtcDays(monthStart, index);
+
+      return {
+        label: `${dayDate.getUTCMonth() + 1}月${dayDate.getUTCDate()}日`,
+        date: formatDateInput(dayDate),
+        active: isSameUtcDay(dayDate, currentDate),
+      };
+    });
+  }
+
+  if (search.view === "week") {
+    const monthStart = getMonthStart(currentDate);
+    const monthEnd = addUtcMonths(monthStart, 1);
+    const currentWeekStart = getWeekStart(currentDate);
+    const options: ScheduleDateJumpOption[] = [];
+    let weekStart = getWeekStart(monthStart);
+    let weekIndex = 1;
+
+    while (weekStart < monthEnd) {
+      const weekEnd = addUtcDays(weekStart, 6);
+
+      options.push({
+        label: `第${weekIndex}周 ${formatShortDate(weekStart)}-${formatShortDate(weekEnd)}`,
+        date: formatDateInput(weekStart),
+        active: isSameUtcDay(weekStart, currentWeekStart),
+      });
+
+      weekStart = addUtcDays(weekStart, 7);
+      weekIndex += 1;
+    }
+
+    return options;
+  }
+
+  return [];
 }
 
 export function getScheduleCalendarSearch(
