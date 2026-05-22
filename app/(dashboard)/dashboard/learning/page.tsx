@@ -7,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -112,23 +113,12 @@ export default async function LearningTasksPage() {
 
   return (
     <div className="grid gap-6">
-      <section className="rounded-md border bg-card p-5 shadow-xs">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">学习运营</Badge>
-              <Badge variant="outline">单词 / 阅读 / 听力</Badge>
-            </div>
-            <h1 className="mt-3 text-2xl font-semibold tracking-normal text-foreground">
-              学习任务
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              把课后学习拆成每天可完成的小任务，学生端负责打卡，老师端后续可继续接入资源、错题和个性化练习。
-            </p>
-          </div>
-          <LearningTaskCreateDialog options={options} />
-        </div>
-      </section>
+      <PageHeader
+        title="学习任务"
+        description="把课后学习拆成每天可完成的小任务，学生端负责打卡，老师端可查看自己班级进度。"
+        badge="单词 / 阅读 / 听力"
+        actions={<LearningTaskCreateDialog options={options} />}
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -136,7 +126,9 @@ export default async function LearningTasksPage() {
             <CardDescription>今日任务</CardDescription>
             <CardTitle className="mt-1 text-3xl">{todayTasks.length}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">今天需要学生完成的学习任务</CardContent>
+          <CardContent className="text-sm text-muted-foreground">
+            今天需要学生完成的学习任务
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
@@ -156,7 +148,9 @@ export default async function LearningTasksPage() {
               <CalendarDays className="size-5 text-primary" aria-hidden="true" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">当前列表展示最近 80 条</CardContent>
+          <CardContent className="text-sm text-muted-foreground">
+            当前列表展示最近 80 条
+          </CardContent>
         </Card>
       </section>
 

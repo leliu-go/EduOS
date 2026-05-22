@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -59,12 +60,7 @@ export default async function DashboardSettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground">系统设置</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          集中查看机构、存储、安全、版本、财务和合规入口。
-        </p>
-      </div>
+      <PageHeader title="系统设置" description="集中查看机构、存储、安全、版本、财务和合规入口。" />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {settingsItems.map((item) => {

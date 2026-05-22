@@ -1,3 +1,4 @@
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -160,6 +161,10 @@ export default async function StudentHomeworkPage() {
     getStudentHomeworkList(currentUser.tenantId, currentUser.id),
     getStudentHomeworkReminders(currentUser.tenantId, currentUser.id),
   ]);
+  const pendingHomeworkCount = homeworkItems.filter((homework) =>
+    canSubmitRevision(getLatestSubmission(homework)),
+  ).length;
+  const submittedHomeworkCount = homeworkItems.length - pendingHomeworkCount;
 
   if (homeworkItems.length === 0 && homeworkReminders.length === 0) {
     return (
@@ -169,9 +174,30 @@ export default async function StudentHomeworkPage() {
 
   return (
     <div className="grid gap-4">
+      <section className="grid grid-cols-3 gap-2 rounded-md border bg-card p-3">
+        <div>
+          <p className="text-xs text-muted-foreground">待处理</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {pendingHomeworkCount}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">已提交/待批改</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {submittedHomeworkCount}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">提醒</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {homeworkReminders.length}
+          </p>
+        </div>
+      </section>
+
       {homeworkReminders.length > 0 ? (
         <section className="grid gap-3">
-          <h2 className="text-base font-semibold tracking-normal text-foreground">作业提醒</h2>
+          <SectionHeader title="作业提醒" description="优先处理即将截止、逾期或需要订正的作业。" />
           {homeworkReminders.map((reminder) => (
             <StudentHomeworkReminderCard key={reminder.id} reminder={reminder} />
           ))}
@@ -179,7 +205,11 @@ export default async function StudentHomeworkPage() {
       ) : null}
 
       <section className="grid gap-3">
-        <h2 className="text-base font-semibold tracking-normal text-foreground">作业</h2>
+        <SectionHeader
+          title="作业"
+          description="提交入口只对本人作业开放，批改反馈由老师端同步。"
+          badge={`${homeworkItems.length} 项`}
+        />
         {homeworkItems.map((homework) => (
           <StudentHomeworkCard key={homework.id} homework={homework} />
         ))}

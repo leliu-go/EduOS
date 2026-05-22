@@ -43,3 +43,10 @@ Date: 2026-05-21
 - Add dedicated resource upload UI on top of the storage provider, including file size/type validation and cloud upload progress.
 - Add student activity detail/history and teacher activity progress pages for the existing word-checkin engine.
 - Add a single teacher lesson execution page that combines attendance, resources, homework, feedback, and lesson status.
+
+## Frontend Design Follow-Ups
+
+- Run a human UX walkthrough on 375px mobile for student homework submission, teacher correction, and resource download after seeded E2E is available.
+- Add screenshot-based visual regression only after the page structure stabilizes; current responsive E2E checks route health and overflow, not pixel diffs.
+- Upgrade Admin resource and scheduling pages from dense tables/calendars to split list/detail flows if real users struggle on tablet widths.
+- Add student course-detail and teacher lesson-execution pages as first-class destinations instead of relying on scattered section links.

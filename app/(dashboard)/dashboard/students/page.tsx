@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,15 +113,12 @@ export default async function StudentListPage({ searchParams }: StudentListPageP
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">学生管理</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            管理本机构学生档案，支持搜索、筛选、创建和维护基础信息。
-          </p>
-        </div>
-        <StudentCreateDialog />
-      </div>
+      <PageHeader
+        title="学生管理"
+        description="管理本机构学生档案，支持搜索、筛选、创建和维护基础信息。"
+        badge={`${result.total} 名学生`}
+        actions={<StudentCreateDialog />}
+      />
 
       {errorMessage ? (
         <p

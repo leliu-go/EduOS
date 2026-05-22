@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,15 +60,12 @@ export default async function ClassGroupListPage({ searchParams }: ClassGroupLis
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">班级</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            管理实际教学班级、主讲老师、校区、容量和学生花名册。
-          </p>
-        </div>
-        <ClassGroupCreateDialog options={options} />
-      </div>
+      <PageHeader
+        title="班级"
+        description="管理实际教学班级、主讲老师、校区、容量和学生花名册。"
+        badge={`${result.total} 个班级`}
+        actions={<ClassGroupCreateDialog options={options} />}
+      />
 
       {errorMessage ? (
         <p

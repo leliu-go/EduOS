@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermission } from "@/lib/rbac/require-permission";
@@ -10,12 +11,11 @@ export default async function DashboardSecuritySettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground">安全中心</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          查看高权限账号安全、MFA 状态、最近登录和审计日志入口。
-        </p>
-      </div>
+      <PageHeader
+        title="安全中心"
+        description="查看高权限账号安全、MFA 状态、最近登录和审计日志入口。"
+        badge="MFA low-risk interface"
+      />
 
       <section className="grid gap-4 md:grid-cols-2">
         <Card className="shadow-none">

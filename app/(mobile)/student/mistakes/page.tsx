@@ -1,3 +1,4 @@
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorRecordCard } from "@/features/mistakes/error-record-card";
 import { ErrorReasonStats } from "@/features/mistakes/error-reason-stats-card";
@@ -39,7 +40,11 @@ export default async function StudentMistakesPage() {
       <ErrorReasonStats title="错因统计" stats={errorReasonStats} />
       <KnowledgePointWeaknessStats title="薄弱知识点" stats={weaknessStats} />
       <section className="grid gap-3">
-        <h2 className="text-base font-semibold tracking-normal text-foreground">我的错题</h2>
+        <SectionHeader
+          title="我的错题"
+          description="只显示你的错题、订正和掌握状态，老师确认后状态会更新。"
+          badge={`${records.length} 条`}
+        />
         {records.map((item) => (
           <ErrorRecordCard
             key={item.id}

@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { getStudentCheckInSchedules } from "@/features/attendance/queries";
 import { StudentCheckInCard } from "@/features/attendance/student-check-in-card";
 import { calculateCourseAccountBalance } from "@/features/course-accounts/balance";
@@ -231,8 +232,9 @@ export default async function StudentHomePage() {
   const todayLessons = timetable.filter((schedule) => isSameDay(schedule.startAt, today));
   const pendingCheckIns = checkInSchedules.filter((schedule) => schedule.checkIns.length === 0);
   const nextLesson = todayLessons[0];
-  const nextCheckIn = checkInSchedules[0];
+  const nextCheckIn = pendingCheckIns[0] ?? checkInSchedules[0];
   const visibleLessons = todayLessons.length > 0 ? todayLessons : timetable.slice(0, 3);
+  const nextLearningTask = learningTasks.find((task) => task.checkIns.length === 0);
   const completedLearningTasks = learningTasks.filter((task) => task.checkIns.length > 0).length;
   const hasNoStudentData =
     todayLessons.length === 0 &&
@@ -243,10 +245,71 @@ export default async function StudentHomePage() {
     enrolledCourses.length === 0 &&
     consumptionLedger.length === 0 &&
     learningTasks.length === 0;
+  const primaryAction =
+    pendingCheckIns.length > 0
+      ? {
+          title: "先完成今日签到",
+          description: getCheckInDescription(pendingCheckIns[0]),
+          href: "#student-checkins",
+          label: "去签到",
+          icon: <CalendarCheck className="size-5" aria-hidden="true" />,
+        }
+      : homeworkReminders.length > 0
+        ? {
+            title: "还有作业待处理",
+            description: "先处理待提交、需订正或即将截止的作业，避免漏交。",
+            href: "/student/homework",
+            label: "看作业",
+            icon: <NotebookPen className="size-5" aria-hidden="true" />,
+          }
+        : nextLearningTask
+          ? {
+              title: `完成${learningTaskTypeLabels[nextLearningTask.taskType]}`,
+              description: nextLearningTask.title,
+              href: "#student-learning-tasks",
+              label: "去打卡",
+              icon: <PenLine className="size-5" aria-hidden="true" />,
+            }
+          : nextLesson
+            ? {
+                title: "准备下一节课",
+                description: getNextLessonDescription(nextLesson),
+                href: "/student/schedule",
+                label: "看课表",
+                icon: <CalendarDays className="size-5" aria-hidden="true" />,
+              }
+            : null;
 
   return (
     <div className="grid gap-5">
-      <section className="grid grid-cols-2 gap-3">
+      {primaryAction ? (
+        <section className="rounded-md border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 gap-3">
+              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                {primaryAction.icon}
+              </span>
+              <div className="min-w-0">
+                <Badge variant="secondary">今日优先</Badge>
+                <h2 className="mt-2 text-lg font-semibold tracking-normal text-foreground">
+                  {primaryAction.title}
+                </h2>
+                <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                  {primaryAction.description}
+                </p>
+              </div>
+            </div>
+            <Button asChild size="sm" className="shrink-0">
+              <Link href={primaryAction.href}>
+                {primaryAction.label}
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StudentHomeCard
           title="今日课程"
           value={`${todayLessons.length}`}
@@ -279,11 +342,16 @@ export default async function StudentHomePage() {
           description="查看老师开放的课件、讲义和练习"
           href="/student/resources"
           icon={Library}
-          className="col-span-2"
+          className="col-span-2 sm:col-span-1"
         />
       </section>
 
-      <section className="grid gap-3">
+      <section id="student-learning-tasks" className="grid gap-3 scroll-mt-4">
+        <SectionHeader
+          title="今日学习任务"
+          description="单词、阅读和练习任务会按老师布置显示，完成后老师端会同步看到进度。"
+          badge={`${completedLearningTasks}/${learningTasks.length} 已完成`}
+        />
         <Card className="overflow-hidden">
           <CardContent className="grid gap-4 p-4">
             <div className="flex items-start justify-between gap-3">
@@ -293,7 +361,8 @@ export default async function StudentHomePage() {
                   {completedLearningTasks}/{learningTasks.length} 已完成
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  连续 {learningStats.currentStreak} 天 · 近 30 天完成率 {learningStats.completionRate}%
+                  连续 {learningStats.currentStreak} 天 · 近 30 天完成率{" "}
+                  {learningStats.completionRate}%
                 </p>
               </div>
               <span className="inline-flex size-10 items-center justify-center rounded-md bg-accent text-accent-foreground">
@@ -328,11 +397,12 @@ export default async function StudentHomePage() {
       ) : null}
 
       {checkInSchedules.length > 0 ? (
-        <section className="grid gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold tracking-normal text-foreground">签到</h2>
-            <Badge variant="secondary">{pendingCheckIns.length} 个待签</Badge>
-          </div>
+        <section id="student-checkins" className="grid gap-3 scroll-mt-4">
+          <SectionHeader
+            title="签到"
+            description="只显示与你本人课程相关的签到任务。"
+            badge={`${pendingCheckIns.length} 个待签`}
+          />
           {checkInSchedules.slice(0, 2).map((schedule) => (
             <StudentCheckInCard key={schedule.id} schedule={schedule} />
           ))}
@@ -341,12 +411,15 @@ export default async function StudentHomePage() {
 
       {visibleLessons.length > 0 ? (
         <section className="grid gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold tracking-normal text-foreground">今日课程</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/student/reports">学习报告</Link>
-            </Button>
-          </div>
+          <SectionHeader
+            title="今日课程"
+            description="你只能看到自己的课程安排和授权课次资源。"
+            action={
+              <Button asChild variant="outline" size="sm">
+                <Link href="/student/reports">学习报告</Link>
+              </Button>
+            }
+          />
           {visibleLessons.map((schedule) => (
             <div key={schedule.id} className="grid gap-2">
               <TimetableCard
@@ -371,16 +444,21 @@ export default async function StudentHomePage() {
 
       {consumptionLedger.length > 0 ? (
         <section className="grid gap-3">
-          <h2 className="text-base font-semibold tracking-normal text-foreground">课消记录</h2>
+          <SectionHeader title="课消记录" description="只读展示已确认的本人课时消耗。" />
           {consumptionLedger.map((item) => (
             <CourseConsumptionLedgerCard key={item.id} item={item} />
           ))}
         </section>
       ) : null}
 
-      {enrolledCourses.map((enrollment) => (
-        <StudentEnrollmentCard key={enrollment.id} enrollment={enrollment} />
-      ))}
+      {enrolledCourses.length > 0 ? (
+        <section className="grid gap-3">
+          <SectionHeader title="我的课程账户" description="查看报名课程、班级和剩余课时。" />
+          {enrolledCourses.map((enrollment) => (
+            <StudentEnrollmentCard key={enrollment.id} enrollment={enrollment} />
+          ))}
+        </section>
+      ) : null}
     </div>
   );
 }

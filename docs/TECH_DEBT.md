@@ -76,3 +76,9 @@
 - Several client components previously accepted full Prisma payloads. Day 5 fixed the observed Decimal serialization paths; keep future query results as minimal DTOs before passing them into `"use client"` components.
 - The local E2E run still logs a pg deprecation warning about concurrent `client.query()` usage. Investigate before upgrading to `pg@9`.
 - The seed script is intentionally additive/idempotent and does not clean data. If QA data cleanup is needed, add a guarded, prefix-only cleanup script instead of using database reset.
+
+### Frontend Design Pass
+
+- The new responsive E2E checks catch route health and document overflow, but they do not yet prove complete UI form-submission flows.
+- Admin scheduling and resource management remain data-dense; they are acceptable for desktop but need a deeper tablet/mobile interaction design later.
+- Student and teacher portals now have clearer priority panels, but dedicated activity detail and course/lesson execution pages are still future work.

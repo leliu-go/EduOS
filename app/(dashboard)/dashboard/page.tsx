@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   AlertTriangle,
   CalendarDays,
@@ -10,8 +9,8 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { FlowStepCard } from "@/components/dashboard/FlowStepCard";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPrincipalDashboard } from "@/features/dashboard/principal-dashboard";
@@ -108,24 +107,50 @@ export default async function DashboardPage() {
     },
   ] as const;
   const quickActions = [
-    { label: "新增学生", href: "/dashboard/students" },
-    { label: "排课", href: "/dashboard/scheduling" },
-    { label: "创建作业", href: "/dashboard/homework" },
-    { label: "录入收款", href: "/dashboard/payments" },
-    { label: "查看预警", href: "/dashboard/renewals" },
-  ];
+    {
+      label: "新增学生",
+      description: "录入学员档案，再进入报名和班级分配流程。",
+      href: "/dashboard/students",
+      icon: CheckCircle2,
+      tone: "primary",
+    },
+    {
+      label: "排课",
+      description: "安排班级课次，让老师端和学生端同步看到课表。",
+      href: "/dashboard/scheduling",
+      icon: CalendarDays,
+      tone: "info",
+    },
+    {
+      label: "创建作业",
+      description: "布置学习任务，后续由老师批改、学生订正。",
+      href: "/dashboard/homework",
+      icon: NotebookPen,
+      tone: "neutral",
+    },
+    {
+      label: "录入收款",
+      description: "记录线下人工收款，不连接真实支付接口。",
+      href: "/dashboard/payments",
+      icon: WalletCards,
+      tone: "success",
+    },
+    {
+      label: "查看预警",
+      description: "跟进低课时、待续费和需要人工处理的学生。",
+      href: "/dashboard/renewals",
+      icon: AlertTriangle,
+      tone: "warning",
+    },
+  ] as const;
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal">工作台</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            聚焦今天要处理的教务、教学、财务和续费事项。
-          </p>
-        </div>
-        <Badge variant="secondary">{dashboard.scope.campusId ? "校区范围" : "机构范围"}</Badge>
-      </div>
+      <PageHeader
+        title="工作台"
+        description="聚焦今天要处理的教务、教学、财务和续费事项；经营分析保持独立，不再复制首页。"
+        badge={dashboard.scope.campusId ? "校区范围" : "机构范围"}
+      />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
         <Card className="shadow-none">
@@ -173,13 +198,18 @@ export default async function DashboardPage() {
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle>快捷操作</CardTitle>
-            <CardDescription>把高频入口放在工作台，减少来回找菜单。</CardDescription>
+            <CardDescription>按真实机构日常流程组织入口，减少来回找菜单。</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-2">
+          <CardContent className="grid gap-3">
             {quickActions.map((action) => (
-              <Button key={action.label} asChild variant="outline" className="justify-start">
-                <Link href={action.href}>{action.label}</Link>
-              </Button>
+              <FlowStepCard
+                key={action.label}
+                title={action.label}
+                description={action.description}
+                href={action.href}
+                icon={action.icon}
+                tone={action.tone}
+              />
             ))}
           </CardContent>
         </Card>

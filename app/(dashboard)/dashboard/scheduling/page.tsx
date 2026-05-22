@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -278,35 +279,34 @@ export default async function SchedulingCalendarPage({
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">排课日历</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            按日、周或列表查看班级、老师、校区和教室的内部排课安排。
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ScheduleCreateDialog options={calendarData.options} />
-          <ScheduleBatchDialog options={calendarData.options} />
-          <Button asChild variant="outline" size="sm">
-            <Link href={getHrefWithDate(search, previousDate)} aria-label="上一段时间">
-              <ChevronLeft className="size-4" aria-hidden="true" />
-              上一段
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={getScheduleCalendarHref({ ...search, date: formatDate(new Date()) })}>
-              今天
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={getHrefWithDate(search, nextDate)} aria-label="下一段时间">
-              下一段
-              <ChevronRight className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="排课日历"
+        description="按日、周或列表查看班级、老师、校区和教室的内部排课安排；学生端只会看到自己的课程。"
+        badge={`${calendarData.schedules.length} 节课`}
+        actions={
+          <>
+            <ScheduleCreateDialog options={calendarData.options} />
+            <ScheduleBatchDialog options={calendarData.options} />
+            <Button asChild variant="outline" size="sm">
+              <Link href={getHrefWithDate(search, previousDate)} aria-label="上一段时间">
+                <ChevronLeft className="size-4" aria-hidden="true" />
+                上一段
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href={getScheduleCalendarHref({ ...search, date: formatDate(new Date()) })}>
+                今天
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href={getHrefWithDate(search, nextDate)} aria-label="下一段时间">
+                下一段
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {errorMessage ? (
         <p

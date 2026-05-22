@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VersionBadge } from "@/components/version/version-badge";
 import { VersionUpdatePanel } from "@/components/version/version-update-panel";
@@ -15,15 +16,11 @@ export default async function DashboardSettingsVersionPage() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">版本与更新</h1>
-          <VersionBadge />
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          查看当前版本、build time、short commit hash 和更新 manifest。这里不展示敏感环境变量。
-        </p>
-      </div>
+      <PageHeader
+        title="版本与更新"
+        description="查看当前版本、build time、short commit hash 和更新 manifest。这里不展示敏感环境变量。"
+        actions={<VersionBadge />}
+      />
 
       <section className="grid gap-4 md:grid-cols-2">
         <Card className="shadow-none">

@@ -102,3 +102,9 @@ When a high-risk item is downgraded, record:
 - Approve the refund approval policy: finance-only, principal final approval, or amount-based approval tiers.
 - Approve whether to add a guarded QA data cleanup script limited to `qa-*` users and `QA_` records.
 - Review the pg deprecation warning before any `pg@9` upgrade.
+
+## 2026-05-22 Frontend Design Follow-Ups
+
+- Review the updated student and teacher mobile portals on a real phone-width browser.
+- Decide whether Admin dense pages such as scheduling and resources need a tablet-specific split-view redesign.
+- Approve the next UX scope for full UI-created Golden Path flows instead of route-health checks.

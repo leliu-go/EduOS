@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { validateProductionEnv } from "@/lib/env/production-env";
@@ -27,12 +28,11 @@ export default async function DashboardStorageSettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground">存储状态</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          只展示脱敏配置状态，不展示 AccessKeySecret、数据库密码或任何密钥值。
-        </p>
-      </div>
+      <PageHeader
+        title="存储状态"
+        description="只展示脱敏配置状态，不展示 AccessKeySecret、数据库密码或任何密钥值。"
+        badge={report.ok ? "ready" : "needs config"}
+      />
 
       <section className="grid gap-4 md:grid-cols-2">
         <Card className="shadow-none">

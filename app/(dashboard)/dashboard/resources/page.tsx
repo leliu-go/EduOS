@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,15 +177,12 @@ export default async function ResourceLibraryPage({ searchParams }: ResourceLibr
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">课程资源</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            管理课件、讲义、音视频和练习等教学资源元数据，并绑定到课程、班级或课节。
-          </p>
-        </div>
-        <ResourceCreateDialog options={options} returnTo="/dashboard/resources" />
-      </div>
+      <PageHeader
+        title="课程资源"
+        description="管理课件、讲义、音视频和练习等教学资源元数据，并绑定到课程、班级或课节。文件本体走 StorageProvider，下载前必须服务端验权。"
+        badge={`${resources.total} 个资源`}
+        actions={<ResourceCreateDialog options={options} returnTo="/dashboard/resources" />}
+      />
 
       <Card>
         <CardHeader>

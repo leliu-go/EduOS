@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getFinanceReportSummary } from "@/features/finance-reports/report";
@@ -40,20 +41,18 @@ export default async function FinanceReportsPage() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">财务报表</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            区分实收现金、已课消收入、未消课余额、退款和欠费，避免把收款直接当成收入。
-          </p>
-        </div>
-        <Button asChild>
-          <a href="/dashboard/finance-reports/export">
-            <Download className="size-4" aria-hidden="true" />
-            导出 CSV
-          </a>
-        </Button>
-      </div>
+      <PageHeader
+        title="财务报表"
+        description="区分实收现金、已课消收入、未消课余额、退款和欠费，避免把收款直接当成收入。"
+        actions={
+          <Button asChild>
+            <a href="/dashboard/finance-reports/export">
+              <Download className="size-4" aria-hidden="true" />
+              导出 CSV
+            </a>
+          </Button>
+        }
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard

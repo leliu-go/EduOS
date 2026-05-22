@@ -1,5 +1,6 @@
 import { CalendarDays, MapPin, Users } from "lucide-react";
 
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -29,6 +30,11 @@ export default async function TeacherClassesPage() {
 
   return (
     <div className="grid gap-4">
+      <SectionHeader
+        title="我的班级"
+        description="这里只展示你授课或授权管理的班级和学生规模。"
+        badge={`${classGroups.length} 个班`}
+      />
       <KnowledgePointWeaknessStats title="班级高频薄弱点" stats={weaknessStats} />
       {classGroups.map((classGroup) => (
         <Card key={classGroup.id}>

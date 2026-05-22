@@ -1,3 +1,4 @@
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -190,21 +191,45 @@ export default async function TeacherHomeworkPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold tracking-normal text-foreground">作业</h2>
-          <p className="mt-1 text-sm text-muted-foreground">给自己的班级、课次或学生布置作业。</p>
-        </div>
-        <HomeworkCreateDialog options={options} returnTo="/teacher/homework" />
-      </div>
+      <SectionHeader
+        title="作业与批改"
+        description="给自己的班级、课次或学生布置作业，并跟进提交、批改和错题订正。"
+        action={<HomeworkCreateDialog options={options} returnTo="/teacher/homework" />}
+      />
 
-      <section className="grid gap-3">
+      <section className="grid grid-cols-2 gap-2 rounded-md border bg-card p-3 sm:grid-cols-4">
         <div>
-          <h3 className="text-sm font-semibold tracking-normal text-foreground">待批改提交</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            只显示自己班级、课次或学生的待批改作业。
+          <p className="text-xs text-muted-foreground">待批改</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {pendingSubmissions.length}
           </p>
         </div>
+        <div>
+          <p className="text-xs text-muted-foreground">待确认订正</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {mistakeCorrections.length}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">未提交</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {notSubmittedItems.length}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">已布置</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-foreground">
+            {homeworkItems.length}
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-3">
+        <SectionHeader
+          title="待批改提交"
+          description="只显示自己班级、课次或学生的待批改作业。"
+          badge={`${pendingSubmissions.length} 份`}
+        />
         {pendingSubmissions.length > 0 ? (
           pendingSubmissions.map((submission) => (
             <TeacherCorrectionCard
@@ -219,12 +244,11 @@ export default async function TeacherHomeworkPage() {
       </section>
 
       <section className="grid gap-3">
-        <div>
-          <h3 className="text-sm font-semibold tracking-normal text-foreground">待确认订正</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            学生提交错题订正后，由老师确认是否已经掌握。
-          </p>
-        </div>
+        <SectionHeader
+          title="待确认订正"
+          description="学生提交错题订正后，由老师确认是否已经掌握。"
+          badge={`${mistakeCorrections.length} 条`}
+        />
         {mistakeCorrections.length > 0 ? (
           mistakeCorrections.map((item) => (
             <TeacherMistakeCorrectionCard key={item.id} item={item} />
@@ -235,10 +259,11 @@ export default async function TeacherHomeworkPage() {
       </section>
 
       <section className="grid gap-3">
-        <div>
-          <h3 className="text-sm font-semibold tracking-normal text-foreground">未提交名单</h3>
-          <p className="mt-1 text-xs text-muted-foreground">按学生列出仍需提交或已逾期的作业。</p>
-        </div>
+        <SectionHeader
+          title="未提交名单"
+          description="按学生列出仍需提交或已逾期的作业。"
+          badge={`${notSubmittedItems.length} 人次`}
+        />
         {notSubmittedItems.length > 0 ? (
           notSubmittedItems.map((item) => <TeacherNotSubmittedCard key={item.id} item={item} />)
         ) : (
@@ -247,9 +272,12 @@ export default async function TeacherHomeworkPage() {
       </section>
 
       {homeworkItems.length > 0 ? (
-        homeworkItems.map((homework) => (
-          <TeacherHomeworkCard key={homework.id} homework={homework} />
-        ))
+        <section className="grid gap-3">
+          <SectionHeader title="已布置作业" badge={`${homeworkItems.length} 项`} />
+          {homeworkItems.map((homework) => (
+            <TeacherHomeworkCard key={homework.id} homework={homework} />
+          ))}
+        </section>
       ) : (
         <EmptyState title="暂无作业" description="布置作业后，可在这里查看截止时间和提交数量。" />
       )}

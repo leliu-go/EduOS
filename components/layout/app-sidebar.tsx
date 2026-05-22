@@ -90,10 +90,7 @@ function AppSidebar() {
   const version = getAppVersion();
 
   return (
-    <aside
-      data-eduos-sidebar
-      className="border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)]"
-    >
+    <aside data-eduos-sidebar className="border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)]">
       <div
         data-eduos-sidebar-header
         className="flex h-20 items-center justify-center border-b px-3"
@@ -108,17 +105,13 @@ function AppSidebar() {
           </div>
         </div>
       </div>
-      <nav
-        data-eduos-sidebar-nav
-        aria-label="主导航"
-        className="flex-1 overflow-y-auto px-2 py-4"
-      >
+      <nav data-eduos-sidebar-nav aria-label="主导航" className="flex-1 overflow-y-auto px-2 py-4">
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
               <p
                 data-eduos-sidebar-group-label
-                className="px-3 text-[11px] font-semibold tracking-[0.08em] text-muted-foreground"
+                className="px-3 text-[11px] font-semibold tracking-normal text-muted-foreground"
               >
                 {group.label}
               </p>

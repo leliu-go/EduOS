@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -60,15 +61,12 @@ export default async function StaffHomeworkPage() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">作业管理</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            给班级、课次或单个学生布置作业，并跟进提交情况。
-          </p>
-        </div>
-        <HomeworkCreateDialog options={options} returnTo="/dashboard/homework" />
-      </div>
+      <PageHeader
+        title="作业管理"
+        description="给班级、课次或单个学生布置作业，并跟进提交、批改和订正状态。"
+        badge={`${homeworkItems.length} 项作业`}
+        actions={<HomeworkCreateDialog options={options} returnTo="/dashboard/homework" />}
+      />
 
       {homeworkItems.length > 0 ? (
         <section className="grid gap-4 xl:grid-cols-2">

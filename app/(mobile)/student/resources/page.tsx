@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,10 +69,16 @@ export default async function StudentResourcesPage() {
 
   return (
     <section className="grid gap-3">
-      <h2 className="text-base font-semibold tracking-normal text-foreground">学习资源</h2>
-      {resources.map((resource) => (
-        <StudentResourceCard key={resource.id} resource={resource} />
-      ))}
+      <SectionHeader
+        title="学习资源"
+        description="只展示老师或机构授权给你的资源，下载前仍会走服务端权限校验。"
+        badge={`${resources.length} 个`}
+      />
+      <div className="grid gap-3 md:grid-cols-2">
+        {resources.map((resource) => (
+          <StudentResourceCard key={resource.id} resource={resource} />
+        ))}
+      </div>
     </section>
   );
 }

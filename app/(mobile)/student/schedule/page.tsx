@@ -1,3 +1,4 @@
+import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getStudentTimetable } from "@/features/scheduling/portal-queries";
 import { TimetableCard } from "@/features/scheduling/timetable-card";
@@ -21,20 +22,26 @@ export default async function StudentSchedulePage() {
 
   return (
     <section className="grid gap-3">
-      <h2 className="text-base font-semibold tracking-normal text-foreground">我的课表</h2>
-      {schedules.map((schedule) => (
-        <TimetableCard
-          key={schedule.id}
-          title={schedule.lesson?.title ?? schedule.classGroup.name}
-          courseName={schedule.classGroup.courseProduct.name}
-          startAt={schedule.startAt}
-          endAt={schedule.endAt}
-          status={schedule.status}
-          campusName={schedule.campus.name}
-          classGroupName={schedule.classGroup.name}
-          teacherName={schedule.teacher.name}
-        />
-      ))}
+      <SectionHeader
+        title="我的课表"
+        description="这里只显示你的课程、授课老师和班级信息，不展示机构内部教室占用。"
+        badge={`${schedules.length} 节`}
+      />
+      <div className="grid gap-3 md:grid-cols-2">
+        {schedules.map((schedule) => (
+          <TimetableCard
+            key={schedule.id}
+            title={schedule.lesson?.title ?? schedule.classGroup.name}
+            courseName={schedule.classGroup.courseProduct.name}
+            startAt={schedule.startAt}
+            endAt={schedule.endAt}
+            status={schedule.status}
+            campusName={schedule.campus.name}
+            classGroupName={schedule.classGroup.name}
+            teacherName={schedule.teacher.name}
+          />
+        ))}
+      </div>
     </section>
   );
 }
