@@ -11,6 +11,12 @@ describe("login route handler", () => {
     expect(existsSync(routePath)).toBe(true);
     expect(loginPage).toContain('action="/api/auth/login"');
     expect(loginPage).toContain('method="post"');
+    expect(loginPage).toContain('name="email"');
+    expect(loginPage).toContain('type="email"');
+    expect(loginPage).toContain('autoComplete="username"');
+    expect(loginPage).toContain('name="password"');
+    expect(loginPage).toContain('type="password"');
+    expect(loginPage).toContain('autoComplete="current-password"');
     expect(route).toContain("request.formData()");
     expect(route).toContain("response.cookies.set");
     expect(route).toContain("x-forwarded-host");

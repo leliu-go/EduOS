@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <CardDescription>使用机构账号进入系统。</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="/api/auth/login" method="post" className="grid gap-4">
+          <form action="/api/auth/login" method="post" autoComplete="on" className="grid gap-4">
             {errorMessage ? (
               <p
                 role="alert"
@@ -47,7 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 name="email"
                 placeholder="请输入账号"
                 type="email"
-                autoComplete="email"
+                autoComplete="username"
               />
             </div>
             <div className="grid gap-2">
