@@ -168,10 +168,14 @@ describe("scheduling calendar UI", () => {
     expect(page).toContain('value="month"');
     expect(page).toContain('value="list"');
     expect(page).toContain("MonthCalendar");
-    expect(page).toContain("DateJumpBar");
+    expect(page).toContain("DateJumpPicker");
+    expect(page).toContain('data-testid="scheduling-date-picker"');
+    expect(page).toContain('data-testid="scheduling-date-picker-panel"');
     expect(page).toContain("renderCalendarView");
     expect(page).not.toContain('<TabsContent value="week">');
     expect(page).toContain("getScheduleDateJumpOptions");
+    expect(page).toContain("open:shadow-lg");
+    expect(page).toContain("grid-cols-7");
     expect(page).toContain("min-w-0 max-w-full overflow-hidden");
     expect(page).toContain("还有");
     expect(page).toContain("getHrefWithDayView");

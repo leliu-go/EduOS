@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CalendarDays,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -137,7 +138,7 @@ function getHrefWithDayView(search: ScheduleCalendarSearch, date: string) {
   });
 }
 
-function getDateJumpBarCopy(view: ScheduleCalendarSearch["view"]) {
+function getDateJumpPickerCopy(view: ScheduleCalendarSearch["view"]) {
   if (view === "day") {
     return {
       title: "选择日期",
@@ -158,43 +159,73 @@ function getDateJumpBarCopy(view: ScheduleCalendarSearch["view"]) {
   };
 }
 
-function DateJumpBar({ search }: { search: ScheduleCalendarSearch }) {
+function getDateJumpPickerGridClass(view: ScheduleCalendarSearch["view"]) {
+  if (view === "day") {
+    return "grid-cols-7";
+  }
+
+  if (view === "week") {
+    return "grid-cols-1 sm:grid-cols-2";
+  }
+
+  return "grid-cols-4 sm:grid-cols-6";
+}
+
+function DateJumpPicker({ search }: { search: ScheduleCalendarSearch }) {
   const options = getScheduleDateJumpOptions(search);
 
   if (options.length === 0) {
     return null;
   }
 
-  const copy = getDateJumpBarCopy(search.view);
+  const copy = getDateJumpPickerCopy(search.view);
+  const activeOption = options.find((option) => option.active) ?? options[0];
 
   return (
-    <div
-      data-testid="scheduling-date-jump-bar"
-      className="grid gap-2 rounded-md border bg-background/60 p-3"
+    <details
+      data-testid="scheduling-date-picker"
+      className="group relative w-full sm:w-auto open:shadow-lg"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-medium text-foreground">{copy.title}</p>
-        <p className="text-xs text-muted-foreground">{copy.description}</p>
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {options.map((option) => (
-          <Button
-            key={option.date}
-            asChild
-            variant={option.active ? "default" : "outline"}
-            size="sm"
-            className="h-8 shrink-0 px-3"
-          >
+      <summary className="inline-flex h-9 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/35 sm:w-auto [&::-webkit-details-marker]:hidden">
+        <span className="inline-flex items-center gap-2">
+          <CalendarDays className="size-4 text-muted-foreground" aria-hidden="true" />
+          <span>{copy.title}</span>
+          <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            {activeOption.label}
+          </span>
+        </span>
+        <ChevronDown
+          className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <div
+        data-testid="scheduling-date-picker-panel"
+        className="absolute right-0 z-30 mt-2 w-[min(92vw,34rem)] rounded-lg border bg-popover p-3 text-popover-foreground shadow-lg"
+      >
+        <div className="mb-3 grid gap-1">
+          <p className="text-sm font-medium text-foreground">{copy.title}</p>
+          <p className="text-xs text-muted-foreground">{copy.description}</p>
+        </div>
+        <div className={cn("grid gap-2", getDateJumpPickerGridClass(search.view))}>
+          {options.map((option) => (
             <Link
+              key={option.date}
               href={getHrefWithDate(search, option.date)}
               aria-current={option.active ? "date" : undefined}
+              className={cn(
+                "inline-flex h-9 min-w-0 items-center justify-center rounded-md border px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/35",
+                option.active
+                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/92 hover:text-primary-foreground"
+                  : "border-input bg-background",
+              )}
             >
               {option.label}
             </Link>
-          </Button>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </details>
   );
 }
 
@@ -650,13 +681,14 @@ export default async function SchedulingCalendarPage({
             </TabsList>
           </Tabs>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarDays className="size-4" aria-hidden="true" />
-            {formatDate(calendarData.window.startAt)} 至 {formatWindowEnd(calendarData.window.endAt)}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CalendarDays className="size-4" aria-hidden="true" />
+              {formatDate(calendarData.window.startAt)} 至 {formatWindowEnd(calendarData.window.endAt)}
+            </div>
+            <DateJumpPicker search={search} />
           </div>
         </div>
-
-        <DateJumpBar search={search} />
 
         <form className="grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_auto]">
           <input type="hidden" name="view" value={search.view} />
