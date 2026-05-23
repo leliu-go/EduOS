@@ -117,3 +117,12 @@ When a high-risk item is downgraded, record:
 - Approve any production migration separately before setting `RUN_PRODUCTION_MIGRATIONS=true`.
 - Verify the Aliyun OSS RAM policy allows only the intended private bucket/object operations.
 - Decide whether and when to begin the optional Tauri desktop client RFC implementation and code-signing procurement.
+
+## 2026-05-23 Admin Backup And MFA Follow-Ups
+
+- Review and approve the additive `20260523120000_add_admin_backup_devices` migration before any staging or production rollout.
+- Decide the operator process for initial Admin MFA enrollment so high-privilege accounts are not locked out.
+- Provision production KMS or managed secret encryption for TOTP secrets.
+- Store `MFA_BACKUP_CODE_PEPPER` only on the server and do not print it in logs.
+- Choose whether the first local backup implementation should remain PWA encrypted export or move to a Tauri desktop backup client.
+- Run a supervised disaster recovery drill in staging before relying on local backup restore.

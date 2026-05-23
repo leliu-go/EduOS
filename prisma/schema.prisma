@@ -36,6 +36,20 @@ enum MfaCredentialStatus {
   DISABLED
 }
 
+enum AdminBackupDeviceRole {
+  LOGIN_ONLY
+  BACKUP_AUTHORIZED
+  PRIMARY_BACKUP
+  STANDBY_BACKUP
+}
+
+enum AdminBackupDeviceStatus {
+  ACTIVE
+  REVOKED
+  LOST
+  REPLACED
+}
+
 enum ActivityType {
   WORD_CHECKIN
 }
@@ -371,6 +385,9 @@ model Tenant {
   roles       Role[]
   memberships Membership[]
   mfaCredentials UserMfaCredential[]
+  backupPolicy TenantBackupPolicy?
+  adminBackupDevices AdminBackupDevice[]
+  adminBackupDeviceChallenges AdminBackupDeviceChallenge[]
   auditLogs   AuditLog[]
   students    StudentProfile[]
   guardians   GuardianProfile[]
@@ -485,6 +502,9 @@ model User {
   approvedRefunds Refund[] @relation("RefundApprovedBy")
   createdResources Resource[] @relation("ResourceCreatedBy")
   mfaCredentials UserMfaCredential[] @relation("UserMfaCredentialUser")
+  adminBackupDevices AdminBackupDevice[] @relation("AdminBackupDeviceAdminUser")
+  revokedAdminBackupDevices AdminBackupDevice[] @relation("AdminBackupDeviceRevokedBy")
+  adminBackupDeviceChallenges AdminBackupDeviceChallenge[] @relation("AdminBackupDeviceChallengeAdminUser")
   createdActivities Activity[] @relation("ActivityCreatedBy")
   assignedActivities ActivityAssignment[] @relation("ActivityAssignmentAssignedBy")
   submittedActivityCheckIns ActivityCheckIn[] @relation("ActivityCheckInSubmittedBy")
@@ -558,6 +578,77 @@ model UserMfaCredential {
   @@index([tenantId, userId])
   @@index([tenantId, status])
   @@index([tenantId, provider])
+}
+
+model TenantBackupPolicy {
+  id                       String   @id @default(cuid())
+  tenantId                 String   @unique
+  tenant                   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enabled                  Boolean  @default(true)
+  maxActiveBackupDevices   Int      @default(1)
+  allowStandbyBackupDevice Boolean  @default(false)
+  primaryBackupDeviceId    String?
+  requireMfaForBackupSync  Boolean  @default(true)
+  requireMfaStepUpForExport Boolean @default(true)
+  requireMfaStepUpForRestore Boolean @default(true)
+  autoSyncOnAdminLogin     Boolean  @default(true)
+  minSyncIntervalMinutes   Int      @default(10)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, enabled])
+  @@index([tenantId, primaryBackupDeviceId])
+}
+
+model AdminBackupDevice {
+  id                   String                  @id @default(cuid())
+  tenantId             String
+  tenant               Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  adminUserId          String
+  adminUser            User                    @relation("AdminBackupDeviceAdminUser", fields: [adminUserId], references: [id], onDelete: Cascade)
+  deviceId             String
+  deviceName           String
+  publicKey            String
+  publicKeyFingerprint String
+  deviceRole           AdminBackupDeviceRole   @default(LOGIN_ONLY)
+  status               AdminBackupDeviceStatus @default(ACTIVE)
+  lastSeenAt           DateTime?
+  lastSyncAt           DateTime?
+  revokedAt            DateTime?
+  revokedById          String?
+  revokedBy            User?                   @relation("AdminBackupDeviceRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+  replacedByDeviceId   String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@unique([tenantId, deviceId])
+  @@index([tenantId])
+  @@index([tenantId, adminUserId])
+  @@index([tenantId, deviceRole, status])
+  @@index([tenantId, publicKeyFingerprint])
+  @@index([tenantId, lastSyncAt])
+}
+
+model AdminBackupDeviceChallenge {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deviceId    String
+  adminUserId String?
+  adminUser   User?    @relation("AdminBackupDeviceChallengeAdminUser", fields: [adminUserId], references: [id], onDelete: SetNull)
+  nonceHash   String
+  purpose     String   @default("core_backup_sync")
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, nonceHash])
+  @@index([tenantId, deviceId, expiresAt])
+  @@index([tenantId, adminUserId])
+  @@index([tenantId, purpose])
+  @@index([tenantId, usedAt])
 }
 
 model AuditLog {

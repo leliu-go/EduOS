@@ -21,6 +21,9 @@ keeping production cryptography out of source control.
   provider and backup-code hashing helpers.
 - `lib/mfa/mfa-service.ts` prepares encrypted enrollment records and writes MFA
   audit events.
+- `lib/mfa/mfa-recovery.ts` defines one-time hashed recovery-code consumption.
+- Admin backup sync authorization requires an MFA-completed session before
+  accepting a primary backup device signature.
 - `UserMfaCredential` is an additive, tenant-scoped Prisma model for encrypted
   TOTP credentials.
 

@@ -7,6 +7,7 @@ export type AuthSessionPayload = {
   tenantId: string;
   roleKey: RoleKey;
   expiresAt: number;
+  mfaVerifiedAt?: number;
 };
 
 function getAuthSecret() {
@@ -48,8 +49,13 @@ function isSessionPayload(value: AuthSessionPayload) {
     typeof value.tenantId === "string" &&
     typeof value.roleKey === "string" &&
     isRoleKey(value.roleKey) &&
-    typeof value.expiresAt === "number"
+    typeof value.expiresAt === "number" &&
+    (value.mfaVerifiedAt === undefined || typeof value.mfaVerifiedAt === "number")
   );
+}
+
+export function sessionHasCompletedMfa(payload: Pick<AuthSessionPayload, "mfaVerifiedAt">) {
+  return typeof payload.mfaVerifiedAt === "number" && payload.mfaVerifiedAt > 0;
 }
 
 export function createSessionToken(payload: AuthSessionPayload, secret = getAuthSecret()) {

@@ -57,6 +57,9 @@ export const permissions = [
   "security:mfa:manage",
   "security:mfa:enforce",
   "security:policy:manage",
+  "adminBackup:manage",
+  "adminBackup:sync",
+  "adminBackup:restore",
   "version:view",
   "updates:manage",
 ] as const;

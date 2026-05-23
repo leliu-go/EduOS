@@ -27,6 +27,9 @@ truth remains `lib/rbac/permissions.ts`.
 | `security:mfa:manage` | Manage MFA setup for the signed-in high-risk account. | Super admin, organization admin, finance |
 | `security:mfa:enforce` | Enforce MFA requirements for high-privilege roles in the tenant. | Super admin, organization admin |
 | `security:policy:manage` | Manage tenant security policy such as MFA requirements and recovery rules. | Super admin, organization admin |
+| `adminBackup:manage` | Register, list, promote, revoke, or mark Admin backup devices after MFA step-up. | Super admin, organization admin |
+| `adminBackup:sync` | Sync encrypted core structured backup data from an active primary backup device. | Super admin, organization admin |
+| `adminBackup:restore` | Preview and run supervised core backup restore workflows. | Super admin, organization admin |
 | `version:view` | View application version and update status. | Super admin, organization admin, campus admin, academic affairs, finance |
 | `updates:manage` | Manage safe update metadata after release process approval. | Super admin, organization admin |
 
@@ -57,6 +60,17 @@ future product decision explicitly adds delegated submissions with audit logs.
 
 `FINANCE` receives `security:mfa:manage` for account hardening and `version:view`
 for support diagnostics, but no activity or scheduling mutation permissions.
+
+## Admin Backup Boundary
+
+Admin local backup is a high-privilege tenant operation. Only `SUPER_ADMIN` and
+`ORG_ADMIN` receive `adminBackup:*` permissions. Finance can be MFA-required but
+cannot register primary backup devices, sync backup payloads, or restore data.
+
+Backup sync must pass server-side RBAC, `tenantId`, MFA completion, active
+`PRIMARY_BACKUP` device status, and device private-key challenge signature
+verification. Frontend buttons are only an experience layer and are not a
+security boundary.
 
 ## Cloud Resource Authorization
 

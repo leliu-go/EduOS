@@ -3,6 +3,7 @@ import {
   Archive,
   Building2,
   CreditCard,
+  DatabaseBackup,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
@@ -26,6 +27,12 @@ const settingsItems = [
     description: "MFA 状态、审计日志和高权限账号安全。",
     href: "/dashboard/settings/security",
     icon: ShieldCheck,
+  },
+  {
+    title: "Admin 本地备份",
+    description: "主备份设备、设备密钥绑定和核心结构化数据加密备份。",
+    href: "/dashboard/settings/backup-devices",
+    icon: DatabaseBackup,
   },
   {
     title: "存储状态",

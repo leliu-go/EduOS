@@ -199,3 +199,21 @@ When a blocker appears, record:
 - Safe fallback implemented: Unit/static RBAC, PWA, update, and deployment tests pass; E2E specs remain available for a seeded environment.
 - Exact blocker: Local `DATABASE_URL` target is not reachable for seeded login flows.
 - Whether later tasks can continue: Yes. Re-run `pnpm test:e2e -- ui-responsive.spec.ts permissions.spec.ts` after local/staging database is reachable and seeded.
+
+## 2026-05-23 Admin Backup Production Rollout Gate
+
+- Stage or PZ task: Admin MFA, backup device binding, and local encrypted core backup.
+- Risk or failure type: Production migration, production MFA lockout, and production restore writes require human supervision.
+- What was intentionally not executed: No production migration, no restore write, no secret read/print, no database reset/drop/truncate, and no OSS deletion.
+- Safe fallback implemented: Additive migration SQL, server-side authorization helpers, encrypted package format, Admin settings UI, tests, and recovery runbooks.
+- Exact blocker: Apply `20260523120000_add_admin_backup_devices` only after backup, SQL review, and operator approval.
+- Whether later tasks can continue: Yes.
+
+## 2026-05-23 Admin Backup E2E Fixtures
+
+- Stage or PZ task: Admin backup device registration and primary-device sync E2E.
+- Risk or failure type: E2E requires seeded Admin MFA credentials, device key pair fixture, and migrated test database.
+- What was intentionally not executed: No fake production MFA secret, no production database migration, and no real restore/import flow.
+- Safe fallback implemented: Unit/static coverage verifies policy, device signature, sync authorization, sanitizer, package checksum, recovery code consumption, and UI/docs.
+- Exact blocker: Create a staging/local MFA fixture and apply the additive migration in a disposable test database before running full browser E2E.
+- Whether later tasks can continue: Yes.

@@ -82,3 +82,11 @@
 - The new responsive E2E checks catch route health and document overflow, but they do not yet prove complete UI form-submission flows.
 - Admin scheduling and resource management remain data-dense; they are acceptable for desktop but need a deeper tablet/mobile interaction design later.
 - Student and teacher portals now have clearer priority panels, but dedicated activity detail and course/lesson execution pages are still future work.
+
+### Admin Backup And MFA
+
+- Wire the Admin backup settings buttons to full MFA step-up flows after production TOTP enrollment is approved.
+- Add a real one-time challenge issuing endpoint that persists `AdminBackupDeviceChallenge` rows and consumes them after signature verification.
+- Add a Tauri desktop backup client if browser storage is not reliable enough for the target backup size.
+- Build a staging-only restore preview/import CLI before considering any production restore write path.
+- Add Playwright coverage for MFA challenge, backup device registration, primary promotion, revoked-device denial, and encrypted backup export after a seeded MFA fixture exists.
