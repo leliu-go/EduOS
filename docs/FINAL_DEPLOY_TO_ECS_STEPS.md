@@ -60,11 +60,11 @@ BASE_URL=https://eduos.study-go.top bash scripts/server/health-check.sh
 
 ## User Updates
 
-1. User opens installed EduOS PWA.
-2. EduOS checks `/api/update-manifest`.
-3. If a newer version exists, EduOS shows "发现新版本，刷新后生效".
-4. User clicks "立即刷新".
-5. If no banner appears, user goes to "我的/设置 -> 版本与更新 -> 检查更新".
+1. Operator deploys the new version on ECS through `git pull`, build, and PM2 restart.
+2. User opens the installed EduOS PWA.
+3. User refreshes or reopens EduOS to load the latest server-rendered app.
+4. Admin can confirm the deployed build from `系统设置 -> 版本信息`.
+5. EduOS currently does not show a manual "检查更新" button because updates are server-managed.
 
 ## User Installation
 

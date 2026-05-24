@@ -37,7 +37,7 @@ export const termConfigSchema = z
   })
   .refine((value) => value.endsAt >= value.startsAt, {
     path: ["endsAt"],
-    message: "Term end date must be after start date.",
+    message: "学期结束日期必须晚于开始日期。",
   });
 
 export type SubjectConfigValues = z.infer<typeof subjectConfigSchema>;

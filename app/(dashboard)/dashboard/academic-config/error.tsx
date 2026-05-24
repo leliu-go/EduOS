@@ -11,7 +11,7 @@ export default function AcademicConfigError({
 }) {
   return (
     <ErrorState
-      title="基础配置加载失败"
+      title="教务规则加载失败"
       description="请重试，或稍后再访问。"
       action={<Button onClick={reset}>重试</Button>}
     />

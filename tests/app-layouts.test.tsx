@@ -30,7 +30,7 @@ describe("app layouts", () => {
       "href",
       "/dashboard/notifications",
     );
-    expect(screen.getByRole("link", { name: /版本与更新/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /版本信息/ })).toHaveAttribute(
       "href",
       "/dashboard/settings/version",
     );
@@ -47,7 +47,10 @@ describe("app layouts", () => {
     );
 
     const navigation = screen.getByRole("navigation", { name: "学生端导航" });
-    expect(within(navigation).getByRole("link", { name: "首页" })).toHaveAttribute("href", "/student");
+    expect(within(navigation).getByRole("link", { name: "首页" })).toHaveAttribute(
+      "href",
+      "/student",
+    );
     expect(within(navigation).getByRole("link", { name: "课表" })).toHaveAttribute(
       "href",
       "/student/schedule",

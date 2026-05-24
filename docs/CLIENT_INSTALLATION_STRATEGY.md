@@ -29,9 +29,11 @@ Phase 2 may add an optional Tauri desktop shell. It must remain one Windows inst
 
 1. Open `https://eduos.study-go.top` in Chrome or Edge.
 2. Use the browser install action or EduOS install prompt.
-3. Launch EduOS from the desktop/start menu.
+3. Launch EduOS from the Windows start menu, browser app list, taskbar, or desktop shortcut if one exists.
 4. Sign in with the assigned account.
 5. Admin users enter the dashboard, teachers enter the teaching portal, students enter the learning portal, and parents enter the parent portal.
+
+Browsers decide whether a desktop shortcut is created. If no desktop icon appears, search `EduOS` from the Windows start menu and pin it to the taskbar or create a shortcut manually.
 
 ## Local Data Policy
 
@@ -55,10 +57,6 @@ The installed client must not include:
 
 ## User Update Flow
 
-When a new deployment is available, EduOS shows a non-blocking update banner:
+Current updates are server-managed. The operator updates the ECS deployment through `git pull`, build, and PM2 restart. Users refresh or reopen EduOS after deployment.
 
-- "发现新版本，刷新后生效"
-- "稍后"
-- "立即刷新"
-
-Users can also open "我的/设置 -> 版本与更新 -> 检查更新".
+EduOS currently displays version information only. It does not show a manual "检查更新" button while all users share the same server-hosted app.

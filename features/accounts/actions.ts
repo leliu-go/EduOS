@@ -15,7 +15,11 @@ import { requirePermission } from "@/lib/rbac/require-permission";
 import type { RoleKey } from "@/lib/rbac/permissions";
 
 import { parseAccountImportCsv } from "./account-csv";
-import { canManageAccountRole, canUnlockAccount } from "./account-policy";
+import {
+  canManageAccountLifecycle,
+  canManageAccountRole,
+  canUnlockAccount,
+} from "./account-policy";
 import {
   accountRoleNameMap,
   accountTargetRoleMap,
@@ -36,6 +40,10 @@ function redirectWithAccountError(error: string): never {
 
 function redirectWithScopedAccountError(error: string, redirectTo: string): never {
   redirect(`${redirectTo}?error=${error}`);
+}
+
+function redirectWithAccountStatus(status: "disabled" | "enabled" | "deleted"): never {
+  redirect(`/dashboard/accounts?${status}=1`);
 }
 
 function getProfileContact(values: AccountInvitationValues, profile: AccountTargetProfile) {
@@ -303,6 +311,232 @@ export async function unlockAccountAction(formData: FormData) {
 
   revalidatePath("/dashboard/accounts");
   redirect("/dashboard/accounts?unlocked=1");
+}
+
+async function findTenantScopedAccount(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  userId: string,
+) {
+  return tx.user.findFirst({
+    where: {
+      id: userId,
+      memberships: {
+        some: {
+          tenantId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      memberships: {
+        where: {
+          tenantId,
+        },
+        select: {
+          id: true,
+          status: true,
+          role: {
+            select: {
+              key: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function assertCanManageAccountLifecycle(actorRole: RoleKey): void {
+  if (!canManageAccountLifecycle(actorRole)) {
+    redirectWithAccountError("invalid_scope");
+  }
+}
+
+function assertCanMutateTargetAccount(
+  currentUser: { id: string; roleKey: RoleKey },
+  targetAccount: Awaited<ReturnType<typeof findTenantScopedAccount>>,
+): asserts targetAccount is NonNullable<Awaited<ReturnType<typeof findTenantScopedAccount>>> {
+  if (!targetAccount) {
+    redirectWithAccountError("target_not_found");
+  }
+
+  if (targetAccount.id === currentUser.id) {
+    redirectWithAccountError("invalid_scope");
+  }
+
+  const targetRoles = targetAccount.memberships.map((membership) => membership.role.key as RoleKey);
+
+  if (targetRoles.some((roleKey) => !canManageAccountRole(currentUser.roleKey, roleKey))) {
+    redirectWithAccountError("invalid_scope");
+  }
+}
+
+export async function disableAccountAction(formData: FormData) {
+  const currentUser = await requirePermission("accounts:disable", {
+    nextPath: "/dashboard/accounts",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  assertCanManageAccountLifecycle(currentUser.roleKey);
+
+  const userId = getFormDataString(formData, "userId") ?? "";
+
+  if (!userId) {
+    redirectWithAccountError("invalid_input");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const targetAccount = await findTenantScopedAccount(tx, currentUser.tenantId, userId);
+
+    assertCanMutateTargetAccount(currentUser, targetAccount);
+
+    await tx.user.update({
+      where: {
+        id: targetAccount.id,
+      },
+      data: {
+        status: "DISABLED",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "account.disable",
+        entityType: "user",
+        entityId: targetAccount.id,
+        beforeJson: {
+          status: targetAccount.status,
+        },
+        afterJson: {
+          status: "DISABLED",
+        },
+      },
+      tx,
+    );
+  });
+
+  revalidatePath("/dashboard/accounts");
+  redirectWithAccountStatus("disabled");
+}
+
+export async function enableAccountAction(formData: FormData) {
+  const currentUser = await requirePermission("accounts:disable", {
+    nextPath: "/dashboard/accounts",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  assertCanManageAccountLifecycle(currentUser.roleKey);
+
+  const userId = getFormDataString(formData, "userId") ?? "";
+
+  if (!userId) {
+    redirectWithAccountError("invalid_input");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const targetAccount = await findTenantScopedAccount(tx, currentUser.tenantId, userId);
+
+    assertCanMutateTargetAccount(currentUser, targetAccount);
+
+    await tx.user.update({
+      where: {
+        id: targetAccount.id,
+      },
+      data: {
+        status: "ACTIVE",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "account.enable",
+        entityType: "user",
+        entityId: targetAccount.id,
+        beforeJson: {
+          status: targetAccount.status,
+        },
+        afterJson: {
+          status: "ACTIVE",
+        },
+      },
+      tx,
+    );
+  });
+
+  revalidatePath("/dashboard/accounts");
+  redirectWithAccountStatus("enabled");
+}
+
+export async function deleteAccountAction(formData: FormData) {
+  const currentUser = await requirePermission("accounts:delete", {
+    nextPath: "/dashboard/accounts",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  assertCanManageAccountLifecycle(currentUser.roleKey);
+
+  const userId = getFormDataString(formData, "userId") ?? "";
+
+  if (!userId) {
+    redirectWithAccountError("invalid_input");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const targetAccount = await findTenantScopedAccount(tx, currentUser.tenantId, userId);
+
+    assertCanMutateTargetAccount(currentUser, targetAccount);
+
+    await tx.user.update({
+      where: {
+        id: targetAccount.id,
+      },
+      data: {
+        status: "DISABLED",
+      },
+    });
+
+    await tx.membership.updateMany({
+      where: {
+        tenantId: currentUser.tenantId,
+        userId: targetAccount.id,
+      },
+      data: {
+        status: "DISABLED",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "account.delete_soft",
+        entityType: "user",
+        entityId: targetAccount.id,
+        beforeJson: {
+          status: targetAccount.status,
+          memberships: targetAccount.memberships.map((membership) => ({
+            id: membership.id,
+            status: membership.status,
+            roleKey: membership.role.key,
+          })),
+        },
+        afterJson: {
+          status: "DISABLED",
+          membershipStatus: "DISABLED",
+          deletedAsSoftDisable: true,
+        },
+      },
+      tx,
+    );
+  });
+
+  revalidatePath("/dashboard/accounts");
+  redirectWithAccountStatus("deleted");
 }
 
 export async function changeOwnPasswordAction(formData: FormData) {

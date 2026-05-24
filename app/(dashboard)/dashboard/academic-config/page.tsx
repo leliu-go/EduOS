@@ -82,7 +82,7 @@ function ConfigSection<TItem extends ConfigRow>({
         ) : (
           <EmptyState
             title={emptyTitle}
-            description="新增后可在课程、班级等模块中使用。"
+            description="新增后可在课程、班级、排课和报表中使用。"
             action={action}
           />
         )}
@@ -106,9 +106,9 @@ export default async function AcademicConfigPage({ searchParams }: ConfigPagePro
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground">基础配置</h1>
+        <h1 className="text-2xl font-semibold tracking-normal text-foreground">教务规则</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          配置科目、年级和学期，为课程产品、班级和报表提供统一基础数据。
+          配置科目、年级和学期，作为课程产品、班级、排课和报表的统一基础数据。
         </p>
       </div>
 

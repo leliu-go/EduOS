@@ -76,32 +76,25 @@ describe("versioning and update detection", () => {
     }
   });
 
-  it("adds non-disruptive update UI and admin version pages", () => {
-    expect(existsSync(join(rootDir, "components/version/update-available-banner.tsx"))).toBe(true);
+  it("adds read-only deployed version UI without a manual update checker", () => {
     expect(existsSync(join(rootDir, "components/version/version-badge.tsx"))).toBe(true);
-    expect(existsSync(join(rootDir, "components/version/check-update-button.tsx"))).toBe(true);
-    expect(existsSync(join(rootDir, "components/version/version-update-panel.tsx"))).toBe(true);
     expect(existsSync(join(rootDir, "app/(dashboard)/dashboard/version/page.tsx"))).toBe(true);
     expect(existsSync(join(rootDir, "app/(dashboard)/dashboard/settings/version/page.tsx"))).toBe(
       true,
     );
 
-    const banner = readProjectFile("components/version/update-available-banner.tsx");
-    const checkButton = readProjectFile("components/version/check-update-button.tsx");
-    const updatePanel = readProjectFile("components/version/version-update-panel.tsx");
+    const layout = readProjectFile("app/layout.tsx");
     const versionPage = readProjectFile("app/(dashboard)/dashboard/settings/version/page.tsx");
     const sidebar = readProjectFile("components/layout/app-sidebar.tsx");
     const changelog = readProjectFile("CHANGELOG.md");
 
-    expect(banner).toContain("UpdateAvailableBanner");
-    expect(banner).toContain("/api/update-manifest");
-    expect(banner).toContain("SKIP_WAITING");
-    expect(checkButton).toContain("CheckUpdateButton");
-    expect(checkButton).toContain("/api/update-manifest");
-    expect(updatePanel).toContain("CheckUpdateButton");
+    expect(layout).not.toContain("UpdateAvailableBanner");
     expect(versionPage).toContain('requirePermission("route:admin"');
     expect(versionPage).toContain("build time");
     expect(versionPage).toContain("short commit hash");
+    expect(versionPage).toContain("当前部署版本");
+    expect(versionPage).not.toContain("CheckUpdateButton");
+    expect(versionPage).not.toContain("检查更新");
     expect(sidebar).toContain("/dashboard/settings/version");
     expect(changelog).toContain("0.1.0");
   });

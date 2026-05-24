@@ -50,7 +50,9 @@ export function SubjectCreateDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>新增科目</DialogTitle>
-          <DialogDescription>配置数学、语文、英语、物理等可售课程科目。</DialogDescription>
+          <DialogDescription>
+            配置数学、语文、英语、物理等课程科目，供课程产品和班级使用。
+          </DialogDescription>
         </DialogHeader>
         <form action={createSubjectAction} className="grid gap-5">
           <div className="grid gap-2">

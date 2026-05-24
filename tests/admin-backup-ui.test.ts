@@ -9,17 +9,21 @@ function readProjectFile(path: string) {
 }
 
 describe("admin backup UI and docs", () => {
-  it("adds an admin-only backup device settings page with explicit safety copy", () => {
-    const pagePath = "app/(dashboard)/dashboard/settings/backup-devices/page.tsx";
+  it("keeps backup device status inside storage settings with explicit safety copy", () => {
+    const storagePath = "app/(dashboard)/dashboard/settings/storage/page.tsx";
+    const redirectPath = "app/(dashboard)/dashboard/settings/backup-devices/page.tsx";
 
-    expect(existsSync(join(rootDir, pagePath))).toBe(true);
+    expect(existsSync(join(rootDir, storagePath))).toBe(true);
+    expect(existsSync(join(rootDir, redirectPath))).toBe(true);
 
-    const page = readProjectFile(pagePath);
-    expect(page).toContain('requirePermission("adminBackup:manage"');
-    expect(page).toContain("不使用 MAC 地址");
-    expect(page).toContain("设备密钥绑定");
-    expect(page).toContain("只有主备份设备可以同步");
-    expect(page).toContain("不保存作业照片");
+    const storagePage = readProjectFile(storagePath);
+    const redirectPage = readProjectFile(redirectPath);
+
+    expect(storagePage).toContain("adminBackup:manage");
+    expect(storagePage).toContain("PRIMARY_BACKUP");
+    expect(storagePage).toContain("本地加密备份");
+    expect(storagePage).toContain("不保存作业照片");
+    expect(redirectPage).toContain('redirect("/dashboard/settings/storage")');
   });
 
   it("documents multi-device admin login, primary backup device security, and disaster recovery", () => {

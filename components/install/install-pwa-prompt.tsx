@@ -115,8 +115,8 @@ export function InstallPwaPrompt() {
         <p className="font-medium text-foreground">安装 EduOS</p>
         <p className="mt-1 text-muted-foreground">
           {installEvent
-            ? "将同一套 EduOS 添加到桌面，登录后按角色进入对应工作台。"
-            : "如浏览器未弹出安装按钮，请使用地址栏安装图标或浏览器菜单里的“安装应用”。"}
+            ? "安装后浏览器决定入口位置。通常可在开始菜单搜索 EduOS，并固定到任务栏或桌面。"
+            : "如浏览器未弹出安装按钮，请使用地址栏安装图标或浏览器菜单里的“安装应用”；桌面图标由浏览器决定。"}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">

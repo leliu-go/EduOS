@@ -37,9 +37,13 @@ describe("institution navigation polish", () => {
       "href",
       "/dashboard/payments",
     );
-    expect(within(navigation).getByRole("link", { name: "版本与更新" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: "版本信息" })).toHaveAttribute(
       "href",
       "/dashboard/settings/version",
+    );
+    expect(within(navigation).getByRole("link", { name: "帮助文档" })).toHaveAttribute(
+      "href",
+      "/dashboard/help",
     );
   });
 
@@ -58,6 +62,7 @@ describe("institution navigation polish", () => {
       "/dashboard/finance-reports",
       "/dashboard/accounts",
       "/dashboard/settings/version",
+      "/dashboard/help",
     ]) {
       expect(source).toContain(`href: "${href}"`);
     }

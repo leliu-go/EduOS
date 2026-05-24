@@ -23,8 +23,8 @@ describe("Day 3 settings and productization status", () => {
     const securityPage = readProjectFile("app/(dashboard)/dashboard/settings/security/page.tsx");
 
     expect(settingsPage).toContain('requirePermission("route:admin"');
-    expect(settingsPage).toContain("版本与更新");
-    expect(settingsPage).toContain("存储状态");
+    expect(settingsPage).toContain("版本信息");
+    expect(settingsPage).toContain("存储与备份");
     expect(settingsPage).toContain("安全中心");
     expect(storagePage).toContain("validateProductionEnv");
     expect(storagePage).toContain("AccessKeySecret");

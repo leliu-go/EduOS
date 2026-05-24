@@ -31,7 +31,9 @@ function MobilePageHeader({ role, title, summary }: MobilePageHeaderProps) {
           <p className="text-xs font-semibold text-primary">
             {roleLabels[role]} · {todayLabel}
           </p>
-          <h1 className="mt-1 truncate text-xl font-semibold tracking-normal sm:text-2xl">{title}</h1>
+          <h1 className="mt-1 truncate text-xl font-semibold tracking-normal sm:text-2xl">
+            {title}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
         </div>
         <Button asChild variant="ghost" size="icon" className="bg-background">

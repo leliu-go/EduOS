@@ -83,6 +83,6 @@ test.describe("frontend design responsive checks", () => {
     }
 
     await page.goto("/dashboard/settings/version");
-    await expect(page.getByRole("button", { name: /检查更新/ })).toBeVisible();
+    await expect(page.getByText("当前部署版本")).toBeVisible();
   });
 });

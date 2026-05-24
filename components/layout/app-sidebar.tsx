@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  BookOpenText,
   Building2,
   CalendarDays,
   ClipboardCheck,
@@ -79,9 +80,10 @@ const sidebarGroups: SidebarGroup[] = [
     label: "设置",
     items: [
       { label: "账号", href: "/dashboard/accounts", icon: Users },
-      { label: "基础配置", href: "/dashboard/academic-config", icon: Settings },
+      { label: "教务规则", href: "/dashboard/academic-config", icon: Settings },
       { label: "系统设置", href: "/dashboard/settings", icon: ShieldCheck },
-      { label: "版本与更新", href: "/dashboard/settings/version", icon: Sparkles },
+      { label: "版本信息", href: "/dashboard/settings/version", icon: Sparkles },
+      { label: "帮助文档", href: "/dashboard/help", icon: BookOpenText },
     ],
   },
 ];

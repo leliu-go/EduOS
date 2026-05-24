@@ -8,6 +8,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { requirePermission } from "@/lib/rbac/require-permission";
 import { AccountCreateDialog } from "@/features/accounts/account-create-dialog";
 import {
+  deleteAccountAction,
+  disableAccountAction,
+  enableAccountAction,
   importAccountsAction,
   unlockAccountAction,
 } from "@/features/accounts/actions";
@@ -49,7 +52,7 @@ function formatDateTime(value: Date | null) {
   return value ? value.toISOString().slice(0, 16).replace("T", " ") : "-";
 }
 
-function getAccountColumns(): Array<DataTableColumn<AccountDirectoryItem>> {
+function getAccountColumns(currentUserId: string): Array<DataTableColumn<AccountDirectoryItem>> {
   return [
     {
       key: "name",
@@ -97,17 +100,45 @@ function getAccountColumns(): Array<DataTableColumn<AccountDirectoryItem>> {
       key: "actions",
       header: "操作",
       className: "text-right",
-      cell: (account) =>
-        account.loginPermanentlyLockedAt || account.loginLockedUntil ? (
-          <form action={unlockAccountAction}>
-            <input type="hidden" name="userId" value={account.id} />
-            <Button type="submit" size="sm" variant="outline">
-              解锁
-            </Button>
-          </form>
-        ) : (
-          <span className="text-xs text-muted-foreground">无需处理</span>
-        ),
+      cell: (account) => {
+        const isSelf = account.id === currentUserId;
+
+        return (
+          <div className="flex flex-wrap justify-end gap-2">
+            {account.loginPermanentlyLockedAt || account.loginLockedUntil ? (
+              <form action={unlockAccountAction}>
+                <input type="hidden" name="userId" value={account.id} />
+                <Button type="submit" size="sm" variant="outline" disabled={isSelf}>
+                  解锁
+                </Button>
+              </form>
+            ) : null}
+
+            {account.status === "ACTIVE" ? (
+              <form action={disableAccountAction}>
+                <input type="hidden" name="userId" value={account.id} />
+                <Button type="submit" size="sm" variant="outline" disabled={isSelf}>
+                  禁用
+                </Button>
+              </form>
+            ) : (
+              <form action={enableAccountAction}>
+                <input type="hidden" name="userId" value={account.id} />
+                <Button type="submit" size="sm" variant="outline" disabled={isSelf}>
+                  启用
+                </Button>
+              </form>
+            )}
+
+            <form action={deleteAccountAction}>
+              <input type="hidden" name="userId" value={account.id} />
+              <Button type="submit" size="sm" variant="destructive" disabled={isSelf}>
+                删除
+              </Button>
+            </form>
+          </div>
+        );
+      },
     },
   ];
 }
@@ -198,6 +229,9 @@ export default async function AccountCreationPage({ searchParams }: AccountPageP
   const created = params.created === "1";
   const imported = params.imported === "1";
   const unlocked = params.unlocked === "1";
+  const disabled = params.disabled === "1";
+  const enabled = params.enabled === "1";
+  const deleted = params.deleted === "1";
   const teacherTargets = targets.teachers.map((teacher) => ({
     id: teacher.id,
     name: teacher.name,
@@ -242,6 +276,24 @@ export default async function AccountCreationPage({ searchParams }: AccountPageP
       {unlocked ? (
         <p className="rounded-md border border-primary/30 px-3 py-2 text-sm text-primary">
           账号登录锁定已解除。
+        </p>
+      ) : null}
+
+      {disabled ? (
+        <p className="rounded-md border border-primary/30 px-3 py-2 text-sm text-primary">
+          账号已禁用，用户无法继续登录。
+        </p>
+      ) : null}
+
+      {enabled ? (
+        <p className="rounded-md border border-primary/30 px-3 py-2 text-sm text-primary">
+          账号已重新启用。
+        </p>
+      ) : null}
+
+      {deleted ? (
+        <p className="rounded-md border border-primary/30 px-3 py-2 text-sm text-primary">
+          账号已按安全策略删除：保留审计和业务历史，停用登录与租户身份。
         </p>
       ) : null}
 
@@ -293,7 +345,7 @@ export default async function AccountCreationPage({ searchParams }: AccountPageP
           </form>
           {accountDirectory.length > 0 ? (
             <DataTable
-              columns={getAccountColumns()}
+              columns={getAccountColumns(currentUser.id)}
               data={accountDirectory}
               getRowKey={(account) => account.id}
             />

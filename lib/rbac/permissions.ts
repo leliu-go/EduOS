@@ -28,6 +28,8 @@ export const permissions = [
   "accounts:import",
   "accounts:export",
   "accounts:unlock",
+  "accounts:disable",
+  "accounts:delete",
   "courses:manage",
   "classes:manage",
   "enrollments:manage",

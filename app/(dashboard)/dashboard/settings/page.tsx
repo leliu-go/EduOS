@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  Archive,
+  BookOpenText,
   Building2,
   CreditCard,
   DatabaseBackup,
@@ -18,45 +18,45 @@ import { requirePermission } from "@/lib/rbac/require-permission";
 const settingsItems = [
   {
     title: "机构信息",
-    description: "机构名称、校区资料和运营基础信息。",
+    description: "维护校区、教室和机构基础资料。",
     href: "/dashboard/campuses",
     icon: Building2,
   },
   {
     title: "安全中心",
-    description: "MFA 状态、审计日志和高权限账号安全。",
+    description: "管理 MFA、账号安全、审计日志和高权限操作说明。",
     href: "/dashboard/settings/security",
     icon: ShieldCheck,
   },
   {
-    title: "Admin 本地备份",
-    description: "主备份设备、设备密钥绑定和核心结构化数据加密备份。",
-    href: "/dashboard/settings/backup-devices",
+    title: "存储与备份",
+    description: "查看 OSS 存储状态、资源安全策略和 Admin 本地加密备份。",
+    href: "/dashboard/settings/storage",
     icon: DatabaseBackup,
   },
   {
-    title: "存储状态",
-    description: "查看 storage provider、OSS bucket 和 signed URL 策略。",
-    href: "/dashboard/settings/storage",
-    icon: Archive,
-  },
-  {
-    title: "版本与更新",
-    description: "检查更新、查看版本信息和发布记录。",
+    title: "版本信息",
+    description: "查看当前服务器部署版本、构建时间和提交号。",
     href: "/dashboard/settings/version",
     icon: Sparkles,
   },
   {
     title: "财务设置",
-    description: "人工收款方式、对账规则和 provider abstraction。",
+    description: "人工收款方式、对账规则和后续支付 provider 方案。",
     href: "/dashboard/payments",
     icon: CreditCard,
   },
   {
-    title: "合规设置",
-    description: "合同、退费、课消和未成年人数据保护规则。",
+    title: "教务规则",
+    description: "课程、课消、退费、合规和未成年人数据保护规则。",
     href: "/dashboard/academic-config",
     icon: SlidersHorizontal,
+  },
+  {
+    title: "帮助文档",
+    description: "查看 EduOS 使用手册、安装说明和常见问题。",
+    href: "/dashboard/help",
+    icon: BookOpenText,
   },
 ];
 
@@ -81,7 +81,10 @@ export default async function DashboardSettingsPage({ searchParams }: DashboardS
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="系统设置" description="集中查看机构、存储、安全、版本、财务和合规入口。" />
+      <PageHeader
+        title="系统设置"
+        description="按真实运维职责组织入口：安全、存储备份、版本信息、财务、教务规则和帮助文档。"
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {settingsItems.map((item) => {
@@ -113,7 +116,9 @@ export default async function DashboardSettingsPage({ searchParams }: DashboardS
       <Card>
         <CardHeader>
           <CardTitle>我的登录密码</CardTitle>
-          <CardDescription>账号拥有者可以自行修改密码；修改后请使用新密码重新登录。</CardDescription>
+          <CardDescription>
+            账号拥有者可以自行修改密码；修改后请使用新密码重新登录。
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {passwordMessage ? (

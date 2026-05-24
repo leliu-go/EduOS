@@ -18,3 +18,7 @@ export function canManageAccountRole(actorRole: RoleKey, targetRole: RoleKey) {
 export function canUnlockAccount(actorRole: RoleKey) {
   return tenantAccountManagerRoles.has(actorRole);
 }
+
+export function canManageAccountLifecycle(actorRole: RoleKey) {
+  return actorRole === "SUPER_ADMIN" || actorRole === "ORG_ADMIN";
+}

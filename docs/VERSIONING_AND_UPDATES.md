@@ -1,47 +1,34 @@
-# EduOS Versioning And Updates
+# EduOS Versioning
 
 ## Source Of Truth
 
 `package.json` is the source of truth for the EduOS application version. Runtime endpoints and UI badges read from the same metadata through `lib/version/app-version.ts`.
 
-## Safe Endpoints
+## Safe Endpoint
 
 - `/api/version`: current version, build id, build time, short commit hash, and release timestamp.
-- `/api/update-manifest`: latest version, minimum supported version, changelog URL, and force-update flag.
 
-Both endpoints return public release metadata only. They must not expose database URLs, auth secrets, storage credentials, or tenant data.
+The endpoint returns public release metadata only. It must not expose database URLs, auth secrets, storage credentials, tenant data, or `.env` contents.
 
-The short commit hash is read from build-time public metadata such as
-`NEXT_PUBLIC_COMMIT_SHA`, `GIT_COMMIT_SHA`, or provider-specific commit
-variables. Secrets and connection strings are never included.
+The short commit hash is read from build-time public metadata such as `NEXT_PUBLIC_COMMIT_SHA`, `GIT_COMMIT_SHA`, or provider-specific commit variables. Secrets and connection strings are never included.
 
-## Update UX
+## Current Update Model
 
-EduOS uses a non-disruptive update banner. Users decide when to refresh so active attendance, finance, homework, or resource workflows are not interrupted.
+Current EduOS deployment is server-managed:
 
-## Day 3 UI Locations
+1. Admin/operator merges code to `main`.
+2. The ECS server runs `git pull`, installs/builds as needed, and restarts PM2.
+3. Users refresh or reopen the PWA and receive the latest server-rendered UI.
+
+Because the server is the single deployed app, the UI now shows version information only. It does not expose a manual "检查更新" button.
+
+## UI Locations
 
 - Sidebar bottom shows the current version as `v{package.json version}`.
-- Settings navigation includes `版本与更新` at `/dashboard/settings/version`.
-- The version page shows current version, build id, build time, short commit hash, release time, update manifest fields, and a manual `检查更新` button.
-- When a newer manifest is detected, users can choose `稍后` or `立即刷新`; EduOS does not force-refresh active forms.
-- The older `/dashboard/version` route now redirects to `/dashboard/settings/version` to avoid duplicate version pages.
+- Settings navigation includes `版本信息` at `/dashboard/settings/version`.
+- The version page shows current version, build id, build time, short commit hash, and release time.
+- The older `/dashboard/version` route redirects to `/dashboard/settings/version` to avoid duplicate version pages.
 
-## Future Release Flow
+## Future Client Updater
 
-Production release publishing, CDN invalidation, and app-store style rollout are high-risk operational tasks. They should be executed by a human operator using the release checklist after validating staging.
-
-## Production Update Metadata
-
-`/api/update-manifest` can read safe release metadata from environment variables:
-
-- `EDUOS_LATEST_VERSION`
-- `EDUOS_MIN_SUPPORTED_VERSION`
-- `EDUOS_RELEASE_NOTES`
-- `EDUOS_UPDATE_URL`
-- `EDUOS_CHANGELOG_URL`
-- `EDUOS_FORCE_UPDATE`
-
-These values are public release metadata only. They must never contain credentials, tenant data, database URLs, OSS keys, or `.env` contents.
-
-The client checks this endpoint with `cache: "no-store"`. If `latestVersion` differs from the running package version, EduOS shows the update banner. If the service worker has a waiting worker, clicking "立即刷新" sends `SKIP_WAITING` and reloads after activation.
+If EduOS later ships a Tauri desktop shell or a separately distributed installer, the update manifest can be reintroduced as a client updater contract. That work must include code signing, rollback, installer hosting, and a human-approved release process.
