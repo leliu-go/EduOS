@@ -49,7 +49,9 @@ describe("deployment configuration", () => {
       scripts?: Record<string, string>;
     };
 
-    expect(packageJson.scripts?.build).toBe("prisma generate && next build");
+    expect(packageJson.scripts?.build).toContain("prisma generate");
+    expect(packageJson.scripts?.build).toContain("next build");
+    expect(packageJson.scripts?.build).toContain("prepare-standalone-static.mjs");
     expect(packageJson.scripts?.start).toBe("next start");
     expect(packageJson.scripts?.prisma).toBeUndefined();
   });

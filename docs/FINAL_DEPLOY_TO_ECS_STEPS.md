@@ -58,6 +58,8 @@ pm2 restart eduos --update-env
 BASE_URL=https://eduos.study-go.top bash scripts/server/health-check.sh
 ```
 
+`pnpm build` runs `scripts/prepare-standalone-static.mjs` after `next build`. This copies `.next/static` and `public` into `.next/standalone` so the PM2 standalone server can serve CSS, JavaScript chunks, icons, and manifest files.
+
 ## User Updates
 
 1. Operator deploys the new version on ECS through `git pull`, build, and PM2 restart.
