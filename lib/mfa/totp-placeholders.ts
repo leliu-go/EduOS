@@ -42,7 +42,7 @@ export type TotpVerificationResult =
     };
 
 export interface MfaSecretPersistenceReadiness {
-  canPersistSecrets: false;
+  canPersistSecrets: boolean;
   missingEnvironment: readonly string[];
   blocker: string;
 }
@@ -116,12 +116,29 @@ export function verifyTotpTokenPlaceholder(input: TotpVerificationInput): TotpVe
 export function getMfaSecretPersistenceReadiness(
   environment: Record<string, string | undefined> = process.env,
 ): MfaSecretPersistenceReadiness {
-  const missingEnvironment = requiredMfaEnvironment.filter((key) => !environment[key]);
+  const missingEnvironment = requiredMfaEnvironment.filter((key) => {
+    const value = environment[key];
+
+    return !value || value.trim().length === 0;
+  });
+  const weakSecretEnvironment = [
+    environment.MFA_TOTP_SECRET_ENCRYPTION_KEY &&
+    environment.MFA_TOTP_SECRET_ENCRYPTION_KEY.trim().length < 16
+      ? "MFA_TOTP_SECRET_ENCRYPTION_KEY"
+      : null,
+    environment.MFA_BACKUP_CODE_PEPPER &&
+    environment.MFA_BACKUP_CODE_PEPPER.trim().length < 16
+      ? "MFA_BACKUP_CODE_PEPPER"
+      : null,
+  ].filter((key): key is string => Boolean(key));
+  const unavailableEnvironment = [...missingEnvironment, ...weakSecretEnvironment];
 
   return {
-    canPersistSecrets: false,
-    missingEnvironment,
+    canPersistSecrets: unavailableEnvironment.length === 0,
+    missingEnvironment: unavailableEnvironment,
     blocker:
-      "MFA secret persistence is intentionally disabled until production encryption, backup code hashing, and migration approval are complete.",
+      unavailableEnvironment.length === 0
+        ? ""
+        : "MFA secret persistence requires server-only encryption key material and backup code pepper.",
   };
 }

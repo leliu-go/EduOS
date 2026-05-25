@@ -147,4 +147,15 @@ describe("TOTP placeholders", () => {
     expect(readiness.canPersistSecrets).toBe(false);
     expect(readiness.missingEnvironment).toContain("MFA_TOTP_SECRET_ENCRYPTION_KEY");
   });
+
+  it("allows TOTP secret persistence when all server MFA secrets are configured", () => {
+    const readiness = getMfaSecretPersistenceReadiness({
+      MFA_ENCRYPTION_KEY_ID: "prod-local-aes-gcm-v1",
+      MFA_TOTP_SECRET_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef",
+      MFA_BACKUP_CODE_PEPPER: "abcdef0123456789abcdef0123456789",
+    });
+
+    expect(readiness.canPersistSecrets).toBe(true);
+    expect(readiness.missingEnvironment).toEqual([]);
+  });
 });
