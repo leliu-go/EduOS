@@ -1,8 +1,10 @@
 import { AlertTriangle, CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 
 import {
+  rebindMfaEnrollmentAction,
   startMfaEnrollmentAction,
   verifyMfaEnrollmentAction,
 } from "@/features/mfa/actions";
@@ -27,6 +29,8 @@ const mfaMessages: Record<string, string> = {
   not_started: "请先生成二维码，再输入验证码完成绑定。",
   locked: "验证码错误次数过多，请稍后再试。",
   invalid_token: "验证码不正确，请确认手机时间准确后重试。",
+  confirm_rebind_required: "更换手机前请先勾选确认项。",
+  rebind_not_enabled: "当前账号还没有完成 Authenticator 绑定，不能执行更换手机。",
 };
 
 function formatMfaStatus(status: string | null | undefined) {
@@ -77,6 +81,10 @@ export default async function DashboardMfaSettingsPage({
   const nextPath = params?.next || "/dashboard";
   const errorMessage = params?.error ? mfaMessages[params.error] : null;
   let qrCodeDataUrl: string | null = null;
+
+  if (credential?.status === "VERIFIED" && !currentUser.mfaVerifiedAt) {
+    redirect(`/mfa?next=${encodeURIComponent("/dashboard/settings/security/mfa")}`);
+  }
 
   if (
     credential?.status === "PENDING_VERIFICATION" &&
@@ -183,8 +191,31 @@ export default async function DashboardMfaSettingsPage({
         </CardHeader>
         <CardContent className="grid gap-5">
           {credential?.status === "VERIFIED" ? (
-            <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-              当前账号已绑定 Authenticator。下次登录高权限后台时，需要输入手机上的 6 位动态验证码。
+            <div className="grid gap-4 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <div>
+                <p className="font-medium">当前账号已绑定 Authenticator。</p>
+                <p className="mt-1">
+                  下次登录高权限后台时，需要输入手机上的 6 位动态验证码。
+                </p>
+              </div>
+              <form action={rebindMfaEnrollmentAction} className="grid gap-3 rounded-md border border-emerald-200 bg-white/70 p-3">
+                <input type="hidden" name="next" value={nextPath} />
+                <label className="flex items-start gap-2 text-sm text-emerald-950">
+                  <input
+                    type="checkbox"
+                    name="confirmRebind"
+                    value="yes"
+                    required
+                    className="mt-1 size-4 rounded border-emerald-300"
+                  />
+                  <span>
+                    我确认要更换手机。生成新二维码后，旧手机上的验证码会失效，需要立即用新手机扫码并完成验证。
+                  </span>
+                </label>
+                <Button type="submit" variant="outline" className="w-fit border-emerald-300 bg-white">
+                  更换手机
+                </Button>
+              </form>
             </div>
           ) : qrCodeDataUrl ? (
             <div className="grid gap-5 lg:grid-cols-[260px_1fr]">

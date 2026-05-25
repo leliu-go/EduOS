@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { KeyRound } from "lucide-react";
 
 import {
@@ -39,6 +40,7 @@ type MfaSetupPageProps = {
 export default async function MfaSetupPage({ searchParams }: MfaSetupPageProps) {
   const params = await searchParams;
   const currentUser = await requireCurrentUser("/mfa/setup");
+  const nextPath = params?.next || getRoleLandingPath(currentUser.roleKey);
 
   if (!hasPermission(currentUser.roleKey, "security:mfa:manage")) {
     return (
@@ -66,9 +68,12 @@ export default async function MfaSetupPage({ searchParams }: MfaSetupPageProps) 
       encryptedTotpSecret: true,
     },
   });
+  if (credential?.status === "VERIFIED" && !currentUser.mfaVerifiedAt) {
+    redirect(`/mfa?next=${encodeURIComponent(nextPath)}`);
+  }
+
   const readiness = getMfaSecretPersistenceReadiness(process.env);
   const encryptionProvider = createLocalDevMfaEncryptionProviderFromEnv(process.env);
-  const nextPath = params?.next || getRoleLandingPath(currentUser.roleKey);
   const accountName = currentUser.email ?? currentUser.name;
   const errorMessage = params?.error ? setupErrors[params.error] : null;
   let qrCodeDataUrl: string | null = null;

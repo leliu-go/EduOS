@@ -82,6 +82,8 @@ function generateBackupCodes(count = 8) {
   });
 }
 
+type MfaRuntime = NonNullable<ReturnType<typeof getMfaRuntime>>;
+
 async function requireMfaManageUser(nextPath: string) {
   const currentUser = await requireCurrentUser("/dashboard/settings/security/mfa");
 
@@ -128,48 +130,27 @@ async function applyFailedMfaAttempt(input: {
   });
 }
 
-export async function startMfaEnrollmentAction(formData: FormData) {
-  const { currentUser, nextPath } = await requireMfaManageUser(getFormDataString(formData, "next"));
-  const returnTo = getReturnTo(formData);
-  const runtime = getMfaRuntime();
-
-  if (!runtime) {
-    redirectToMfaSettings("missing_config", nextPath, returnTo);
-  }
-
-  const existingCredential = await prisma.userMfaCredential.findUnique({
-    where: {
-      tenantId_userId_provider: {
-        tenantId: currentUser.tenantId,
-        userId: currentUser.id,
-        provider: "totp",
-      },
-    },
-    select: {
-      status: true,
-    },
-  });
-
-  if (existingCredential?.status === "VERIFIED") {
-    redirectToMfaSettings("already_enabled", nextPath, returnTo);
-  }
-
+async function createPendingMfaEnrollment(input: {
+  currentUser: CurrentUser;
+  runtime: MfaRuntime;
+  rebind: boolean;
+}) {
   const secret = generateTotpSecret();
   const backupCodes = generateBackupCodes();
   const enrollment = await prepareMfaEnrollment({
-    tenantId: currentUser.tenantId,
-    userId: currentUser.id,
+    tenantId: input.currentUser.tenantId,
+    userId: input.currentUser.id,
     plainTextTotpSecret: secret,
     backupCodes,
-    backupCodePepper: runtime.backupCodePepper,
-    encryptionProvider: runtime.encryptionProvider,
+    backupCodePepper: input.runtime.backupCodePepper,
+    encryptionProvider: input.runtime.encryptionProvider,
   });
 
   await prisma.userMfaCredential.upsert({
     where: {
       tenantId_userId_provider: {
-        tenantId: currentUser.tenantId,
-        userId: currentUser.id,
+        tenantId: input.currentUser.tenantId,
+        userId: input.currentUser.id,
         provider: "totp",
       },
     },
@@ -196,13 +177,88 @@ export async function startMfaEnrollmentAction(formData: FormData) {
   });
 
   await writeMfaAuditLog({
-    tenantId: currentUser.tenantId,
-    actorUserId: currentUser.id,
-    targetUserId: currentUser.id,
+    tenantId: input.currentUser.tenantId,
+    actorUserId: input.currentUser.id,
+    targetUserId: input.currentUser.id,
     action: "mfa.enrollment.started",
     metadata: {
       provider: "totp",
+      rebind: input.rebind,
     },
+  });
+}
+
+export async function startMfaEnrollmentAction(formData: FormData) {
+  const { currentUser, nextPath } = await requireMfaManageUser(getFormDataString(formData, "next"));
+  const returnTo = getReturnTo(formData);
+  const runtime = getMfaRuntime();
+
+  if (!runtime) {
+    redirectToMfaSettings("missing_config", nextPath, returnTo);
+  }
+
+  const existingCredential = await prisma.userMfaCredential.findUnique({
+    where: {
+      tenantId_userId_provider: {
+        tenantId: currentUser.tenantId,
+        userId: currentUser.id,
+        provider: "totp",
+      },
+    },
+    select: {
+      status: true,
+    },
+  });
+
+  if (existingCredential?.status === "VERIFIED") {
+    redirectToMfaSettings("already_enabled", nextPath, returnTo);
+  }
+
+  await createPendingMfaEnrollment({ currentUser, runtime, rebind: false });
+
+  redirect(`${returnTo}?mfa=pending&next=${encodeURIComponent(nextPath)}`);
+}
+
+export async function rebindMfaEnrollmentAction(formData: FormData) {
+  const { currentUser, nextPath } = await requireMfaManageUser(getFormDataString(formData, "next"));
+  const returnTo = "/dashboard/settings/security/mfa";
+  const runtime = getMfaRuntime();
+
+  if (!runtime) {
+    redirectToMfaSettings("missing_config", nextPath, returnTo);
+  }
+
+  if (!currentUser.mfaVerifiedAt) {
+    redirect(`/mfa?next=${encodeURIComponent(returnTo)}`);
+  }
+
+  if (getFormDataString(formData, "confirmRebind") !== "yes") {
+    redirectToMfaSettings("confirm_rebind_required", nextPath, returnTo);
+  }
+
+  const existingCredential = await prisma.userMfaCredential.findUnique({
+    where: {
+      tenantId_userId_provider: {
+        tenantId: currentUser.tenantId,
+        userId: currentUser.id,
+        provider: "totp",
+      },
+    },
+    select: {
+      status: true,
+    },
+  });
+
+  if (existingCredential?.status !== "VERIFIED") {
+    redirectToMfaSettings("rebind_not_enabled", nextPath, returnTo);
+  }
+
+  await createPendingMfaEnrollment({ currentUser, runtime, rebind: true });
+  await setAuthSession({
+    userId: currentUser.id,
+    tenantId: currentUser.tenantId,
+    roleKey: currentUser.roleKey,
+    expiresAt: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
   });
 
   redirect(`${returnTo}?mfa=pending&next=${encodeURIComponent(nextPath)}`);

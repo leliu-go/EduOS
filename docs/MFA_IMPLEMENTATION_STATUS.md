@@ -16,6 +16,10 @@ variables and the existing additive migration to be present.
   verification compatible with Microsoft Authenticator.
 - `/mfa/setup` first-time enrollment page.
 - `/mfa` login challenge page.
+- Authenticated Admin change-phone flow from the dashboard security center:
+  the user must already have a completed MFA session, confirm the rebind, scan
+  a newly generated QR code, and verify it before continuing. The old phone's
+  TOTP code is invalidated when the new pending secret is generated.
 - Server-side redirect from high-privilege password login to enrollment or
   challenge before dashboard access.
 - Unit coverage in `tests/unit/mfa.test.ts` and existing

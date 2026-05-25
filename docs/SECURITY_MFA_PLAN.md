@@ -27,6 +27,10 @@ keeping production cryptography out of source control.
 - `lib/mfa/mfa-recovery.ts` defines one-time hashed recovery-code consumption.
 - `/mfa/setup` handles first-time Admin enrollment before dashboard access.
 - `/mfa` handles post-password Authenticator challenges.
+- `系统设置 -> 安全中心 -> 绑定 Authenticator` supports changing phones for an
+  already-bound Admin. This is intentionally a rebind flow, not a disable-MFA
+  flow: generating the new QR code replaces the old TOTP secret, clears the
+  current session's MFA completion flag, and requires the new phone to verify.
 - Admin backup sync authorization requires an MFA-completed session before
   accepting a primary backup device signature.
 - `UserMfaCredential` is an additive, tenant-scoped Prisma model for encrypted
@@ -49,6 +53,10 @@ MFA operations write `AuditLog` rows using these actions:
 - `mfa.challenge.failed`
 - `mfa.backup_code.used`
 - `mfa.disabled`
+
+When an Admin changes phones, EduOS writes another `mfa.enrollment.started`
+event with `metadata.rebind=true`; the old phone's code should no longer pass
+verification after the pending secret is generated.
 
 ## Human Actions Before Production Enforcement
 

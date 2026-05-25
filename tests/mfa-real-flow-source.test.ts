@@ -32,14 +32,22 @@ describe("MFA real enrollment and login flow wiring", () => {
   it("provides real enrollment actions without exposing plaintext secrets", () => {
     const actions = readProjectFile("features/mfa/actions.ts");
     const page = readProjectFile("app/(dashboard)/dashboard/settings/security/mfa/page.tsx");
+    const setupPage = readProjectFile("app/(auth)/mfa/setup/page.tsx");
     const challengePage = readProjectFile("app/(auth)/mfa/page.tsx");
 
     expect(actions).toContain("startMfaEnrollmentAction");
+    expect(actions).toContain("rebindMfaEnrollmentAction");
+    expect(actions).toContain("confirmRebind");
+    expect(actions).toContain("!currentUser.mfaVerifiedAt");
     expect(actions).toContain("verifyMfaEnrollmentAction");
     expect(actions).toContain("verifyMfaChallengeAction");
     expect(actions).toContain("writeMfaAuditLog");
     expect(actions).toContain("verifyTotpCode");
     expect(page).toContain("Microsoft Authenticator");
+    expect(page).toContain("更换手机");
+    expect(page).toContain("旧手机上的验证码会失效");
+    expect(page).toContain("!currentUser.mfaVerifiedAt");
+    expect(setupPage).toContain("!currentUser.mfaVerifiedAt");
     expect(page).toContain("qrCodeDataUrl");
     expect(page).toContain("name=\"token\"");
     expect(challengePage).toContain("Authenticator 验证");
