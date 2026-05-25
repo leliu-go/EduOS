@@ -101,6 +101,13 @@ describe("MFA low-risk implementation", () => {
     expect(
       getPostPasswordMfaLoginDecision({
         roleKey: "FINANCE",
+        enrollmentStatus: "pending_verification",
+      }),
+    ).toEqual({ action: "enroll", reason: "verification_pending" });
+
+    expect(
+      getPostPasswordMfaLoginDecision({
+        roleKey: "FINANCE",
         enrollmentStatus: "verified",
       }),
     ).toEqual({ action: "challenge", reason: "verification_required" });

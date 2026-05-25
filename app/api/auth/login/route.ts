@@ -6,11 +6,13 @@ import {
   canAttemptLogin,
   getSuccessfulLoginReset,
 } from "@/lib/auth/login-security";
+import { getPostPasswordMfaLoginDecision } from "@/lib/auth/mfa-login";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSessionToken } from "@/lib/auth/session";
 import { AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-cookie";
 import { loginSchema } from "@/lib/auth/validation";
 import { getFormDataString } from "@/lib/forms/form-data";
+import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
 import { prisma } from "@/lib/prisma";
 
 function getPublicBaseUrl(request: NextRequest) {
@@ -113,10 +115,28 @@ export async function POST(request: NextRequest) {
   });
 
   const expiresAt = Date.now() + SESSION_MAX_AGE_SECONDS * 1000;
-  const response = NextResponse.redirect(
-    getPublicUrl(request, getRoleLandingPath(membership.role.key)),
-    303,
-  );
+  const landingPath = getRoleLandingPath(membership.role.key);
+  const enrollmentStatus = await getMfaEnrollmentStatus({
+    tenantId: membership.tenantId,
+    userId: user.id,
+  });
+  const mfaDecision = getPostPasswordMfaLoginDecision({
+    roleKey: membership.role.key,
+    enrollmentStatus,
+    sessionMfaVerified: false,
+  });
+  const redirectPath =
+    mfaDecision.action === "enroll"
+      ? `/mfa/setup?next=${encodeURIComponent(landingPath)}`
+      : mfaDecision.action === "challenge"
+        ? `/mfa?next=${encodeURIComponent(landingPath)}`
+        : landingPath;
+
+  if (mfaDecision.action === "deny") {
+    return loginRedirect(request, "mfa_locked");
+  }
+
+  const response = NextResponse.redirect(getPublicUrl(request, redirectPath), 303);
 
   response.cookies.set(
     AUTH_SESSION_COOKIE,
@@ -125,6 +145,8 @@ export async function POST(request: NextRequest) {
       tenantId: membership.tenantId,
       roleKey: membership.role.key,
       expiresAt,
+      mfaVerifiedAt:
+        mfaDecision.action === "allow" && mfaDecision.reason === "verified" ? Date.now() : undefined,
     }),
     {
       httpOnly: true,

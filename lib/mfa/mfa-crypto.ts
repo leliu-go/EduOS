@@ -131,3 +131,29 @@ export function verifyBackupCode(code: string, storedHash: BackupCodeHash, peppe
 
   return timingSafeEqual(actualBuffer, expectedBuffer);
 }
+
+export function serializeEncryptedMfaSecret(encryptedSecret: EncryptedMfaSecret) {
+  return JSON.stringify(encryptedSecret);
+}
+
+export function parseEncryptedMfaSecret(value: string): EncryptedMfaSecret {
+  const parsed = JSON.parse(value) as Partial<EncryptedMfaSecret>;
+
+  if (
+    parsed.algorithm !== "aes-256-gcm" ||
+    typeof parsed.keyId !== "string" ||
+    typeof parsed.iv !== "string" ||
+    typeof parsed.authTag !== "string" ||
+    typeof parsed.ciphertext !== "string"
+  ) {
+    throw new Error("Invalid encrypted MFA secret payload.");
+  }
+
+  return {
+    keyId: parsed.keyId,
+    algorithm: parsed.algorithm,
+    iv: parsed.iv,
+    authTag: parsed.authTag,
+    ciphertext: parsed.ciphertext,
+  };
+}

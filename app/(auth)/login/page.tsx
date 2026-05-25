@@ -9,6 +9,7 @@ const loginErrors = {
   account_locked: "账号已临时锁定，请稍后再试。",
   account_permanently_locked: "账号已被安全封禁，请联系管理员解锁。",
   missing_context: "账号尚未绑定机构角色。",
+  mfa_locked: "Authenticator 验证暂时锁定，请稍后再试或联系管理员。",
 } as const;
 
 type LoginPageProps = {

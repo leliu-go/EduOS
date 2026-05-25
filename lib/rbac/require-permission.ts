@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 
 import { requireCurrentUser, type CurrentUser } from "@/lib/auth/current-user";
 import { hasPermission, type Permission } from "@/lib/rbac/permissions";
+import { getPostPasswordMfaLoginDecision } from "@/lib/auth/mfa-login";
+import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
+import { roleRequiresMfa } from "@/lib/mfa/mfa-policy";
 
 export class PermissionDeniedError extends Error {
   constructor(
@@ -19,6 +22,47 @@ type RequirePermissionOptions = {
   unauthorizedRedirectTo?: string;
 };
 
+function getSafeNextPath(nextPath: string | undefined) {
+  return nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+    ? nextPath
+    : "/dashboard";
+}
+
+async function enforceRequiredMfa(currentUser: CurrentUser, permission: Permission, nextPath?: string) {
+  if (!roleRequiresMfa(currentUser.roleKey) || permission === "security:mfa:manage") {
+    return;
+  }
+
+  if (currentUser.mfaVerifiedAt) {
+    return;
+  }
+
+  const safeNextPath = getSafeNextPath(nextPath);
+  const enrollmentStatus = await getMfaEnrollmentStatus({
+    tenantId: currentUser.tenantId,
+    userId: currentUser.id,
+  });
+  const decision = getPostPasswordMfaLoginDecision({
+    roleKey: currentUser.roleKey,
+    enrollmentStatus,
+    sessionMfaVerified: Boolean(currentUser.mfaVerifiedAt),
+  });
+
+  if (decision.action === "allow") {
+    return;
+  }
+
+  if (decision.action === "enroll") {
+    redirect(`/mfa/setup?next=${encodeURIComponent(safeNextPath)}`);
+  }
+
+  if (decision.action === "challenge") {
+    redirect(`/mfa?next=${encodeURIComponent(safeNextPath)}`);
+  }
+
+  redirect("/login?error=mfa_locked");
+}
+
 export async function requirePermission(
   permission: Permission,
   options: RequirePermissionOptions = {},
@@ -32,6 +76,8 @@ export async function requirePermission(
 
     throw new PermissionDeniedError(permission, currentUser.roleKey);
   }
+
+  await enforceRequiredMfa(currentUser, permission, options.nextPath);
 
   return currentUser;
 }

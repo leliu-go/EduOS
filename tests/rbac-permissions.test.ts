@@ -15,6 +15,7 @@ const baseUser: CurrentUser = {
   campusId: null,
   roleId: "role_1",
   roleKey: "ORG_ADMIN",
+  mfaVerifiedAt: Date.now(),
 };
 
 function userWithRole(roleKey: CurrentUser["roleKey"]): CurrentUser {

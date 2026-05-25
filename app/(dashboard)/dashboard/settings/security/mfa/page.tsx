@@ -1,11 +1,33 @@
 import { AlertTriangle, CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import QRCode from "qrcode";
 
+import {
+  startMfaEnrollmentAction,
+  verifyMfaEnrollmentAction,
+} from "@/features/mfa/actions";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  createLocalDevMfaEncryptionProviderFromEnv,
+  parseEncryptedMfaSecret,
+} from "@/lib/mfa/mfa-crypto";
+import { createTotpProvisioningUri } from "@/lib/mfa/totp";
 import { getMfaSecretPersistenceReadiness } from "@/lib/mfa/totp-placeholders";
+import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/rbac/require-permission";
+
+const mfaMessages: Record<string, string> = {
+  missing_config: "服务器缺少 MFA 加密配置，暂不能生成二维码。",
+  already_enabled: "当前账号已经绑定 Authenticator。",
+  not_started: "请先生成二维码，再输入验证码完成绑定。",
+  locked: "验证码错误次数过多，请稍后再试。",
+  invalid_token: "验证码不正确，请确认手机时间准确后重试。",
+};
 
 function formatMfaStatus(status: string | null | undefined) {
   const labels: Record<string, string> = {
@@ -18,7 +40,17 @@ function formatMfaStatus(status: string | null | undefined) {
   return status ? labels[status] ?? status : "未绑定";
 }
 
-export default async function DashboardMfaSettingsPage() {
+type DashboardMfaSettingsPageProps = {
+  searchParams?: Promise<{
+    error?: string;
+    next?: string;
+  }>;
+};
+
+export default async function DashboardMfaSettingsPage({
+  searchParams,
+}: DashboardMfaSettingsPageProps) {
+  const params = await searchParams;
   const currentUser = await requirePermission("security:mfa:manage", {
     nextPath: "/dashboard/settings/security/mfa",
     unauthorizedRedirectTo: "/unauthorized",
@@ -33,19 +65,52 @@ export default async function DashboardMfaSettingsPage() {
     },
     select: {
       status: true,
+      encryptedTotpSecret: true,
       lastVerifiedAt: true,
       lockedUntil: true,
     },
   });
   const readiness = getMfaSecretPersistenceReadiness(process.env);
+  const encryptionProvider = createLocalDevMfaEncryptionProviderFromEnv(process.env);
+  const issuer = process.env.MFA_TOTP_ISSUER || "EduOS";
+  const accountName = currentUser.email ?? currentUser.name;
+  const nextPath = params?.next || "/dashboard";
+  const errorMessage = params?.error ? mfaMessages[params.error] : null;
+  let qrCodeDataUrl: string | null = null;
+
+  if (
+    credential?.status === "PENDING_VERIFICATION" &&
+    encryptionProvider &&
+    readiness.canPersistSecrets
+  ) {
+    const secret = await encryptionProvider.decrypt(
+      parseEncryptedMfaSecret(credential.encryptedTotpSecret),
+    );
+    const provisioningUri = createTotpProvisioningUri({
+      issuer,
+      accountName,
+      secret,
+    });
+    qrCodeDataUrl = await QRCode.toDataURL(provisioningUri, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 220,
+    });
+  }
 
   return (
     <div className="grid gap-6">
       <PageHeader
         title="绑定 Authenticator"
-        description="Admin 的 MFA 属于账号安全，不属于本地备份设备。这里显示绑定状态和安全配置检查。"
+        description="推荐使用 Microsoft Authenticator 扫描二维码，完成 Admin 高权限登录保护。"
         badge="TOTP"
       />
+
+      {errorMessage ? (
+        <div role="alert" className="rounded-md border border-destructive/30 p-3 text-sm text-destructive">
+          {errorMessage}
+        </div>
+      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="shadow-none">
@@ -57,7 +122,7 @@ export default async function DashboardMfaSettingsPage() {
             <CardDescription>只展示状态，不展示 TOTP secret、恢复码或密钥材料。</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm text-muted-foreground">
-            <p>账号：{currentUser.email ?? currentUser.name}</p>
+            <p>账号：{accountName}</p>
             <p>状态：{formatMfaStatus(credential?.status)}</p>
             <p>
               最近验证：
@@ -98,26 +163,76 @@ export default async function DashboardMfaSettingsPage() {
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                   <div>
                     <p className="font-medium">MFA 加密配置已存在</p>
-                    <p className="mt-1">下一步可接入二维码生成和首次验证码确认流程。</p>
+                    <p className="mt-1">可以生成二维码，并使用 Microsoft Authenticator 扫码绑定。</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div>
-              <p className="font-medium text-foreground">需要的服务器变量</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>MFA_ENCRYPTION_KEY_ID</li>
-                <li>MFA_TOTP_SECRET_ENCRYPTION_KEY</li>
-                <li>MFA_BACKUP_CODE_PEPPER</li>
-              </ul>
-            </div>
             <p>
-              绑定流程原则：生成二维码后由 Admin 使用 Authenticator 扫描，并输入 6 位验证码完成验证；恢复码只显示一次且只保存哈希。
+              绑定流程：生成二维码，打开 Microsoft Authenticator，选择添加账号并扫描二维码，然后输入 6 位验证码完成验证。
             </p>
           </CardContent>
         </Card>
       </section>
+
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle>Microsoft Authenticator 绑定流程</CardTitle>
+          <CardDescription>二维码只用于当前账号。请不要截图转发给其他人。</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5">
+          {credential?.status === "VERIFIED" ? (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+              当前账号已绑定 Authenticator。下次登录高权限后台时，需要输入手机上的 6 位动态验证码。
+            </div>
+          ) : qrCodeDataUrl ? (
+            <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+              <div className="rounded-lg border border-border bg-background p-4">
+                <Image
+                  src={qrCodeDataUrl}
+                  alt="Microsoft Authenticator 绑定二维码"
+                  width={224}
+                  height={224}
+                  unoptimized
+                  className="mx-auto"
+                />
+              </div>
+              <form action={verifyMfaEnrollmentAction} className="grid content-start gap-4">
+                <input type="hidden" name="next" value={nextPath} />
+                <input type="hidden" name="returnTo" value="/dashboard/settings/security/mfa" />
+                <div className="grid gap-2">
+                  <Label htmlFor="token">输入 Microsoft Authenticator 中的 6 位验证码</Label>
+                  <Input
+                    id="token"
+                    name="token"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    placeholder="123456"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-fit">
+                  完成绑定
+                </Button>
+              </form>
+            </div>
+          ) : (
+            <form action={startMfaEnrollmentAction} className="grid gap-3">
+              <input type="hidden" name="next" value={nextPath} />
+              <input type="hidden" name="returnTo" value="/dashboard/settings/security/mfa" />
+              <p className="text-sm text-muted-foreground">
+                点击后会生成一个新的 TOTP 二维码，并把 secret 加密保存为待验证状态。
+              </p>
+              <Button type="submit" className="w-fit" disabled={!readiness.canPersistSecrets}>
+                生成绑定二维码
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -7,8 +7,8 @@ import type { RoleKey } from "@/lib/rbac/permissions";
 
 export type MfaLoginDecision =
   | { action: "allow"; reason: "policy_disabled" | "role_not_required" | "verified" }
-  | { action: "enroll"; reason: "enrollment_required" }
-  | { action: "challenge"; reason: "verification_required" | "verification_pending" }
+  | { action: "enroll"; reason: "enrollment_required" | "verification_pending" }
+  | { action: "challenge"; reason: "verification_required" }
   | { action: "deny"; reason: "locked" };
 
 export function getPostPasswordMfaLoginDecision(input: {
@@ -40,10 +40,14 @@ export function getPostPasswordMfaLoginDecision(input: {
     };
   }
 
-  if (
-    requirement.reason === "verification_required" ||
-    requirement.reason === "verification_pending"
-  ) {
+  if (requirement.reason === "verification_pending") {
+    return {
+      action: "enroll",
+      reason: requirement.reason,
+    };
+  }
+
+  if (requirement.reason === "verification_required") {
     return {
       action: "challenge",
       reason: requirement.reason,

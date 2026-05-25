@@ -8,10 +8,12 @@ import {
   canAttemptLogin,
   getSuccessfulLoginReset,
 } from "@/lib/auth/login-security";
+import { getPostPasswordMfaLoginDecision } from "@/lib/auth/mfa-login";
 import { verifyPassword } from "@/lib/auth/password";
 import { setAuthSession, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-cookie";
 import { loginSchema } from "@/lib/auth/validation";
 import { getFormDataString } from "@/lib/forms/form-data";
+import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
 
 function redirectWithLoginError(error: string): never {
   redirect(`/login?error=${error}`);
@@ -97,14 +99,39 @@ export async function loginAction(formData: FormData) {
     data: getSuccessfulLoginReset(),
   });
 
+  const landingPath = getRoleLandingPath(membership.role.key);
+  const enrollmentStatus = await getMfaEnrollmentStatus({
+    tenantId: membership.tenantId,
+    userId: user.id,
+  });
+  const mfaDecision = getPostPasswordMfaLoginDecision({
+    roleKey: membership.role.key,
+    enrollmentStatus,
+    sessionMfaVerified: false,
+  });
+
+  if (mfaDecision.action === "deny") {
+    redirectWithLoginError("mfa_locked");
+  }
+
   await setAuthSession({
     userId: user.id,
     tenantId: membership.tenantId,
     roleKey: membership.role.key,
     expiresAt: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
+    mfaVerifiedAt:
+      mfaDecision.action === "allow" && mfaDecision.reason === "verified" ? Date.now() : undefined,
   });
 
-  redirect(getRoleLandingPath(membership.role.key));
+  if (mfaDecision.action === "enroll") {
+    redirect(`/mfa/setup?next=${encodeURIComponent(landingPath)}`);
+  }
+
+  if (mfaDecision.action === "challenge") {
+    redirect(`/mfa?next=${encodeURIComponent(landingPath)}`);
+  }
+
+  redirect(landingPath);
 }
 
 export async function logoutAction() {

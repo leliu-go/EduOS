@@ -4,7 +4,7 @@ const demoPassword = process.env.EDUOS_DEMO_PASSWORD ?? "EduOS-demo-123456";
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 const demoLogins = [
-  { email: "admin@eduos.test", landingPath: "/dashboard" },
+  { email: "admin@eduos.test", landingPath: "/mfa/setup" },
   { email: "teacher@eduos.test", landingPath: "/teacher" },
   { email: "student.lin@eduos.test", landingPath: "/student" },
   { email: "parent.lin@eduos.test", landingPath: "/parent" },

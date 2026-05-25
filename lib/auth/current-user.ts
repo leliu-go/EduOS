@@ -13,6 +13,7 @@ export type CurrentUser = {
   campusId: string | null;
   roleId: string;
   roleKey: RoleKey;
+  mfaVerifiedAt: number | null;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -85,6 +86,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     campusId: membership.campusId,
     roleId: membership.role.id,
     roleKey: membership.role.key,
+    mfaVerifiedAt: session.mfaVerifiedAt ?? null,
   };
 }
 

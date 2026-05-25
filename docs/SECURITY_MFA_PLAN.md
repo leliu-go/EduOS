@@ -19,9 +19,14 @@ keeping production cryptography out of source control.
   `allow`, `enroll`, `challenge`, or `deny`.
 - `lib/mfa/mfa-crypto.ts` provides a local development AES-GCM encryption
   provider and backup-code hashing helpers.
+- `lib/mfa/totp.ts` generates base32 TOTP secrets, RFC 6238 codes, token
+  verification, and `otpauth://totp` provisioning URIs compatible with
+  Microsoft Authenticator.
 - `lib/mfa/mfa-service.ts` prepares encrypted enrollment records and writes MFA
   audit events.
 - `lib/mfa/mfa-recovery.ts` defines one-time hashed recovery-code consumption.
+- `/mfa/setup` handles first-time Admin enrollment before dashboard access.
+- `/mfa` handles post-password Authenticator challenges.
 - Admin backup sync authorization requires an MFA-completed session before
   accepting a primary backup device signature.
 - `UserMfaCredential` is an additive, tenant-scoped Prisma model for encrypted
@@ -51,4 +56,4 @@ MFA operations write `AuditLog` rows using these actions:
 - Generate `MFA_BACKUP_CODE_PEPPER` and store it only on the server.
 - Confirm recovery identity-check workflow for locked high-privilege accounts.
 - Approve running the additive MFA migration on staging.
-- Add rate limiting and lockout telemetry to the final challenge endpoints.
+- Add operational telemetry for repeated MFA challenge failures.

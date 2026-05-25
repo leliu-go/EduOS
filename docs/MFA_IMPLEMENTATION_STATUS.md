@@ -1,7 +1,8 @@
 # MFA/TOTP Implementation Status
 
-Status: low-risk first implementation complete; production enforcement pending
-human-controlled crypto and staging migration approval.
+Status: real Microsoft Authenticator compatible TOTP enrollment and challenge
+flow implemented. Production rollout requires server-side MFA environment
+variables and the existing additive migration to be present.
 
 ## Implemented
 
@@ -11,16 +12,22 @@ human-controlled crypto and staging migration approval.
 - Backup-code hashing and timing-safe verification.
 - Tenant-scoped `UserMfaCredential` Prisma model.
 - MFA audit-log wrapper.
+- TOTP secret generation, QR provisioning URI generation, and token
+  verification compatible with Microsoft Authenticator.
+- `/mfa/setup` first-time enrollment page.
+- `/mfa` login challenge page.
+- Server-side redirect from high-privilege password login to enrollment or
+  challenge before dashboard access.
 - Unit coverage in `tests/unit/mfa.test.ts` and existing
   `tests/mfa-policy.test.ts`.
+- Additional coverage in `tests/unit/mfa-totp-real-flow.test.ts` and
+  `tests/mfa-real-flow-source.test.ts`.
 
 ## Not Implemented Yet
 
-- Real TOTP token generation and QR provisioning.
 - Real KMS-backed encryption provider.
-- Production MFA challenge UI.
 - Recovery approval workflow.
-- Production rate limiting and lockout notifications.
+- Operational telemetry for repeated MFA lockouts.
 
 ## Migration
 

@@ -19,10 +19,12 @@
 
 ## Authenticator
 
-- 高权限账号应使用 Authenticator 动态验证码。
-- 入口：`系统设置 -> 安全中心 -> 绑定 Authenticator`。
+- 高权限账号使用 Microsoft Authenticator 动态验证码。
+- 首次登录 Admin 后，如果尚未绑定，会进入 `/mfa/setup` 完成扫码绑定。
+- 已进入后台后，入口：`系统设置 -> 安全中心 -> 绑定 Authenticator`。
 - EduOS 不会在页面、日志或文档中展示 TOTP secret、恢复码明文或服务器密钥。
 - 如果服务器缺少 MFA 加密配置，绑定页面会提示需要补齐环境变量，不会生成二维码。
+- 绑定完成后，下次登录 Admin 后必须输入 Microsoft Authenticator 中的 6 位验证码。
 
 ## 存储与备份
 
