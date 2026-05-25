@@ -90,3 +90,14 @@
 - Add a Tauri desktop backup client if browser storage is not reliable enough for the target backup size.
 - Build a staging-only restore preview/import CLI before considering any production restore write path.
 - Add Playwright coverage for MFA challenge, backup device registration, primary promotion, revoked-device denial, and encrypted backup export after a seeded MFA fixture exists.
+
+### Security And Maintainability Review 2026-05-25
+
+- Retire or delegate the duplicate login server action path after confirming all login traffic uses `/api/auth/login`.
+- Add an account import preview that flags existing global user matches before creating tenant memberships.
+- Tighten parent resource download policy before adding parent-facing download endpoints.
+- Wire PWA cache clearing into logout/account-switch UX even though the service worker currently caches only static assets.
+- Split `app/(dashboard)/dashboard/scheduling/page.tsx` into smaller date-control, month-grid, and schedule-list components.
+- Split `features/accounts/actions.ts` into invite/import/export/lifecycle modules.
+- Replace brittle source-string architecture tests with helper-level tests where possible.
+- Add a reusable CSV response helper with `Cache-Control: no-store` defaults for sensitive exports.

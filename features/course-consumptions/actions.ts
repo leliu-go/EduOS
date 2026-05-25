@@ -81,9 +81,10 @@ export async function reverseCourseConsumptionAction(formData: FormData) {
       return null;
     }
 
-    await tx.courseAccount.update({
+    const accountRestoreResult = await tx.courseAccount.updateMany({
       where: {
         id: consumption.courseAccountId,
+        tenantId: currentUser.tenantId,
       },
       data: {
         usedHours: {
@@ -91,6 +92,10 @@ export async function reverseCourseConsumptionAction(formData: FormData) {
         },
       },
     });
+
+    if (accountRestoreResult.count !== 1) {
+      throw new Error("Unable to restore tenant-scoped course account.");
+    }
 
     const reversed = await tx.courseConsumption.findFirst({
       where: {

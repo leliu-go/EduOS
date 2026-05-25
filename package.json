@@ -60,5 +60,11 @@
     "tsx": "^4.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "@hono/node-server": "1.19.13",
+      "postcss": "8.5.14"
+    }
   }
 }

@@ -40,7 +40,7 @@ const protectedRoutes = [
   { route: "/student/payments", next: "/student" },
   { route: "/student/reports", next: "/student" },
   { route: "/student/resources", next: "/student" },
-  { route: "/student/resources/sample-resource", next: "/student/resources" },
+  { route: "/student/resources/sample-resource", next: "/student" },
   { route: "/student/resources/sample-resource/download", next: "/student/resources" },
   { route: "/student/lessons/sample-lesson/resources", next: "/student" },
   { route: "/student/check-in/sample-token", next: "/student" },

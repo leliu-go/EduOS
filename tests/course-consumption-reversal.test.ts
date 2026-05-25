@@ -56,7 +56,10 @@ describe("course consumption reversal", () => {
     expect(source).toContain("prisma.$transaction");
     expect(source).toContain("tx.courseConsumption.findFirst");
     expect(source).toContain("reversedAt: null");
-    expect(source).toContain("tx.courseAccount.update");
+    expect(source).toContain("tx.courseAccount.updateMany");
+    expect(source).toContain("tenantId: currentUser.tenantId");
+    expect(source).toContain("accountRestoreResult.count");
+    expect(source).toContain("Unable to restore tenant-scoped course account");
     expect(source).toContain("decrement: consumption.consumedHours");
     expect(source).toContain("tx.courseConsumption.updateMany");
     expect(source).toContain("reversalResult.count");

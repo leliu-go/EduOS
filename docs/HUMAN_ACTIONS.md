@@ -126,3 +126,11 @@ When a high-risk item is downgraded, record:
 - Store `MFA_BACKUP_CODE_PEPPER` only on the server and do not print it in logs.
 - Choose whether the first local backup implementation should remain PWA encrypted export or move to a Tauri desktop backup client.
 - Run a supervised disaster recovery drill in staging before relying on local backup restore.
+
+## 2026-05-25 Security And Maintainability Follow-Ups
+
+- Add CI jobs for `pnpm audit`, secret scanning, lint, typecheck, and test before deployment.
+- Review production reverse-proxy configuration so only trusted proxy headers reach the app; app login redirects no longer depend on those headers.
+- Plan a seeded staging fixture for Admin MFA, backup device registration, and route-access e2e.
+- Decide whether account import should require a two-person review when it links an existing global user to a tenant.
+- Schedule a small refactor pass for the large scheduling and account action files after current security hardening is deployed.

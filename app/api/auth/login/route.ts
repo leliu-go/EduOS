@@ -16,18 +16,11 @@ import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
 import { prisma } from "@/lib/prisma";
 
 function getPublicBaseUrl(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-
-  if (forwardedHost && !forwardedHost.includes("localhost")) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
   if (process.env.APP_URL) {
     return process.env.APP_URL;
   }
 
-  return request.url;
+  return request.nextUrl.origin;
 }
 
 function getPublicUrl(request: NextRequest, path: string) {

@@ -217,3 +217,12 @@ When a blocker appears, record:
 - Safe fallback implemented: Unit/static coverage verifies policy, device signature, sync authorization, sanitizer, package checksum, recovery code consumption, and UI/docs.
 - Exact blocker: Create a staging/local MFA fixture and apply the additive migration in a disposable test database before running full browser E2E.
 - Whether later tasks can continue: Yes.
+
+## 2026-05-25 Security And Maintainability Review
+
+- Stage or PZ task: Account, MFA, RBAC, tenant, finance, resource, PWA, secret, dependency, and maintainability review.
+- Risk or failure type: No P0 blocker confirmed. Remaining blockers are operational/test-fixture related.
+- What was intentionally not executed: No `.env.production.local` read/print, no production migration, no database drop/reset/truncate, no OSS deletion, and no production deploy.
+- Safe fallback implemented: Login redirect hardening, tenant-scoped course-account restore on consumption reversal, no-store finance report export, dependency audit overrides, and review reports.
+- Exact blocker: Full browser MFA/admin-backup e2e still needs a seeded MFA/device fixture in a disposable database.
+- Whether later tasks can continue: Yes.

@@ -81,6 +81,7 @@ describe("finance reports", () => {
     expect(routeSource).toContain("buildFinanceReportCsv");
     expect(routeSource).toContain("Content-Disposition");
     expect(routeSource).toContain("text/csv");
+    expect(routeSource).toContain('"Cache-Control": "no-store"');
     expect(sidebarSource).toContain("/dashboard/finance-reports");
     expect(e2eSource).toContain("/dashboard/finance-reports");
 

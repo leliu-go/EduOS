@@ -19,8 +19,10 @@ describe("login route handler", () => {
     expect(loginPage).toContain('autoComplete="current-password"');
     expect(route).toContain("request.formData()");
     expect(route).toContain("response.cookies.set");
-    expect(route).toContain("x-forwarded-host");
     expect(route).toContain("APP_URL");
+    expect(route).toContain("request.nextUrl.origin");
+    expect(route).not.toContain("x-forwarded-host");
+    expect(route).not.toContain("x-forwarded-proto");
     expect(route).toContain("applyFailedLoginAttempt");
     expect(route).toContain("canAttemptLogin");
   });
