@@ -79,9 +79,8 @@ describe("finance reports", () => {
     expect(pageSource).toContain("欠费/应收");
     expect(routeSource).toContain('requirePermission("finance:reports:view"');
     expect(routeSource).toContain("buildFinanceReportCsv");
-    expect(routeSource).toContain("Content-Disposition");
-    expect(routeSource).toContain("text/csv");
-    expect(routeSource).toContain('"Cache-Control": "no-store"');
+    expect(routeSource).toContain("createCsvDownloadResponse");
+    expect(routeSource).toContain("finance-report.csv");
     expect(sidebarSource).toContain("/dashboard/finance-reports");
     expect(e2eSource).toContain("/dashboard/finance-reports");
 

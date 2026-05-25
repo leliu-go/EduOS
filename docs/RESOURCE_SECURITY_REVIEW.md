@@ -19,9 +19,15 @@ Date: 2026-05-25
 
 No confirmed P0 resource download bypass was found in the reviewed student resource path.
 
-### P1/P2 - Parent download policy should be exact before expansion
+### P1/P2 - Parent download policy should be exact before expansion - fixed 2026-05-26
 
-The shared resource policy helper has a coarse parent branch. It is acceptable for the currently reviewed student download route because parent downloads are not using that route, but it must be tightened before exposing parent resource downloads.
+The shared resource policy helper previously had a coarse parent branch. It has been tightened before exposing parent resource downloads.
+
+Fix applied:
+
+- Parent access requires explicit guardian user scope.
+- If a resource declares `studentUserIds`, the parent's `guardianStudentUserIds` must overlap that list.
+- Added a regression case where a parent bound to `student-1` cannot access a resource scoped to `student-2`.
 
 ## Positive Controls
 
@@ -30,10 +36,10 @@ The shared resource policy helper has a coarse parent branch. It is acceptable f
 - `createAuthorizedResourceDownloadUrl()` calls `canAccessResourceFile()` before requesting a signed URL.
 - Signed URL TTL defaults to 300 seconds.
 - OSS provider signs server-side and does not expose `AccessKeySecret`.
+- Parent policy now checks exact child/resource intersection when explicit student scope is available.
 
 ## Remaining Risks
 
-- Add parent download endpoint only after exact guardian-child-resource joins are implemented.
+- Add parent download endpoint only after route-level database joins pass exact guardian-child-resource scope into the shared helper.
 - Add teacher download route tests for non-owner class denial.
 - Avoid returning `objectKey` to client components unless required for authorized staff operations.
-

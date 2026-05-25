@@ -42,5 +42,6 @@ Files over roughly 300 lines:
 
 ## Low-Risk Refactors Done
 
-- No broad refactor was performed. This pass limited code changes to security hardening and small response-header/dependency fixes.
-
+- No broad refactor was performed. The review limited code changes to security hardening and small response-header/dependency fixes.
+- 2026-05-26: removed unused duplicate login action logic from `lib/auth/actions.ts`.
+- 2026-05-26: added `lib/http/csv-response.ts` and routed account/finance CSV exports through it.

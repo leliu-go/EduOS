@@ -20,6 +20,8 @@ Date: 2026-05-25
 - Added source guard against reintroducing forwarded-host trust in login route.
 - Added source guard for tenant-scoped course-account restoration in consumption reversal.
 - Added source guard for no-store finance report CSV export.
+- Removed the unused duplicate login server action from `lib/auth/actions.ts`.
+- Added `lib/http/csv-response.ts` so account and finance CSV downloads share no-store, `nosniff`, and filename safety defaults.
 
 ## Refactors Intentionally Not Done
 
@@ -28,4 +30,3 @@ Date: 2026-05-25
 - No ORM abstraction.
 - No UI framework replacement.
 - No broad service extraction.
-

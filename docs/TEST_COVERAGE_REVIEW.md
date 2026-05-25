@@ -15,15 +15,18 @@ Date: 2026-05-25
 ## Tests Added Or Updated In This Review
 
 - `tests/login-route-handler.test.ts`: asserts login route no longer trusts forwarded host/proto headers.
+- `tests/login-route-handler.test.ts`: asserts duplicate login server action is not reintroduced.
 - `tests/course-consumption-reversal.test.ts`: asserts tenant-scoped course-account restore with count check.
 - `tests/finance-reports.test.ts`: asserts finance CSV export uses `Cache-Control: no-store`.
 - `tests/e2e/auth.spec.ts`: aligns unauthenticated student resource detail redirect expectations with the student portal layout guard.
+- `tests/csv-response.test.ts`: verifies shared CSV download headers and unsafe filename rejection.
+- `tests/resource-download-authorization.test.ts`: verifies parent access requires child/resource student-scope intersection when explicit student scope exists.
 
 ## Final Commands Run
 
 - `pnpm lint`: passed.
 - `pnpm typecheck`: passed.
-- `pnpm test`: passed, 118 test files and 439 tests.
+- `pnpm test`: passed, 119 test files and 442 tests.
 - `pnpm test:e2e -- tests/e2e/auth.spec.ts --workers=1`: passed, 53 tests.
 - `pnpm audit`: passed, no known vulnerabilities found.
 

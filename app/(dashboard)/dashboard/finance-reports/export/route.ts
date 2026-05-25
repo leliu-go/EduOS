@@ -1,4 +1,5 @@
 import { buildFinanceReportCsv, getFinanceReportSummary } from "@/features/finance-reports/report";
+import { createCsvDownloadResponse } from "@/lib/http/csv-response";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 export async function GET() {
@@ -9,11 +10,5 @@ export async function GET() {
   const summary = await getFinanceReportSummary(currentUser.tenantId);
   const csv = buildFinanceReportCsv(summary);
 
-  return new Response(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="finance-report.csv"',
-      "Cache-Control": "no-store",
-    },
-  });
+  return createCsvDownloadResponse(csv, "finance-report.csv");
 }

@@ -13,13 +13,14 @@ No confirmed P0 issue was found in tracked product code during this review.
 - Added `Cache-Control: no-store` to finance report CSV export.
 - Resolved two moderate transitive dependency advisories with pnpm overrides.
 - Updated unauthenticated student resource detail e2e expectation to match the student layout guard.
+- 2026-05-26: removed duplicate login server action logic from `lib/auth/actions.ts`.
+- 2026-05-26: standardized sensitive CSV downloads through `lib/http/csv-response.ts`.
+- 2026-05-26: tightened parent resource access policy to require child/resource student-scope intersection when explicit student scope exists.
 
 ## P1 Remaining
 
-- Retire or delegate duplicate login server action path after confirming no imports.
 - Add preview/confirmation to account import for existing global user matches.
 - Add e2e MFA fixture and browser coverage.
-- Add exact parent-child-resource policy before exposing parent download endpoints.
 - Split large scheduling and account files in future small refactors.
 
 ## P2 Remaining
@@ -40,6 +41,6 @@ No confirmed P0 issue was found in tracked product code during this review.
 
 - `pnpm lint`: passed.
 - `pnpm typecheck`: passed.
-- `pnpm test`: passed, 118 files and 439 tests.
+- `pnpm test`: passed, 119 files and 442 tests.
 - `pnpm test:e2e -- tests/e2e/auth.spec.ts --workers=1`: passed, 53 tests.
 - `pnpm audit`: passed, no known vulnerabilities found.

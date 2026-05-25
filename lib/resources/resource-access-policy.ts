@@ -34,11 +34,21 @@ export function canAccessResourceFile(actor: ResourceFileActor, resource: Resour
   }
 
   if (actor.roleKey === "PARENT") {
-    return Boolean(
-      resource.guardianUserIds?.includes(actor.userId) &&
-        resource.guardianStudentUserIds &&
-        resource.guardianStudentUserIds.length > 0,
-    );
+    if (
+      !resource.guardianUserIds?.includes(actor.userId) ||
+      !resource.guardianStudentUserIds ||
+      resource.guardianStudentUserIds.length === 0
+    ) {
+      return false;
+    }
+
+    if (resource.studentUserIds && resource.studentUserIds.length > 0) {
+      return resource.guardianStudentUserIds.some((studentUserId) =>
+        resource.studentUserIds?.includes(studentUserId),
+      );
+    }
+
+    return true;
   }
 
   return false;

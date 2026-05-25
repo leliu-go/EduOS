@@ -93,10 +93,11 @@
 
 ### Security And Maintainability Review 2026-05-25
 
-- Retire or delegate the duplicate login server action path after confirming all login traffic uses `/api/auth/login`.
 - Add an account import preview that flags existing global user matches before creating tenant memberships.
-- Tighten parent resource download policy before adding parent-facing download endpoints.
 - Wire PWA cache clearing into logout/account-switch UX even though the service worker currently caches only static assets.
+- Fixed 2026-05-26: duplicate login server action path was removed; active login traffic remains on `/api/auth/login`.
+- Fixed 2026-05-26: parent resource policy now requires child/resource student-scope intersection when explicit student scope exists.
+- Fixed 2026-05-26: account and finance CSV downloads use a shared no-store helper.
 - Split `app/(dashboard)/dashboard/scheduling/page.tsx` into smaller date-control, month-grid, and schedule-list components.
 - Split `features/accounts/actions.ts` into invite/import/export/lifecycle modules.
 - Replace brittle source-string architecture tests with helper-level tests where possible.

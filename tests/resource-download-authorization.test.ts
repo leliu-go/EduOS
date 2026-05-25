@@ -98,6 +98,16 @@ describe("resource download authorization", () => {
         resource,
       ),
     ).toBe(false);
+    expect(
+      canAccessResourceFile(
+        { tenantId: "tenant-1", roleKey: "PARENT", userId: "parent-1" },
+        {
+          ...resource,
+          studentUserIds: ["student-2"],
+          guardianStudentUserIds: ["student-1"],
+        },
+      ),
+    ).toBe(false);
   });
 
   it("does not sign downloads when storage object metadata is missing", async () => {

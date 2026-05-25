@@ -26,4 +26,14 @@ describe("login route handler", () => {
     expect(route).toContain("applyFailedLoginAttempt");
     expect(route).toContain("canAttemptLogin");
   });
+
+  it("keeps login logic in the route handler instead of a duplicate server action", () => {
+    const authActions = readFileSync(join(process.cwd(), "lib/auth/actions.ts"), "utf8");
+
+    expect(authActions).not.toContain("loginAction");
+    expect(authActions).toContain("logoutAction");
+    expect(authActions).not.toContain("loginSchema");
+    expect(authActions).not.toContain("verifyPassword");
+    expect(authActions).not.toContain("applyFailedLoginAttempt");
+  });
 });

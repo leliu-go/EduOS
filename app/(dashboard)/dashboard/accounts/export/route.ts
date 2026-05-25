@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-
 import { buildAccountCsv } from "@/features/accounts/account-csv";
 import { getAccountDirectory } from "@/features/accounts/queries";
+import { createCsvDownloadResponse } from "@/lib/http/csv-response";
 import { requirePermission } from "@/lib/rbac/require-permission";
 
 export async function GET() {
@@ -20,11 +19,5 @@ export async function GET() {
     })),
   );
 
-  return new NextResponse(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="eduos-accounts.csv"',
-      "Cache-Control": "no-store",
-    },
-  });
+  return createCsvDownloadResponse(csv, "eduos-accounts.csv");
 }

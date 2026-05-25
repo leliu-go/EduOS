@@ -27,11 +27,15 @@ Fix applied:
 - Do not trust `x-forwarded-host` or `x-forwarded-proto`.
 - Updated `tests/login-route-handler.test.ts`.
 
-### P1 - Duplicate login action path
+### P1 - Duplicate login action path - fixed 2026-05-26
 
-`app/api/auth/login/route.ts` is the active login endpoint. `lib/auth/actions.ts` still contains a separate login action path. Keeping two login implementations increases drift risk for lockout, MFA, and cookie behavior. No behavior change was made because the active form posts to `/api/auth/login`.
+`app/api/auth/login/route.ts` is the active login endpoint. `lib/auth/actions.ts` previously contained a separate login action path, which increased drift risk for lockout, MFA, and cookie behavior.
 
-Recommended next step: retire or wrap the unused action after confirming no page imports it.
+Fix applied:
+
+- Removed the unused `loginAction` from `lib/auth/actions.ts`.
+- Kept `logoutAction`, which is used by student and teacher "Me" pages.
+- Added source coverage in `tests/login-route-handler.test.ts` to keep login logic centralized in the route handler.
 
 ### P1 - Account import needs stronger preview controls
 
@@ -54,4 +58,3 @@ Recommended next step: retire or wrap the unused action after confirming no page
 - Add central rate limiting by IP and account identifier at the reverse proxy or app layer.
 - Add audit logging for successful login, logout, and admin unlock operations.
 - Add an admin-only permanent-lock recovery workflow with MFA step-up.
-

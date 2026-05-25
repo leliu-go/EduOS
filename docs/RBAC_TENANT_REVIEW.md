@@ -27,9 +27,15 @@ Date: 2026-05-25
 
 Teachers can invite student accounts through `accounts:invite`, but `features/accounts/actions.ts` contains extra teacher-scope logic to restrict class ownership. This should stay covered by tests because the permission name alone is broad.
 
-### P2 - Parent resource policy helper is coarse
+### P1/P2 - Parent resource policy helper is coarse - fixed 2026-05-26
 
-`lib/resources/resource-access-policy.ts` allows parent access when the parent is in `guardianUserIds` and `guardianStudentUserIds` is non-empty. Current student download routes do not expose parent downloads, but a future parent download route should pass and verify the exact child-to-resource relation, not just a non-empty guardian student list.
+`lib/resources/resource-access-policy.ts` previously allowed parent access when the parent was in `guardianUserIds` and `guardianStudentUserIds` was non-empty. This was too coarse for future parent resource download endpoints.
+
+Fix applied:
+
+- Parent access now still requires the parent user scope.
+- When a resource has explicit `studentUserIds`, the parent's bound student ids must intersect that list.
+- Added regression coverage in `tests/resource-download-authorization.test.ts`.
 
 ## Positive Controls
 
@@ -42,4 +48,3 @@ Teachers can invite student accounts through `accounts:invite`, but `features/ac
 
 - Add source tests that scan high-risk server actions for `requirePermission` plus tenant predicates.
 - Add browser e2e for teacher-other-class denial and parent-child-only access once fixtures are stable.
-
