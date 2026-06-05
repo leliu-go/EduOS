@@ -42,12 +42,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </p>
             ) : null}
             <div className="grid gap-2">
-              <Label htmlFor="email">账号</Label>
+              <Label htmlFor="identifier">账号</Label>
               <Input
-                id="email"
-                name="email"
+                id="identifier"
+                name="identifier"
                 placeholder="请输入账号"
-                type="email"
+                type="text"
                 autoComplete="username"
               />
             </div>

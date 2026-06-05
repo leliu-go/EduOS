@@ -9,7 +9,7 @@ test.describe("seeded mobile resource navigation", () => {
 
   test("teacher can open resources from the profile shortcut", async ({ page }) => {
     await page.goto("/login");
-    await page.locator('input[name="email"]').fill("teacher@eduos.test");
+    await page.locator('input[name="identifier"]').fill("teacher@eduos.test");
     await page.locator('input[name="password"]').fill(demoPassword);
     await page.locator('button[type="submit"]').click();
 

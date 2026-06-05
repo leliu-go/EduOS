@@ -31,21 +31,20 @@ function loginRedirect(request: NextRequest, error: string) {
   return NextResponse.redirect(getPublicUrl(request, `/login?error=${error}`), 303);
 }
 
-export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const parsed = loginSchema.safeParse({
-    email: getFormDataString(formData, "email"),
-    password: getFormDataString(formData, "password"),
-  });
-
-  if (!parsed.success) {
-    return loginRedirect(request, "invalid_input");
-  }
-
-  const credentials = parsed.data;
-  const user = await prisma.user.findUnique({
+function findUserByLoginIdentifier(identifier: string) {
+  return prisma.user.findFirst({
     where: {
-      email: credentials.email.toLowerCase(),
+      OR: [
+        {
+          username: identifier,
+        },
+        {
+          email: identifier,
+        },
+        {
+          phone: identifier,
+        },
+      ],
     },
     include: {
       memberships: {
@@ -69,6 +68,21 @@ export async function POST(request: NextRequest) {
       },
     },
   });
+}
+
+export async function POST(request: NextRequest) {
+  const formData = await request.formData();
+  const parsed = loginSchema.safeParse({
+    identifier: getFormDataString(formData, "identifier"),
+    password: getFormDataString(formData, "password"),
+  });
+
+  if (!parsed.success) {
+    return loginRedirect(request, "invalid_input");
+  }
+
+  const credentials = parsed.data;
+  const user = await findUserByLoginIdentifier(credentials.identifier);
 
   if (!user || user.status !== "ACTIVE") {
     return loginRedirect(request, "invalid_credentials");

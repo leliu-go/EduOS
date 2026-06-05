@@ -6,7 +6,7 @@ const runGoldenPath =
 
 async function login(page: Page, email: string, landingPath: string) {
   await page.goto("/login");
-  await page.locator('input[name="email"]').fill(email);
+  await page.locator('input[name="identifier"]').fill(email);
   await page.locator('input[name="password"]').fill(qaPassword);
   await page.locator('button[type="submit"]').click();
 

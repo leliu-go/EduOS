@@ -31,7 +31,7 @@ test.describe("seeded mobile schedule navigation", () => {
   for (const flow of mobileScheduleFlows) {
     test(`${flow.email} can open schedule from the mobile tab bar`, async ({ page }) => {
       await page.goto("/login");
-      await page.locator('input[name="email"]').fill(flow.email);
+      await page.locator('input[name="identifier"]').fill(flow.email);
       await page.locator('input[name="password"]').fill(demoPassword);
       await page.locator('button[type="submit"]').click();
 

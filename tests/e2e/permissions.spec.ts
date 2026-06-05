@@ -5,7 +5,7 @@ const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 async function login(page: import("@playwright/test").Page, email: string) {
   await page.goto("/login");
-  await page.locator('input[name="email"]').fill(email);
+  await page.locator('input[name="identifier"]').fill(email);
   await page.locator('input[name="password"]').fill(demoPassword);
   await page.locator('button[type="submit"]').click();
 }

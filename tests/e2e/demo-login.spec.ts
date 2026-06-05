@@ -16,7 +16,7 @@ test.describe("seeded MVP demo login flows", () => {
   for (const demoLogin of demoLogins) {
     test(`${demoLogin.email} lands on ${demoLogin.landingPath}`, async ({ page }) => {
       await page.goto("/login");
-      await page.locator('input[name="email"]').fill(demoLogin.email);
+      await page.locator('input[name="identifier"]').fill(demoLogin.email);
       await page.locator('input[name="password"]').fill(demoPassword);
       await page.locator('button[type="submit"]').click();
 

@@ -39,7 +39,7 @@ describe("account CSV management", () => {
 
   it("parses template rows without logging or exposing password hashes", () => {
     const rows = parseAccountImportCsv(
-      "role,name,email,phone,initialPassword,status\nSTUDENT,QA Student,qa-student@example.test,,EduOS-demo-123456,ACTIVE",
+      "role,name,email,phone,initialPassword,status\nSTUDENT,QA Student,qa-student@example.test,,ChangeMe-123456,ACTIVE",
     );
 
     expect(rows).toEqual([
@@ -48,10 +48,18 @@ describe("account CSV management", () => {
         name: "QA Student",
         email: "qa-student@example.test",
         phone: undefined,
-        initialPassword: "EduOS-demo-123456",
+        initialPassword: "ChangeMe-123456",
         status: "ACTIVE",
       },
     ]);
+  });
+
+  it("does not ship demo passwords in the downloadable account template", () => {
+    const template = buildAccountImportTemplate();
+
+    expect(template).not.toContain("EduOS-demo");
+    expect(template).not.toContain("qa-");
+    expect(template).toContain("ChangeMe-123456");
   });
 
   it("allows admins to manage all tenant accounts and teachers only student accounts", () => {

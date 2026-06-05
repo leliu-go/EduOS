@@ -9,7 +9,7 @@ test.describe("seeded mobile parent profile navigation", () => {
 
   test("parent can open profile from the mobile tab bar", async ({ page }) => {
     await page.goto("/login");
-    await page.locator('input[name="email"]').fill("parent.lin@eduos.test");
+    await page.locator('input[name="identifier"]').fill("parent.lin@eduos.test");
     await page.locator('input[name="password"]').fill(demoPassword);
     await page.locator('button[type="submit"]').click();
 

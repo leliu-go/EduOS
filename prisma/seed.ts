@@ -564,7 +564,7 @@ async function main() {
       `${result.students} students, ${result.rooms} rooms, ${result.classGroups} classes, ` +
       `${result.schedules} schedules.`,
   );
-  console.log(`Demo login password: ${demoUserPassword}`);
+  console.log("Demo login password is configured through EDUOS_DEMO_PASSWORD and is not printed.");
 }
 
 main()

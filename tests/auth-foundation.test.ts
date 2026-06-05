@@ -45,6 +45,15 @@ describe("auth foundation", () => {
     expect(schema).not.toContain("password String");
   });
 
+  it("supports short production usernames without overloading email", () => {
+    const schema = readFileSync(join(process.cwd(), "prisma/schema.prisma"), "utf8");
+    const validation = readFileSync(join(process.cwd(), "lib/auth/validation.ts"), "utf8");
+
+    expect(schema).toContain("username    String?      @unique");
+    expect(validation).toContain("identifier");
+    expect(validation).not.toContain(".email()");
+  });
+
   it("protects the dashboard layout on the server", () => {
     const dashboardLayout = readFileSync(join(process.cwd(), "app/(dashboard)/layout.tsx"), "utf8");
 

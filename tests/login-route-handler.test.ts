@@ -11,8 +11,8 @@ describe("login route handler", () => {
     expect(existsSync(routePath)).toBe(true);
     expect(loginPage).toContain('action="/api/auth/login"');
     expect(loginPage).toContain('method="post"');
-    expect(loginPage).toContain('name="email"');
-    expect(loginPage).toContain('type="email"');
+    expect(loginPage).toContain('name="identifier"');
+    expect(loginPage).toContain('type="text"');
     expect(loginPage).toContain('autoComplete="username"');
     expect(loginPage).toContain('name="password"');
     expect(loginPage).toContain('type="password"');
@@ -25,6 +25,7 @@ describe("login route handler", () => {
     expect(route).not.toContain("x-forwarded-proto");
     expect(route).toContain("applyFailedLoginAttempt");
     expect(route).toContain("canAttemptLogin");
+    expect(route).toContain("findUserByLoginIdentifier");
   });
 
   it("keeps login logic in the route handler instead of a duplicate server action", () => {

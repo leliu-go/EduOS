@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function expectLoginGate(page: Page, nextPath: string) {
   await expect(page).toHaveURL(/\/login\?next=/);
   expect(new URL(page.url()).searchParams.get("next")).toBe(nextPath);
-  await expect(page.locator('input[name="email"]')).toBeVisible();
+  await expect(page.locator('input[name="identifier"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
   await expect(page.locator('button[type="submit"]')).toBeVisible();
 }
@@ -14,7 +14,7 @@ test.describe("login flow", () => {
 
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("heading", { name: /EduOS/ })).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await expect(page.locator('input[name="identifier"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
 

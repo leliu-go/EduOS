@@ -95,9 +95,9 @@ function formatCsvCell(value: string | number | null | undefined) {
 export function buildAccountImportTemplate() {
   return [
     accountCsvColumns.join(","),
-    ["STUDENT", "学生姓名", "student@example.test", "", "EduOS-demo-123456", "ACTIVE"].join(","),
-    ["TEACHER", "老师姓名", "teacher@example.test", "", "EduOS-demo-123456", "ACTIVE"].join(","),
-    ["ORG_ADMIN", "管理员姓名", "admin@example.test", "", "EduOS-demo-123456", "ACTIVE"].join(
+    ["STUDENT", "学生姓名", "student@example.test", "", "ChangeMe-123456", "ACTIVE"].join(","),
+    ["TEACHER", "老师姓名", "teacher@example.test", "", "ChangeMe-123456", "ACTIVE"].join(","),
+    ["ORG_ADMIN", "管理员姓名", "admin@example.test", "", "ChangeMe-123456", "ACTIVE"].join(
       ",",
     ),
   ].join("\n");
