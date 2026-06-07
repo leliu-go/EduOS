@@ -19,6 +19,7 @@ import {
   teacherStatusLabels,
   teacherStatusValues,
 } from "@/features/teachers/teacher-schema";
+import { TeacherDeleteForm } from "@/features/teachers/teacher-delete-form";
 import { TeacherCreateDialog } from "@/features/teachers/teacher-form-dialog";
 
 type TeacherListPageProps = {
@@ -89,9 +90,12 @@ function getColumns(): Array<DataTableColumn<TeacherListItem>> {
       header: "操作",
       className: "text-right",
       cell: (teacher) => (
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/teachers/${teacher.id}`}>查看</Link>
-        </Button>
+        <div className="flex justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/dashboard/teachers/${teacher.id}`}>查看</Link>
+          </Button>
+          <TeacherDeleteForm teacherId={teacher.id} teacherName={teacher.name} />
+        </div>
       ),
     },
   ];

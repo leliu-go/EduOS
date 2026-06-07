@@ -142,3 +142,78 @@ export async function updateStudentAction(formData: FormData) {
   revalidatePath(`/dashboard/students/${student.id}`);
   redirect(`/dashboard/students/${student.id}`);
 }
+
+export async function deleteStudentAction(formData: FormData) {
+  const currentUser = await requirePermission("students:manage", {
+    nextPath: "/dashboard/students",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsedStudentId = studentIdSchema.safeParse(formData.get("studentId"));
+
+  if (!parsedStudentId.success) {
+    redirectWithStudentError("/dashboard/students", "invalid_input");
+  }
+
+  const student = await prisma.$transaction(async (tx) => {
+    const beforeStudent = await tx.studentProfile.findFirst({
+      where: {
+        id: parsedStudentId.data,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!beforeStudent) {
+      return null;
+    }
+
+    const updatedStudent = await tx.studentProfile.update({
+      where: {
+        id: beforeStudent.id,
+      },
+      data: {
+        status: "WITHDRAWN",
+      },
+    });
+
+    const disabledMemberships = beforeStudent.userId
+      ? await tx.membership.updateMany({
+          where: {
+            tenantId: currentUser.tenantId,
+            userId: beforeStudent.userId,
+            role: {
+              key: "STUDENT",
+            },
+          },
+          data: {
+            status: "DISABLED",
+          },
+        })
+      : { count: 0 };
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "student.delete",
+        entityType: "student",
+        entityId: updatedStudent.id,
+        beforeJson: toAuditSnapshot(beforeStudent),
+        afterJson: {
+          ...toAuditSnapshot(updatedStudent),
+          disabledMembershipCount: disabledMemberships.count,
+        },
+      },
+      tx,
+    );
+
+    return updatedStudent;
+  });
+
+  if (!student) {
+    redirectWithStudentError("/dashboard/students", "not_found");
+  }
+
+  revalidatePath("/dashboard/students");
+  revalidatePath(`/dashboard/students/${student.id}`);
+  redirect("/dashboard/students?deleted=1");
+}

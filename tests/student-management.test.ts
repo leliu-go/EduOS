@@ -60,6 +60,9 @@ describe("student management", () => {
     expect(source).toContain("currentUser.tenantId");
     expect(source).toContain("writeAuditLog");
     expect(source).toContain("$transaction");
+    expect(source).toContain("deleteStudentAction");
+    expect(source).toContain('status: "WITHDRAWN"');
+    expect(source).toContain('action: "student.delete"');
   });
 
   it("renders list, create dialog, detail, and route states", () => {
@@ -81,6 +84,7 @@ describe("student management", () => {
     );
 
     expect(listPage).toContain("StudentCreateDialog");
+    expect(listPage).toContain("StudentDeleteForm");
     expect(listPage).toContain("EmptyState");
     expect(listPage).toContain("search");
     expect(listPage).toContain("status");

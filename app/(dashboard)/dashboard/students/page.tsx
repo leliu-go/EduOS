@@ -20,6 +20,7 @@ import {
   studentStatusLabels,
   studentStatusValues,
 } from "@/features/students/student-schema";
+import { StudentDeleteForm } from "@/features/students/student-delete-form";
 import { StudentCreateDialog } from "@/features/students/student-form-dialog";
 
 type StudentListPageProps = {
@@ -90,9 +91,12 @@ function getColumns(): Array<DataTableColumn<StudentListItem>> {
       header: "操作",
       className: "text-right",
       cell: (student) => (
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/students/${student.id}`}>查看</Link>
-        </Button>
+        <div className="flex justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/dashboard/students/${student.id}`}>查看</Link>
+          </Button>
+          <StudentDeleteForm studentId={student.id} studentName={student.name} />
+        </div>
       ),
     },
   ];

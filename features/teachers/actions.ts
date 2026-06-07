@@ -148,3 +148,78 @@ export async function updateTeacherAction(formData: FormData) {
   revalidatePath(`/dashboard/teachers/${teacher.id}`);
   redirect(`/dashboard/teachers/${teacher.id}`);
 }
+
+export async function deleteTeacherAction(formData: FormData) {
+  const currentUser = await requirePermission("teachers:manage", {
+    nextPath: "/dashboard/teachers",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsedTeacherId = teacherIdSchema.safeParse(formData.get("teacherId"));
+
+  if (!parsedTeacherId.success) {
+    redirectWithTeacherError("/dashboard/teachers", "invalid_input");
+  }
+
+  const teacher = await prisma.$transaction(async (tx) => {
+    const beforeTeacher = await tx.teacherProfile.findFirst({
+      where: {
+        id: parsedTeacherId.data,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!beforeTeacher) {
+      return null;
+    }
+
+    const updatedTeacher = await tx.teacherProfile.update({
+      where: {
+        id: beforeTeacher.id,
+      },
+      data: {
+        status: "RESIGNED",
+      },
+    });
+
+    const disabledMemberships = beforeTeacher.userId
+      ? await tx.membership.updateMany({
+          where: {
+            tenantId: currentUser.tenantId,
+            userId: beforeTeacher.userId,
+            role: {
+              key: "TEACHER",
+            },
+          },
+          data: {
+            status: "DISABLED",
+          },
+        })
+      : { count: 0 };
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "teacher.delete",
+        entityType: "teacher",
+        entityId: updatedTeacher.id,
+        beforeJson: toAuditSnapshot(beforeTeacher),
+        afterJson: {
+          ...toAuditSnapshot(updatedTeacher),
+          disabledMembershipCount: disabledMemberships.count,
+        },
+      },
+      tx,
+    );
+
+    return updatedTeacher;
+  });
+
+  if (!teacher) {
+    redirectWithTeacherError("/dashboard/teachers", "not_found");
+  }
+
+  revalidatePath("/dashboard/teachers");
+  revalidatePath(`/dashboard/teachers/${teacher.id}`);
+  redirect("/dashboard/teachers?deleted=1");
+}

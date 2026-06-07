@@ -32,6 +32,8 @@ function buildTeacherWhere(tenantId: string, query: TeacherListQuery) {
 
   if (query.status) {
     where.status = query.status;
+  } else {
+    where.status = { not: "RESIGNED" };
   }
 
   if (query.search) {

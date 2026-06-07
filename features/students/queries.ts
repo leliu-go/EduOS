@@ -32,6 +32,8 @@ function buildStudentWhere(tenantId: string, query: StudentListQuery) {
 
   if (query.status) {
     where.status = query.status;
+  } else {
+    where.status = { not: "WITHDRAWN" };
   }
 
   if (query.search) {

@@ -65,6 +65,9 @@ describe("teacher management", () => {
     expect(source).toContain("currentUser.tenantId");
     expect(source).toContain("$transaction");
     expect(source).toContain("writeAuditLog");
+    expect(source).toContain("deleteTeacherAction");
+    expect(source).toContain('status: "RESIGNED"');
+    expect(source).toContain('action: "teacher.delete"');
   });
 
   it("queries teacher portal profile by the signed-in user only", () => {
@@ -94,6 +97,7 @@ describe("teacher management", () => {
     );
 
     expect(listPage).toContain("TeacherCreateDialog");
+    expect(listPage).toContain("TeacherDeleteForm");
     expect(listPage).toContain("EmptyState");
     expect(detailPage).toContain("TeacherEditDialog");
     expect(loadingPage).toContain("LoadingState");
