@@ -1,9 +1,13 @@
 import { render, screen, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { DashboardShell } from "../components/layout/dashboard-shell";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard",
+}));
 
 describe("institution navigation polish", () => {
   it("groups desktop navigation by institution workflows", () => {
@@ -28,6 +32,10 @@ describe("institution navigation polish", () => {
     expect(within(navigation).getByRole("link", { name: "排课" })).toHaveAttribute(
       "href",
       "/dashboard/scheduling",
+    );
+    expect(within(navigation).getByRole("link", { name: "教务规则" })).toHaveAttribute(
+      "href",
+      "/dashboard/academic-config",
     );
     expect(within(navigation).getByRole("link", { name: "作业" })).toHaveAttribute(
       "href",

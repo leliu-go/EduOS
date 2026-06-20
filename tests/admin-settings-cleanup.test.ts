@@ -20,6 +20,7 @@ describe("admin settings information architecture", () => {
     expect(settingsPage).toContain("帮助文档");
     expect(settingsPage).not.toContain("Admin 本地备份");
     expect(settingsPage).not.toContain("/dashboard/settings/backup-devices");
+    expect(settingsPage).not.toContain("/dashboard/academic-config");
 
     expect(securityPage).toContain("绑定 Authenticator");
     expect(securityPage).toContain("/dashboard/settings/security/mfa");

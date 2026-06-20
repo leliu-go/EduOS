@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   BookOpen,
   BookOpenText,
@@ -19,7 +23,6 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { getAppVersion } from "@/lib/version/app-version";
 import { cn } from "@/lib/utils";
 
 type SidebarIcon = typeof Home;
@@ -28,7 +31,6 @@ type SidebarItem = {
   label: string;
   href: string;
   icon: SidebarIcon;
-  active?: boolean;
 };
 
 type SidebarGroup = {
@@ -39,7 +41,7 @@ type SidebarGroup = {
 const sidebarGroups: SidebarGroup[] = [
   {
     label: "首页",
-    items: [{ label: "工作台", href: "/dashboard", icon: Home, active: true }],
+    items: [{ label: "工作台", href: "/dashboard", icon: Home }],
   },
   {
     label: "招生",
@@ -58,6 +60,7 @@ const sidebarGroups: SidebarGroup[] = [
       { label: "班级", href: "/dashboard/classes", icon: Library },
       { label: "排课", href: "/dashboard/scheduling", icon: CalendarDays },
       { label: "考勤课消", href: "/dashboard/course-accounts", icon: ClipboardCheck },
+      { label: "教务规则", href: "/dashboard/academic-config", icon: Settings },
     ],
   },
   {
@@ -80,7 +83,6 @@ const sidebarGroups: SidebarGroup[] = [
     label: "设置",
     items: [
       { label: "账号", href: "/dashboard/accounts", icon: Users },
-      { label: "教务规则", href: "/dashboard/academic-config", icon: Settings },
       { label: "系统设置", href: "/dashboard/settings", icon: ShieldCheck },
       { label: "版本信息", href: "/dashboard/settings/version", icon: Sparkles },
       { label: "帮助文档", href: "/dashboard/help", icon: BookOpenText },
@@ -88,8 +90,28 @@ const sidebarGroups: SidebarGroup[] = [
   },
 ];
 
-function AppSidebar() {
-  const version = getAppVersion();
+function isRouteMatch(pathname: string, href: string) {
+  if (href === "/dashboard") {
+    return pathname === href;
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getActiveHref(pathname: string) {
+  return sidebarGroups
+    .flatMap((group) => group.items)
+    .filter((item) => isRouteMatch(pathname, item.href))
+    .sort((left, right) => right.href.length - left.href.length)[0]?.href;
+}
+
+type AppSidebarProps = {
+  version: string;
+};
+
+function AppSidebar({ version }: AppSidebarProps) {
+  const pathname = usePathname() ?? "/dashboard";
+  const activeHref = getActiveHref(pathname);
 
   return (
     <aside data-eduos-sidebar className="border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)]">
@@ -123,19 +145,20 @@ function AppSidebar() {
 
                   return (
                     <li key={`${group.label}-${item.label}`}>
-                      <a
+                      <Link
                         href={item.href}
                         aria-label={item.label}
+                        aria-current={item.href === activeHref ? "page" : undefined}
                         data-eduos-sidebar-link
                         className={cn(
                           "flex items-center rounded-md py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-                          item.active &&
+                          item.href === activeHref &&
                             "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground",
                         )}
                       >
                         <Icon className="size-4 shrink-0" aria-hidden="true" />
                         <span data-eduos-sidebar-text>{item.label}</span>
-                      </a>
+                      </Link>
                     </li>
                   );
                 })}
@@ -149,14 +172,14 @@ function AppSidebar() {
           href="/dashboard/settings/version"
           data-eduos-sidebar-version
           className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent hover:text-accent-foreground"
-          aria-label={`当前版本 v${version.version}`}
+          aria-label={`当前版本 v${version}`}
         >
           <span data-eduos-sidebar-version-short className="font-medium text-foreground">
-            v{version.version}
+            v{version}
           </span>
           <span data-eduos-sidebar-version-label>当前版本</span>
           <span data-eduos-sidebar-version-full className="font-medium text-foreground">
-            v{version.version}
+            v{version}
           </span>
         </a>
       </div>

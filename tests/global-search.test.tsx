@@ -1,9 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { DashboardShell } from "../components/layout/dashboard-shell";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard",
+}));
 
 describe("global search", () => {
   it("uses role-aware tenant-scoped queries for students, teachers, classes, and courses", () => {

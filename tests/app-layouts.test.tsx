@@ -12,7 +12,9 @@ vi.mock("next/navigation", () => ({
 
 describe("app layouts", () => {
   it("renders a polished desktop dashboard shell with sidebar and topbar controls", () => {
-    render(
+    mockedPathname.value = "/dashboard/courses";
+
+    const { container } = render(
       <DashboardShell>
         <h1>机构工作台</h1>
       </DashboardShell>,
@@ -34,6 +36,11 @@ describe("app layouts", () => {
       "href",
       "/dashboard/settings/version",
     );
+    expect(container.querySelector('a[href="/dashboard/courses"]')).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(container.querySelector('a[href="/dashboard"]')).not.toHaveAttribute("aria-current");
     expect(screen.getByRole("heading", { name: "机构工作台" })).toBeInTheDocument();
   });
 

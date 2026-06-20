@@ -5,7 +5,6 @@ import {
   CreditCard,
   DatabaseBackup,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 
@@ -47,12 +46,6 @@ const settingsItems = [
     icon: CreditCard,
   },
   {
-    title: "教务规则",
-    description: "课程、课消、退费、合规和未成年人数据保护规则。",
-    href: "/dashboard/academic-config",
-    icon: SlidersHorizontal,
-  },
-  {
     title: "帮助文档",
     description: "查看 EduOS 使用手册、安装说明和常见问题。",
     href: "/dashboard/help",
@@ -83,7 +76,7 @@ export default async function DashboardSettingsPage({ searchParams }: DashboardS
     <div className="grid gap-6">
       <PageHeader
         title="系统设置"
-        description="按真实运维职责组织入口：安全、存储备份、版本信息、财务、教务规则和帮助文档。"
+        description="按真实运维职责组织入口：安全、存储备份、版本信息、财务设置和帮助文档。教务规则已放入左侧教务分组。"
       />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

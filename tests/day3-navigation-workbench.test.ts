@@ -17,6 +17,7 @@ describe("Day 3 navigation and workbench UX", () => {
     expect(existsSync(join(rootDir, globalsPath))).toBe(true);
 
     const source = readProjectFile(sidebarPath);
+    const shellSource = readProjectFile("components/layout/dashboard-shell.tsx");
     const globals = readProjectFile(globalsPath);
     const dashboardHrefCount = (source.match(/href: "\/dashboard"/g) ?? []).length;
 
@@ -24,7 +25,9 @@ describe("Day 3 navigation and workbench UX", () => {
     expect(source).not.toContain("数据看板");
     expect(dashboardHrefCount).toBe(1);
     expect(source).toContain("/dashboard/settings/version");
-    expect(source).toContain("getAppVersion");
+    expect(source).toContain("usePathname");
+    expect(source).toContain("aria-current");
+    expect(shellSource).toContain("getAppVersion");
     expect(source).toContain("data-eduos-sidebar");
     expect(source).toContain("data-eduos-sidebar-link");
     expect(source).not.toContain("hidden min-h-screen");
