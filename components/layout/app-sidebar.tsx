@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef, type UIEvent } from "react";
 import {
   BookOpen,
   BookOpenText,
@@ -24,6 +25,8 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+
+const sidebarScrollStorageKey = "eduos.dashboard.sidebar.scrollTop";
 
 type SidebarIcon = typeof Home;
 
@@ -105,6 +108,25 @@ function getActiveHref(pathname: string) {
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 }
 
+function readSavedSidebarScrollTop() {
+  try {
+    const value = window.sessionStorage.getItem(sidebarScrollStorageKey);
+    const scrollTop = Number.parseInt(value ?? "", 10);
+
+    return Number.isFinite(scrollTop) && scrollTop >= 0 ? scrollTop : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveSidebarScrollTop(scrollTop: number) {
+  try {
+    window.sessionStorage.setItem(sidebarScrollStorageKey, String(Math.max(0, scrollTop)));
+  } catch {
+    // Storage may be unavailable in hardened browser modes; navigation still works.
+  }
+}
+
 type AppSidebarProps = {
   version: string;
 };
@@ -112,6 +134,19 @@ type AppSidebarProps = {
 function AppSidebar({ version }: AppSidebarProps) {
   const pathname = usePathname() ?? "/dashboard";
   const activeHref = getActiveHref(pathname);
+  const sidebarNavRef = useRef<HTMLElement | null>(null);
+
+  useLayoutEffect(() => {
+    const sidebarNav = sidebarNavRef.current;
+
+    if (sidebarNav) {
+      sidebarNav.scrollTop = readSavedSidebarScrollTop();
+    }
+  }, [pathname]);
+
+  function handleSidebarScroll(event: UIEvent<HTMLElement>) {
+    saveSidebarScrollTop(event.currentTarget.scrollTop);
+  }
 
   return (
     <aside data-eduos-sidebar className="border-r bg-card/95 shadow-[1px_0_0_rgba(15,23,42,0.02)]">
@@ -129,7 +164,13 @@ function AppSidebar({ version }: AppSidebarProps) {
           </div>
         </div>
       </div>
-      <nav data-eduos-sidebar-nav aria-label="主导航" className="flex-1 overflow-y-auto px-2 py-4">
+      <nav
+        ref={sidebarNavRef}
+        data-eduos-sidebar-nav
+        aria-label="主导航"
+        className="flex-1 overflow-y-auto px-2 py-4"
+        onScroll={handleSidebarScroll}
+      >
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
             <section key={group.label} aria-label={group.label} className="space-y-1">

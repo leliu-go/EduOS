@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { DashboardShell } from "../components/layout/dashboard-shell";
@@ -42,6 +42,40 @@ describe("app layouts", () => {
     );
     expect(container.querySelector('a[href="/dashboard"]')).not.toHaveAttribute("aria-current");
     expect(screen.getByRole("heading", { name: "机构工作台" })).toBeInTheDocument();
+  });
+
+  it("keeps the dashboard sidebar scroll position across navigation", () => {
+    window.sessionStorage.clear();
+    mockedPathname.value = "/dashboard/settings/storage";
+
+    const firstRender = render(
+      <DashboardShell>
+        <h1>机构工作台</h1>
+      </DashboardShell>,
+    );
+
+    const sidebarNav = firstRender.container.querySelector("[data-eduos-sidebar-nav]");
+    expect(sidebarNav).toBeInstanceOf(HTMLElement);
+
+    if (!(sidebarNav instanceof HTMLElement)) {
+      return;
+    }
+
+    sidebarNav.scrollTop = 280;
+    fireEvent.scroll(sidebarNav);
+    firstRender.unmount();
+
+    mockedPathname.value = "/dashboard/help";
+
+    const secondRender = render(
+      <DashboardShell>
+        <h1>帮助文档</h1>
+      </DashboardShell>,
+    );
+
+    const restoredSidebarNav = secondRender.container.querySelector("[data-eduos-sidebar-nav]");
+    expect(restoredSidebarNav).toBeInstanceOf(HTMLElement);
+    expect((restoredSidebarNav as HTMLElement).scrollTop).toBe(280);
   });
 
   it("renders student mobile shell with role-specific bottom navigation", () => {
