@@ -37,6 +37,10 @@ describe("Day 3 navigation and workbench UX", () => {
     expect(globals).toContain('@source "../features";');
     expect(globals).toContain("[data-eduos-sidebar]");
     expect(globals).toContain("width: 16rem");
+    expect(globals).toContain("position: sticky");
+    expect(globals).toContain("height: 100vh");
+    expect(globals).toContain("[data-eduos-sidebar-nav]");
+    expect(globals).toContain("min-height: 0");
   });
 
   it("documents the new navigation split between workbench and future analytics", () => {
