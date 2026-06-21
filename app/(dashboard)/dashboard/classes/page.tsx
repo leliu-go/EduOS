@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ClassGroupDeleteForm } from "@/features/classes/class-group-delete-form";
 import { ClassGroupCreateDialog } from "@/features/classes/class-group-form-dialog";
 import { classGroupStatusLabels } from "@/features/classes/class-group-schema";
 import {
@@ -107,9 +108,12 @@ export default async function ClassGroupListPage({ searchParams }: ClassGroupLis
                     {formatDate(classGroup.startsAt)} 至 {formatDate(classGroup.endsAt)}
                   </p>
                 </div>
-                <Button asChild variant="outline">
-                  <Link href={`/dashboard/classes/${classGroup.id}`}>管理班级</Link>
-                </Button>
+                <div className="flex gap-2">
+                  <Button asChild variant="outline" className="flex-1">
+                    <Link href={`/dashboard/classes/${classGroup.id}`}>管理班级</Link>
+                  </Button>
+                  <ClassGroupDeleteForm classGroupId={classGroup.id} />
+                </div>
               </CardContent>
             </Card>
           ))}

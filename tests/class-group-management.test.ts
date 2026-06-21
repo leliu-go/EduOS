@@ -78,6 +78,9 @@ describe("class group management", () => {
     expect(source).toContain("tx.campus.findFirst");
     expect(source).toContain("confirmCapacityOverride");
     expect(source).toContain("capacity_warning");
+    expect(source).toContain("deleteClassGroupAction");
+    expect(source).toContain('status: "ARCHIVED"');
+    expect(source).toContain('action: "classGroup.delete"');
     expect(source).toContain("classGroupStudent.create");
     expect(source).toContain("classGroupStudent.delete");
     expect(source).toContain("writeAuditLog");
@@ -88,6 +91,7 @@ describe("class group management", () => {
 
     expect(source).toContain("getClassGroupList");
     expect(source).toContain("tenantId");
+    expect(source).toContain('not: "ARCHIVED"');
     expect(source).toContain("courseProduct: true");
     expect(source).toContain("primaryTeacher: true");
     expect(source).toContain("campus: true");
@@ -119,7 +123,9 @@ describe("class group management", () => {
     );
 
     expect(listPage).toContain("ClassGroupCreateDialog");
+    expect(listPage).toContain("ClassGroupDeleteForm");
     expect(detailPage).toContain("ClassGroupEditDialog");
+    expect(detailPage).toContain("ClassGroupDeleteForm");
     expect(detailPage).toContain("ClassGroupStudentAddDialog");
     expect(detailPage).toContain("ClassGroupStudentRemoveForm");
     expect(teacherPage).toContain("getTeacherClassGroups");

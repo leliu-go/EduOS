@@ -4,10 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CampusDeleteForm } from "@/features/campuses/campus-delete-form";
 import { requirePermission } from "@/lib/rbac/require-permission";
 import { CampusEditDialog } from "@/features/campuses/campus-form-dialog";
 import { getCampusById } from "@/features/campuses/queries";
 import { campusStatusLabels, roomStatusLabels } from "@/features/campuses/campus-schema";
+import { RoomDeleteForm } from "@/features/campuses/room-delete-form";
 import { RoomCreateDialog, RoomEditDialog } from "@/features/campuses/room-form-dialog";
 
 type CampusDetailPageProps = {
@@ -45,7 +47,12 @@ function getRoomColumns(): Array<DataTableColumn<RoomListItem>> {
       key: "actions",
       header: "操作",
       className: "text-right",
-      cell: (room) => <RoomEditDialog room={room} />,
+      cell: (room) => (
+        <div className="flex justify-end gap-2">
+          <RoomEditDialog room={room} />
+          <RoomDeleteForm campusId={room.campusId} roomId={room.id} />
+        </div>
+      ),
     },
   ];
 }
@@ -78,6 +85,7 @@ export default async function CampusDetailPage({ params }: CampusDetailPageProps
         </div>
         <div className="flex gap-2">
           <CampusEditDialog campus={campus} />
+          <CampusDeleteForm campusId={campus.id} />
           <RoomCreateDialog campusId={campus.id} />
         </div>
       </div>

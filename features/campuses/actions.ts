@@ -170,6 +170,63 @@ export async function updateCampusAction(formData: FormData) {
   redirect(`/dashboard/campuses/${campus.id}`);
 }
 
+export async function deleteCampusAction(formData: FormData) {
+  const currentUser = await requirePermission("campus:manage", {
+    nextPath: "/dashboard/campuses",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsedCampusId = campusIdSchema.safeParse(formData.get("campusId"));
+
+  if (!parsedCampusId.success) {
+    redirectWithCampusError("/dashboard/campuses", "invalid_input");
+  }
+
+  const campus = await prisma.$transaction(async (tx) => {
+    const beforeCampus = await tx.campus.findFirst({
+      where: {
+        id: parsedCampusId.data,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!beforeCampus) {
+      return null;
+    }
+
+    const deletedCampus = await tx.campus.update({
+      where: {
+        id: beforeCampus.id,
+      },
+      data: {
+        status: "INACTIVE",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "campus.delete",
+        entityType: "campus",
+        entityId: deletedCampus.id,
+        beforeJson: campusSnapshot(beforeCampus),
+        afterJson: campusSnapshot(deletedCampus),
+      },
+      tx,
+    );
+
+    return deletedCampus;
+  });
+
+  if (!campus) {
+    redirectWithCampusError("/dashboard/campuses", "not_found");
+  }
+
+  revalidatePath("/dashboard/campuses");
+  revalidatePath(`/dashboard/campuses/${campus.id}`);
+  redirect("/dashboard/campuses");
+}
+
 export async function createRoomAction(formData: FormData) {
   const currentUser = await requirePermission("campus:manage", {
     nextPath: "/dashboard/campuses",
@@ -274,6 +331,64 @@ export async function updateRoomAction(formData: FormData) {
 
   if (!room) {
     redirectWithCampusError("/dashboard/campuses", "not_found");
+  }
+
+  revalidatePath(`/dashboard/campuses/${room.campusId}`);
+  redirect(`/dashboard/campuses/${room.campusId}`);
+}
+
+export async function deleteRoomAction(formData: FormData) {
+  const currentUser = await requirePermission("campus:manage", {
+    nextPath: "/dashboard/campuses",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsedCampusId = campusIdSchema.safeParse(formData.get("campusId"));
+  const parsedRoomId = roomIdSchema.safeParse(formData.get("roomId"));
+
+  if (!parsedCampusId.success || !parsedRoomId.success) {
+    redirectWithCampusError("/dashboard/campuses", "invalid_room");
+  }
+
+  const room = await prisma.$transaction(async (tx) => {
+    const beforeRoom = await tx.room.findFirst({
+      where: {
+        id: parsedRoomId.data,
+        campusId: parsedCampusId.data,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!beforeRoom) {
+      return null;
+    }
+
+    const deletedRoom = await tx.room.update({
+      where: {
+        id: beforeRoom.id,
+      },
+      data: {
+        status: "INACTIVE",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "room.delete",
+        entityType: "room",
+        entityId: deletedRoom.id,
+        beforeJson: roomSnapshot(beforeRoom),
+        afterJson: roomSnapshot(deletedRoom),
+      },
+      tx,
+    );
+
+    return deletedRoom;
+  });
+
+  if (!room) {
+    redirectWithCampusError(`/dashboard/campuses/${parsedCampusId.data}`, "not_found");
   }
 
   revalidatePath(`/dashboard/campuses/${room.campusId}`);

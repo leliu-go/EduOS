@@ -68,9 +68,18 @@ describe("academic configuration", () => {
     const source = readFileSync(join(process.cwd(), "features/academic-config/actions.ts"), "utf8");
 
     expect(source).toContain('requirePermission("academicConfig:manage"');
+    expect(source).toContain("updateSubjectAction");
+    expect(source).toContain("deleteSubjectAction");
+    expect(source).toContain("updateGradeAction");
+    expect(source).toContain("deleteGradeAction");
+    expect(source).toContain("updateTermAction");
+    expect(source).toContain("deleteTermAction");
     expect(source).toContain("currentUser.tenantId");
     expect(source).toContain("$transaction");
     expect(source).toContain("writeAuditLog");
+    expect(source).toContain('action: "subject.delete"');
+    expect(source).toContain('action: "grade.delete"');
+    expect(source).toContain('action: "term.delete"');
   });
 
   it("renders the academic configuration page and route states", () => {
@@ -88,9 +97,21 @@ describe("academic configuration", () => {
     );
 
     expect(page).toContain("SubjectCreateDialog");
+    expect(page).toContain("SubjectEditDialog");
+    expect(page).toContain("SubjectDeleteForm");
     expect(page).toContain("GradeCreateDialog");
+    expect(page).toContain("GradeEditDialog");
+    expect(page).toContain("GradeDeleteForm");
     expect(page).toContain("TermCreateDialog");
+    expect(page).toContain("TermEditDialog");
+    expect(page).toContain("TermDeleteForm");
     expect(loadingPage).toContain("LoadingState");
     expect(errorPage).toContain("ErrorState");
+  });
+
+  it("hides deleted academic configuration items from default lists", () => {
+    const source = readFileSync(join(process.cwd(), "features/academic-config/queries.ts"), "utf8");
+
+    expect(source).toContain("status: \"ACTIVE\"");
   });
 });

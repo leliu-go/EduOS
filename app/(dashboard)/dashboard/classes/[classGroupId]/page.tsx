@@ -8,6 +8,7 @@ import {
   ClassGroupEditDialog,
   ClassGroupStudentAddDialog,
 } from "@/features/classes/class-group-form-dialog";
+import { ClassGroupDeleteForm } from "@/features/classes/class-group-delete-form";
 import { ClassGroupStudentRemoveForm } from "@/features/classes/class-group-student-remove-form";
 import { classGroupStatusLabels } from "@/features/classes/class-group-schema";
 import {
@@ -106,6 +107,7 @@ export default async function ClassGroupDetailPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <ClassGroupEditDialog options={options} classGroup={classGroup} />
+          <ClassGroupDeleteForm classGroupId={classGroup.id} />
           <ClassGroupStudentAddDialog classGroupId={classGroup.id} students={students} />
         </div>
       </div>

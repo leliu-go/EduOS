@@ -6,8 +6,14 @@ import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   GradeCreateDialog,
+  GradeDeleteForm,
+  GradeEditDialog,
   SubjectCreateDialog,
+  SubjectDeleteForm,
+  SubjectEditDialog,
   TermCreateDialog,
+  TermDeleteForm,
+  TermEditDialog,
 } from "@/features/academic-config/config-dialogs";
 import { configStatusLabels, formatConfigDate } from "@/features/academic-config/config-schema";
 import { getAcademicConfig } from "@/features/academic-config/queries";
@@ -27,6 +33,7 @@ const errorMessages = {
   invalid_subject: "科目信息不完整，请检查后重试。",
   invalid_grade: "年级信息不完整，请检查后重试。",
   invalid_term: "学期信息不完整，请检查后重试。",
+  not_found: "未找到对应教务规则。",
 } as const;
 
 function statusBadge(status: "ACTIVE" | "INACTIVE") {
@@ -37,12 +44,34 @@ const subjectColumns: Array<DataTableColumn<SubjectItem>> = [
   { key: "name", header: "科目", cell: (subject) => subject.name },
   { key: "code", header: "编码", cell: (subject) => subject.code ?? "未填写" },
   { key: "status", header: "状态", cell: (subject) => statusBadge(subject.status) },
+  {
+    key: "actions",
+    header: "操作",
+    className: "text-right",
+    cell: (subject) => (
+      <div className="flex justify-end gap-2">
+        <SubjectEditDialog subject={subject} />
+        <SubjectDeleteForm subjectId={subject.id} />
+      </div>
+    ),
+  },
 ];
 
 const gradeColumns: Array<DataTableColumn<GradeItem>> = [
   { key: "name", header: "年级", cell: (grade) => grade.name },
   { key: "sortOrder", header: "排序", cell: (grade) => grade.sortOrder },
   { key: "status", header: "状态", cell: (grade) => statusBadge(grade.status) },
+  {
+    key: "actions",
+    header: "操作",
+    className: "text-right",
+    cell: (grade) => (
+      <div className="flex justify-end gap-2">
+        <GradeEditDialog grade={grade} />
+        <GradeDeleteForm gradeId={grade.id} />
+      </div>
+    ),
+  },
 ];
 
 const termColumns: Array<DataTableColumn<TermItem>> = [
@@ -53,6 +82,23 @@ const termColumns: Array<DataTableColumn<TermItem>> = [
     cell: (term) => `${formatConfigDate(term.startsAt)} 至 ${formatConfigDate(term.endsAt)}`,
   },
   { key: "status", header: "状态", cell: (term) => statusBadge(term.status) },
+  {
+    key: "actions",
+    header: "操作",
+    className: "text-right",
+    cell: (term) => (
+      <div className="flex justify-end gap-2">
+        <TermEditDialog
+          term={{
+            ...term,
+            startsAt: formatConfigDate(term.startsAt),
+            endsAt: formatConfigDate(term.endsAt),
+          }}
+        />
+        <TermDeleteForm termId={term.id} />
+      </div>
+    ),
+  },
 ];
 
 function ConfigSection<TItem extends ConfigRow>({

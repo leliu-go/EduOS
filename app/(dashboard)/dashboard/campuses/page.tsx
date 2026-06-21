@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CampusDeleteForm } from "@/features/campuses/campus-delete-form";
 import { requirePermission } from "@/lib/rbac/require-permission";
 import { CampusCreateDialog } from "@/features/campuses/campus-form-dialog";
 import { getCampusList } from "@/features/campuses/queries";
@@ -81,9 +82,12 @@ export default async function CampusListPage({ searchParams }: CampusListPagePro
                   </p>
                   <p>营业时间：{campus.businessHours ?? "未填写"}</p>
                 </div>
-                <Button asChild variant="outline">
-                  <Link href={`/dashboard/campuses/${campus.id}`}>管理教室</Link>
-                </Button>
+                <div className="flex gap-2">
+                  <Button asChild variant="outline" className="flex-1">
+                    <Link href={`/dashboard/campuses/${campus.id}`}>管理教室</Link>
+                  </Button>
+                  <CampusDeleteForm campusId={campus.id} />
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -68,9 +68,21 @@ describe("campus and room management", () => {
     const source = readFileSync(join(process.cwd(), "features/campuses/actions.ts"), "utf8");
 
     expect(source).toContain('requirePermission("campus:manage"');
+    expect(source).toContain("deleteCampusAction");
+    expect(source).toContain("deleteRoomAction");
+    expect(source).toContain('status: "INACTIVE"');
+    expect(source).toContain('action: "campus.delete"');
+    expect(source).toContain('action: "room.delete"');
     expect(source).toContain("currentUser.tenantId");
     expect(source).toContain("$transaction");
     expect(source).toContain("writeAuditLog");
+  });
+
+  it("hides deleted campuses and rooms from default management lists", () => {
+    const source = readFileSync(join(process.cwd(), "features/campuses/queries.ts"), "utf8");
+
+    expect(source).toContain('status: "ACTIVE"');
+    expect(source).toContain('status: { not: "INACTIVE" }');
   });
 
   it("renders campus list, room management detail, and route states", () => {
@@ -92,9 +104,11 @@ describe("campus and room management", () => {
     );
 
     expect(listPage).toContain("CampusCreateDialog");
+    expect(listPage).toContain("CampusDeleteForm");
     expect(listPage).toContain("EmptyState");
     expect(detailPage).toContain("RoomCreateDialog");
     expect(detailPage).toContain("RoomEditDialog");
+    expect(detailPage).toContain("RoomDeleteForm");
     expect(loadingPage).toContain("LoadingState");
     expect(errorPage).toContain("ErrorState");
   });

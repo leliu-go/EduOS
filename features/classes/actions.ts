@@ -223,6 +223,63 @@ export async function updateClassGroupAction(formData: FormData) {
   redirect(`/dashboard/classes/${classGroup.id}`);
 }
 
+export async function deleteClassGroupAction(formData: FormData) {
+  const currentUser = await requirePermission("classes:manage", {
+    nextPath: "/dashboard/classes",
+    unauthorizedRedirectTo: "/unauthorized",
+  });
+  const parsedClassGroupId = classGroupIdSchema.safeParse(formData.get("classGroupId"));
+
+  if (!parsedClassGroupId.success) {
+    redirectWithClassGroupError("/dashboard/classes", "invalid_input");
+  }
+
+  const classGroup = await prisma.$transaction(async (tx) => {
+    const beforeClassGroup = await tx.classGroup.findFirst({
+      where: {
+        id: parsedClassGroupId.data,
+        tenantId: currentUser.tenantId,
+      },
+    });
+
+    if (!beforeClassGroup) {
+      return null;
+    }
+
+    const deletedClassGroup = await tx.classGroup.update({
+      where: {
+        id: beforeClassGroup.id,
+      },
+      data: {
+        status: "ARCHIVED",
+      },
+    });
+
+    await writeAuditLog(
+      {
+        tenantId: currentUser.tenantId,
+        actorUserId: currentUser.id,
+        action: "classGroup.delete",
+        entityType: "classGroup",
+        entityId: deletedClassGroup.id,
+        beforeJson: classGroupSnapshot(beforeClassGroup),
+        afterJson: classGroupSnapshot(deletedClassGroup),
+      },
+      tx,
+    );
+
+    return deletedClassGroup;
+  });
+
+  if (!classGroup) {
+    redirectWithClassGroupError("/dashboard/classes", "not_found");
+  }
+
+  revalidatePath("/dashboard/classes");
+  revalidatePath(`/dashboard/classes/${classGroup.id}`);
+  redirect("/dashboard/classes");
+}
+
 export async function addClassGroupStudentAction(formData: FormData) {
   const currentUser = await requirePermission("classes:manage", {
     nextPath: "/dashboard/classes",

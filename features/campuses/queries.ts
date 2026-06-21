@@ -4,6 +4,7 @@ export async function getCampusList(tenantId: string) {
   return prisma.campus.findMany({
     where: {
       tenantId,
+      status: "ACTIVE",
     },
     include: {
       _count: {
@@ -21,9 +22,13 @@ export async function getCampusById(tenantId: string, campusId: string) {
     where: {
       id: campusId,
       tenantId,
+      status: "ACTIVE",
     },
     include: {
       rooms: {
+        where: {
+          status: { not: "INACTIVE" },
+        },
         orderBy: [{ status: "asc" }, { name: "asc" }],
       },
     },

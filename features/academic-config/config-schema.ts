@@ -45,6 +45,10 @@ export type GradeConfigValues = z.infer<typeof gradeConfigSchema>;
 export type TermConfigValues = z.infer<typeof termConfigSchema>;
 export type ConfigStatusValue = (typeof configStatusValues)[number];
 
+export const subjectIdSchema = z.string().cuid();
+export const gradeIdSchema = z.string().cuid();
+export const termIdSchema = z.string().cuid();
+
 export function getSubjectConfigValues(formData: FormData) {
   return subjectConfigSchema.safeParse({
     name: formData.get("name"),
