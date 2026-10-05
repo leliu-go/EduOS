@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAuthSessionPayload } from "@/lib/auth/session-cookie";
+import { sessionSurvivesPasswordChange } from "@/lib/auth/session";
 import type { RoleKey } from "@/lib/rbac/permissions";
 
 export type CurrentUser = {
@@ -34,6 +35,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       email: true,
       status: true,
       loginPermanentlyLockedAt: true,
+      passwordChangedAt: true,
       memberships: {
         where: {
           tenantId: session.tenantId,
@@ -68,6 +70,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     !user ||
     user.status !== "ACTIVE" ||
     user.loginPermanentlyLockedAt ||
+    !sessionSurvivesPasswordChange(session, user.passwordChangedAt) ||
     !membership ||
     membership.tenant.status !== "ACTIVE" ||
     membership.role.status !== "ACTIVE" ||

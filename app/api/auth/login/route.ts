@@ -13,6 +13,7 @@ import { AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session
 import { loginSchema } from "@/lib/auth/validation";
 import { getFormDataString } from "@/lib/forms/form-data";
 import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
+import { getTemporaryMfaPolicy } from "@/lib/mfa/temporary-access";
 import { prisma } from "@/lib/prisma";
 
 function getPublicBaseUrl(request: NextRequest) {
@@ -131,6 +132,12 @@ export async function POST(request: NextRequest) {
     roleKey: membership.role.key,
     enrollmentStatus,
     sessionMfaVerified: false,
+    policy: await getTemporaryMfaPolicy({
+      tenantId: membership.tenantId,
+      userId: user.id,
+      roleKey: membership.role.key,
+      enrollmentStatus,
+    }),
   });
   const redirectPath =
     mfaDecision.action === "enroll"
@@ -153,7 +160,9 @@ export async function POST(request: NextRequest) {
       roleKey: membership.role.key,
       expiresAt,
       mfaVerifiedAt:
-        mfaDecision.action === "allow" && mfaDecision.reason === "verified" ? Date.now() : undefined,
+        mfaDecision.action === "allow" && mfaDecision.reason === "verified"
+          ? Date.now()
+          : undefined,
     }),
     {
       httpOnly: true,

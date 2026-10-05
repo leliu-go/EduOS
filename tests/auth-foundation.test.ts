@@ -34,6 +34,7 @@ describe("auth foundation", () => {
       tenantId: "tenant_1",
       roleKey: "ORG_ADMIN",
       expiresAt: expect.any(Number),
+      issuedAt: expect.any(Number),
     });
     expect(verifySessionToken(`${token}tampered`, "test-secret")).toBeNull();
   });

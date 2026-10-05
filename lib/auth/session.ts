@@ -7,6 +7,7 @@ export type AuthSessionPayload = {
   tenantId: string;
   roleKey: RoleKey;
   expiresAt: number;
+  issuedAt?: number;
   mfaVerifiedAt?: number;
 };
 
@@ -50,6 +51,7 @@ function isSessionPayload(value: AuthSessionPayload) {
     typeof value.roleKey === "string" &&
     isRoleKey(value.roleKey) &&
     typeof value.expiresAt === "number" &&
+    (value.issuedAt === undefined || (Number.isFinite(value.issuedAt) && value.issuedAt > 0)) &&
     (value.mfaVerifiedAt === undefined || typeof value.mfaVerifiedAt === "number")
   );
 }
@@ -59,10 +61,20 @@ export function sessionHasCompletedMfa(payload: Pick<AuthSessionPayload, "mfaVer
 }
 
 export function createSessionToken(payload: AuthSessionPayload, secret = getAuthSecret()) {
-  const encodedPayload = encodeJson(payload);
+  const encodedPayload = encodeJson({ ...payload, issuedAt: payload.issuedAt ?? Date.now() });
   const signature = sign(encodedPayload, secret);
 
   return `${encodedPayload}.${signature}`;
+}
+
+export function sessionSurvivesPasswordChange(
+  payload: Pick<AuthSessionPayload, "issuedAt">,
+  passwordChangedAt: Date | null,
+) {
+  return (
+    !passwordChangedAt ||
+    (typeof payload.issuedAt === "number" && payload.issuedAt >= passwordChangedAt.getTime())
+  );
 }
 
 export function verifySessionToken(token: string, secret = getAuthSecret()) {

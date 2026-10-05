@@ -5,6 +5,7 @@ import { hasPermission, type Permission } from "@/lib/rbac/permissions";
 import { getPostPasswordMfaLoginDecision } from "@/lib/auth/mfa-login";
 import { getMfaEnrollmentStatus } from "@/lib/mfa/mfa-status";
 import { roleRequiresMfa } from "@/lib/mfa/mfa-policy";
+import { getTemporaryMfaPolicy } from "@/lib/mfa/temporary-access";
 
 export class PermissionDeniedError extends Error {
   constructor(
@@ -28,7 +29,11 @@ function getSafeNextPath(nextPath: string | undefined) {
     : "/dashboard";
 }
 
-async function enforceRequiredMfa(currentUser: CurrentUser, permission: Permission, nextPath?: string) {
+async function enforceRequiredMfa(
+  currentUser: CurrentUser,
+  permission: Permission,
+  nextPath?: string,
+) {
   if (!roleRequiresMfa(currentUser.roleKey) || permission === "security:mfa:manage") {
     return;
   }
@@ -46,6 +51,12 @@ async function enforceRequiredMfa(currentUser: CurrentUser, permission: Permissi
     roleKey: currentUser.roleKey,
     enrollmentStatus,
     sessionMfaVerified: Boolean(currentUser.mfaVerifiedAt),
+    policy: await getTemporaryMfaPolicy({
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
+      roleKey: currentUser.roleKey,
+      enrollmentStatus,
+    }),
   });
 
   if (decision.action === "allow") {
