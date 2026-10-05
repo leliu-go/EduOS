@@ -44,3 +44,21 @@ migration, database reset, object-storage deletion or business-data deletion.
   password-only admin access is an explicitly requested risk, capped at 24 hours.
 - Production account mutation and deployment must be verified separately; these
   local test results alone do not claim the live account has already changed.
+
+## Live operation verification
+
+On 2026-10-05 the owner-authorized recovery of `admin` in tenant `eduos-demo`
+completed after GitHub push and server pull/build/PM2 restart. The account and its
+ORG_ADMIN membership are ACTIVE; its previous MFA credential is DISABLED and the
+stored old secret/backup codes were erased by the transaction. The separate
+`develop` account remains ACTIVE with VERIFIED MFA.
+
+The temporary grace expires at `2026-10-06T08:01:29.398Z` (16:01 Singapore/China
+time). After expiry, enrollment is required again. The requested temporary
+password was provided via non-echoed SSH stdin and is not recorded here.
+
+Real Chromium login to the HTTPS site reached `/dashboard`, rendered the sidebar,
+showed no system-unavailable error, and confirmed the session had no
+mfaVerifiedAt. No screenshot, trace, video or session cookie was saved. The HTTPS
+login endpoint returned 200. No schema migration or business-data deletion was
+performed.
