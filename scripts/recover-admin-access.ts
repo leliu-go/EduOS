@@ -1,14 +1,19 @@
 import { recoverAdminAccount } from "../lib/auth/admin-recovery";
 import { prisma } from "../lib/prisma";
+import { createInterface } from "node:readline";
 
 async function readStdin() {
-  let input = "";
-  process.stdin.setEncoding("utf8");
-  for await (const chunk of process.stdin) {
-    input += chunk;
-    if (input.length > 4096) throw new Error("Input too large.");
+  const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
+  try {
+    for await (const line of lines) {
+      if (line.length > 4096) throw new Error("Input too large.");
+      if (line.trim()) return line;
+    }
+    return "";
+  } finally {
+    lines.close();
+    process.stdin.pause();
   }
-  return input;
 }
 
 async function main() {
